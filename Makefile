@@ -1,3 +1,6 @@
+# Copyright 2021 VMware, Inc.
+# SPDX-License-Identifier: BSD-2-Clause
+
 SHELL = /bin/bash
 GO-VER = go1.16
 
@@ -48,7 +51,7 @@ deps: deps-modules deps-counterfeiter deps-ginkgo
 
 SRC = $(shell find . -name "*.go" | grep -v "_test\." )
 VERSION := $(or $(VERSION), dev)
-LDFLAGS="-X gitlab.eng.vmware.com/marketplace-partner-eng/marketplace-cli/v2/cmd.Version=$(VERSION)"
+LDFLAGS="-X github.com/vmware-labs/marketplace-cli/v2/cmd.Version=$(VERSION)"
 
 build/mkpcli: $(SRC)
 	go build -o build/mkpcli -ldflags ${LDFLAGS} ./main.go
@@ -87,4 +90,4 @@ lint: deps-goimports
 # #### DEVOPS ####
 .PHONY: set-pipeline
 set-pipeline: ci/pipeline.yaml
-	fly -t tie set-pipeline --config ci/pipeline.yaml --pipeline mkpcli
+	fly -t tie set-pipeline --config ci/pipeline.yaml --pipeline marketplace-cli

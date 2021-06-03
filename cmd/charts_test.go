@@ -1,3 +1,6 @@
+// Copyright 2021 VMware, Inc.
+// SPDX-License-Identifier: BSD-2-Clause
+
 package cmd_test
 
 import (
@@ -13,10 +16,10 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/gbytes"
-	"gitlab.eng.vmware.com/marketplace-partner-eng/marketplace-cli/v2/cmd"
-	"gitlab.eng.vmware.com/marketplace-partner-eng/marketplace-cli/v2/lib"
-	"gitlab.eng.vmware.com/marketplace-partner-eng/marketplace-cli/v2/lib/libfakes"
-	"gitlab.eng.vmware.com/marketplace-partner-eng/marketplace-cli/v2/models"
+	"github.com/vmware-labs/marketplace-cli/v2/cmd"
+	"github.com/vmware-labs/marketplace-cli/v2/lib"
+	"github.com/vmware-labs/marketplace-cli/v2/lib/libfakes"
+	"github.com/vmware-labs/marketplace-cli/v2/models"
 )
 
 var _ = Describe("Charts", func() {

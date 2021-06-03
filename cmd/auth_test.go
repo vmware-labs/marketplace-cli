@@ -1,3 +1,6 @@
+// Copyright 2021 VMware, Inc.
+// SPDX-License-Identifier: BSD-2-Clause
+
 package cmd_test
 
 import (
@@ -5,9 +8,9 @@ import (
 	. "github.com/onsi/gomega"
 	"github.com/pkg/errors"
 	"github.com/spf13/viper"
-	. "gitlab.eng.vmware.com/marketplace-partner-eng/marketplace-cli/v2/cmd"
-	"gitlab.eng.vmware.com/marketplace-partner-eng/marketplace-cli/v2/cmd/cmdfakes"
-	"gitlab.eng.vmware.com/marketplace-partner-eng/marketplace-cli/v2/lib/csp"
+	. "github.com/vmware-labs/marketplace-cli/v2/cmd"
+	"github.com/vmware-labs/marketplace-cli/v2/cmd/cmdfakes"
+	"github.com/vmware-labs/marketplace-cli/v2/lib/csp"
 )
 
 var _ = Describe("Auth", func() {

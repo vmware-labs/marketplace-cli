@@ -1,5 +1,8 @@
+# Copyright 2021 VMware, Inc.
+# SPDX-License-Identifier: BSD-2-Clause
+
 FROM harbor-repo.vmware.com/dockerhub-proxy-cache/library/ubuntu
-LABEL description="The VMware Marketplace CLI"
+LABEL description="VMware Marketplace CLI"
 LABEL maintainer="tanzu-isv-engineering@groups.vmware.com"
 
 RUN apt-get update && \

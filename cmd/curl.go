@@ -1,3 +1,6 @@
+// Copyright 2021 VMware, Inc.
+// SPDX-License-Identifier: BSD-2-Clause
+
 package cmd
 
 import (
@@ -7,7 +10,7 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
-	. "gitlab.eng.vmware.com/marketplace-partner-eng/marketplace-cli/v2/lib"
+	. "github.com/vmware-labs/marketplace-cli/v2/lib"
 )
 
 func init() {

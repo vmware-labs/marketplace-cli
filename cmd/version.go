@@ -1,10 +1,13 @@
+// Copyright 2021 VMware, Inc.
+// SPDX-License-Identifier: BSD-2-Clause
+
 package cmd
 
 import (
 	"fmt"
 	"os"
 
-	. "gitlab.eng.vmware.com/marketplace-partner-eng/marketplace-cli/v2/lib"
+	. "github.com/vmware-labs/marketplace-cli/v2/lib"
 
 	"github.com/spf13/cobra"
 )

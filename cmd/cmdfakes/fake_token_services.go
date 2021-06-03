@@ -4,8 +4,8 @@ package cmdfakes
 import (
 	"sync"
 
-	"gitlab.eng.vmware.com/marketplace-partner-eng/marketplace-cli/v2/cmd"
-	"gitlab.eng.vmware.com/marketplace-partner-eng/marketplace-cli/v2/lib/csp"
+	"github.com/vmware-labs/marketplace-cli/v2/cmd"
+	"github.com/vmware-labs/marketplace-cli/v2/lib/csp"
 )
 
 type FakeTokenServices struct {

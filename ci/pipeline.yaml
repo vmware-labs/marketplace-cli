@@ -1,31 +1,26 @@
----
-resource_types:
-  - name: gl-release
-    type: registry-image
-    source:
-      repository: harbor-repo.vmware.com/dockerhub-proxy-cache/orangeopensource/gitlab-release-resource
-      tag: v1.0.4
-      username: ((harbor.username))
-      password: ((harbor.token))
+# Copyright 2021 VMware, Inc.
+# SPDX-License-Identifier: BSD-2-Clause
 
+---
 resources:
   - name: source
     type: git
-    icon: gitlab
+    icon: github
     source:
-      uri: git@gitlab.eng.vmware.com:marketplace-partner-eng/marketplace-cli.git
-      private_key: ((gitlab.private_key))
+      uri: git@github.com:vmware-labs/marketplace-cli.git
+      private_key: ((github.private_key))
       branch: main
 
   - name: version
     type: semver
-    icon: gitlab
+    icon: github
     source:
       driver: git
-      uri: git@gitlab.eng.vmware.com:marketplace-partner-eng/versions.git
-      private_key: ((gitlab.private_key))
-      branch: master
-      file: mkpcli
+      uri: git@github.com:vmware-labs/marketplace-cli.git
+      private_key: ((github.private_key))
+      branch: main
+      file: version
+      commit_message: "[ci skip] bump version to %version%"
 
   - name: mkpcli
     type: docker-image
@@ -36,64 +31,64 @@ resources:
       password: ((harbor.token))
 
   - name: release
-    type: gl-release
-    icon: gitlab
+    type: github-release
+    icon: github
     source:
-      repository: marketplace-partner-eng/marketplace-cli
-      access_token: ((gitlab.access_token))
-      gitlab_api_url: https://gitlab.eng.vmware.com
+      owner: vmware-labs
+      repository: marketplace-cli
+      access_token: ((github.access_token))
 
-  - name: test-container-product-source
-    type: git
-    icon: gitlab
-    source:
-      uri: git@gitlab.eng.vmware.com:marketplace-partner-eng/test-products.git
-      private_key: ((gitlab.private_key))
-      branch: master
-      paths:
-        - test-container-product/*
-        - test-container-product/**
-
-  - name: test-container-product-version
-    type: semver
-    icon: gitlab
-    source:
-      driver: git
-      uri: git@gitlab.eng.vmware.com:marketplace-partner-eng/test-products.git
-      private_key: ((gitlab.private_key))
-      branch: master
-      file: test-container-product/version
-      commit_message: "[ci skip] Updating to version %version%"
-
-  - name: test-container-product
-    type: docker-image
-    icon: docker
-    source:
-      repository: harbor-repo.vmware.com/tanzu_isv_engineering/test-container-product
-      username: ((harbor.username))
-      password: ((harbor.token))
-
-  - name: test-chart-product-source
-    type: git
-    icon: gitlab
-    source:
-      uri: git@gitlab.eng.vmware.com:marketplace-partner-eng/test-products.git
-      private_key: ((gitlab.private_key))
-      branch: master
-      paths:
-        - test-chart-product/*
-        - test-chart-product/**
-
-  - name: test-chart-product-version
-    type: semver
-    icon: gitlab
-    source:
-      driver: git
-      uri: git@gitlab.eng.vmware.com:marketplace-partner-eng/test-products.git
-      private_key: ((gitlab.private_key))
-      branch: master
-      file: test-chart-product/version
-      commit_message: "[ci skip] Updating to version %version%"
+#  - name: test-container-product-source
+#    type: git
+#    icon: gitlab
+#    source:
+#      uri: git@gitlab.eng.vmware.com:marketplace-partner-eng/test-products.git
+#      private_key: ((gitlab.private_key))
+#      branch: master
+#      paths:
+#        - test-container-product/*
+#        - test-container-product/**
+#
+#  - name: test-container-product-version
+#    type: semver
+#    icon: gitlab
+#    source:
+#      driver: git
+#      uri: git@gitlab.eng.vmware.com:marketplace-partner-eng/test-products.git
+#      private_key: ((gitlab.private_key))
+#      branch: master
+#      file: test-container-product/version
+#      commit_message: "[ci skip] Updating to version %version%"
+#
+#  - name: test-container-product
+#    type: docker-image
+#    icon: docker
+#    source:
+#      repository: harbor-repo.vmware.com/tanzu_isv_engineering/test-container-product
+#      username: ((harbor.username))
+#      password: ((harbor.token))
+#
+#  - name: test-chart-product-source
+#    type: git
+#    icon: gitlab
+#    source:
+#      uri: git@gitlab.eng.vmware.com:marketplace-partner-eng/test-products.git
+#      private_key: ((gitlab.private_key))
+#      branch: master
+#      paths:
+#        - test-chart-product/*
+#        - test-chart-product/**
+#
+#  - name: test-chart-product-version
+#    type: semver
+#    icon: gitlab
+#    source:
+#      driver: git
+#      uri: git@gitlab.eng.vmware.com:marketplace-partner-eng/test-products.git
+#      private_key: ((gitlab.private_key))
+#      branch: master
+#      file: test-chart-product/version
+#      commit_message: "[ci skip] Updating to version %version%"
 
   - name: daily
     type: time
@@ -114,7 +109,6 @@ jobs:
         file: source/ci/tasks/test.yaml
         params:
           CSP_API_TOKEN: ((marketplace_api_token))
-          GIT_SSH_KEY: ((gitlab.private_key))
           MARKETPLACE_HOST: gtwstg.market.csp.vmware.com
 
   - name: build
@@ -130,13 +124,8 @@ jobs:
               bump: patch
       - task: build
         file: source/ci/tasks/build.yaml
-        params:
-          GIT_SSH_KEY: ((gitlab.private_key))
       - put: mkpcli
-        inputs:
-          - build
-          - source
-          - version
+        inputs: [build, source, version]
         params:
           build: .
           dockerfile: source/Dockerfile
@@ -145,8 +134,9 @@ jobs:
       - put: release
         inputs: [build, source, version]
         params:
-          commitish: source/.git/ref
+          name: version/version
           tag: version/version
+          commitish: source/.git/ref
           globs:
             - build/*
       - put: version
@@ -170,155 +160,155 @@ jobs:
         params:
           bump: minor
 
-  - name: test-container-product
-    plan:
-      - in_parallel:
-          - get: source
-            resource: test-container-product-source
-            trigger: true
-          - get: version
-            resource: test-container-product-version
-            params: { bump: patch }
-          - get: mkpcli
-            trigger: true
-            passed:
-              - build
-      - put: test-container-product
-        inputs: all
-        params:
-          build: .
-          dockerfile: source/test-container-product/Dockerfile
-          tag_file: version/version
-          tag_as_latest: true
-      - put: test-container-product-version
-        inputs: detect
-        params:
-          file: version/version
-      - task: add-version-to-marketplace
-        image: mkpcli
-        config:
-          inputs:
-            - name: version
-          platform: linux
-          params:
-            CSP_API_TOKEN: ((marketplace_api_token))
-            MARKETPLACE_HOST: gtwstg.market.csp.vmware.com
-            SLUG: ((marketplace-test-products.container))
-          run:
-            path: bash
-            args:
-              - -exc
-              - |
-                mkpcli product-version create --product ${SLUG} --product-version $(cat version/version)
-      - task: add-container-image-to-marketplace
-        image: mkpcli
-        config:
-          inputs:
-            - name: test-container-product
-            - name: version
-          platform: linux
-          params:
-            CSP_API_TOKEN: ((marketplace_api_token))
-            MARKETPLACE_HOST: gtwstg.market.csp.vmware.com
-            SLUG: ((marketplace-test-products.container))
-          run:
-            path: bash
-            args:
-              - -exc
-              - |
-                mkpcli container-image create \
-                  --product ${SLUG} \
-                  --product-version $(cat version/version) \
-                  --image-repository $(cat test-container-product/repository) \
-                  --image-tag $(cat version/version) \
-                  --image-tag-type FIXED \
-                  --deployment-instructions "docker run $(cat test-container-product/repository):$(cat version/version)"
-
-  - name: test-chart-product
-    plan:
-      - in_parallel:
-          - get: source
-            resource: test-chart-product-source
-            trigger: true
-          - get: version
-            resource: test-chart-product-version
-            params: { bump: patch }
-          - get: mkpcli
-            trigger: true
-            passed:
-              - build
-      - task: publish-chart
-        config:
-          platform: linux
-          image_resource:
-            type: registry-image
-            source:
-              repository: harbor-repo.vmware.com/dockerhub-proxy-cache/alpine/helm
-              username: ((harbor.username))
-              password: ((harbor.token))
-          inputs:
-            - name: source
-            - name: version
-          params:
-            HARBOR_USERNAME: ((harbor.username))
-            HARBOR_PASSWORD: ((harbor.token))
-          run:
-            path: sh
-            dir: source/test-chart-product
-            args:
-              - -exc
-              - |
-                apk add git
-                export VERSION=$(cat ../../version/version)
-                helm package test-chart-product --version ${VERSION}
-                helm repo add \
-                    --username ${HARBOR_USERNAME} \
-                    --password ${HARBOR_PASSWORD} \
-                    tanzu_isv_engineering \
-                    https://harbor-repo.vmware.com/chartrepo/tanzu_isv_engineering
-                helm plugin install https://github.com/chartmuseum/helm-push
-                helm push test-chart-product-${VERSION}.tgz tanzu_isv_engineering
-      - put: test-chart-product-version
-        inputs: detect
-        params:
-          file: version/version
-      - task: add-version-to-marketplace
-        image: mkpcli
-        config:
-          inputs:
-            - name: version
-          platform: linux
-          params:
-            CSP_API_TOKEN: ((marketplace_api_token))
-            MARKETPLACE_HOST: gtwstg.market.csp.vmware.com
-            SLUG: ((marketplace-test-products.chart))
-          run:
-            path: bash
-            args:
-              - -exc
-              - |
-                mkpcli product-version create --product ${SLUG} --product-version $(cat version/version)
-      - task: add-chart-to-marketplace
-        image: mkpcli
-        config:
-          inputs:
-            - name: version
-          platform: linux
-          params:
-            CSP_API_TOKEN: ((marketplace_api_token))
-            MARKETPLACE_HOST: gtwstg.market.csp.vmware.com
-            SLUG: ((marketplace-test-products.chart))
-          run:
-            path: bash
-            args:
-              - -exc
-              - |
-                export VERSION=$(cat version/version)
-                mkpcli chart create \
-                  --product ${SLUG} \
-                  --product-version ${VERSION} \
-                  --chart-name tanzu_isv_engineering/test-chart-product-${VERSION} \
-                  --chart-version ${VERSION} \
-                  --chart-url https://harbor-repo.vmware.com/chartrepo/tanzu_isv_engineering/charts/test-chart-product-${VERSION}.tgz \
-                  --repository-name tanzu_isv_engineering \
-                  --repository-url https://harbor-repo.vmware.com/chartrepo/tanzu_isv_engineering
+#  - name: test-container-product
+#    plan:
+#      - in_parallel:
+#          - get: source
+#            resource: test-container-product-source
+#            trigger: true
+#          - get: version
+#            resource: test-container-product-version
+#            params: { bump: patch }
+#          - get: mkpcli
+#            trigger: true
+#            passed:
+#              - build
+#      - put: test-container-product
+#        inputs: all
+#        params:
+#          build: .
+#          dockerfile: source/test-container-product/Dockerfile
+#          tag_file: version/version
+#          tag_as_latest: true
+#      - put: test-container-product-version
+#        inputs: detect
+#        params:
+#          file: version/version
+#      - task: add-version-to-marketplace
+#        image: mkpcli
+#        config:
+#          inputs:
+#            - name: version
+#          platform: linux
+#          params:
+#            CSP_API_TOKEN: ((marketplace_api_token))
+#            MARKETPLACE_HOST: gtwstg.market.csp.vmware.com
+#            SLUG: ((marketplace-test-products.container))
+#          run:
+#            path: bash
+#            args:
+#              - -exc
+#              - |
+#                mkpcli product-version create --product ${SLUG} --product-version $(cat version/version)
+#      - task: add-container-image-to-marketplace
+#        image: mkpcli
+#        config:
+#          inputs:
+#            - name: test-container-product
+#            - name: version
+#          platform: linux
+#          params:
+#            CSP_API_TOKEN: ((marketplace_api_token))
+#            MARKETPLACE_HOST: gtwstg.market.csp.vmware.com
+#            SLUG: ((marketplace-test-products.container))
+#          run:
+#            path: bash
+#            args:
+#              - -exc
+#              - |
+#                mkpcli container-image create \
+#                  --product ${SLUG} \
+#                  --product-version $(cat version/version) \
+#                  --image-repository $(cat test-container-product/repository) \
+#                  --image-tag $(cat version/version) \
+#                  --image-tag-type FIXED \
+#                  --deployment-instructions "docker run $(cat test-container-product/repository):$(cat version/version)"
+#
+#  - name: test-chart-product
+#    plan:
+#      - in_parallel:
+#          - get: source
+#            resource: test-chart-product-source
+#            trigger: true
+#          - get: version
+#            resource: test-chart-product-version
+#            params: { bump: patch }
+#          - get: mkpcli
+#            trigger: true
+#            passed:
+#              - build
+#      - task: publish-chart
+#        config:
+#          platform: linux
+#          image_resource:
+#            type: registry-image
+#            source:
+#              repository: harbor-repo.vmware.com/dockerhub-proxy-cache/alpine/helm
+#              username: ((harbor.username))
+#              password: ((harbor.token))
+#          inputs:
+#            - name: source
+#            - name: version
+#          params:
+#            HARBOR_USERNAME: ((harbor.username))
+#            HARBOR_PASSWORD: ((harbor.token))
+#          run:
+#            path: sh
+#            dir: source/test-chart-product
+#            args:
+#              - -exc
+#              - |
+#                apk add git
+#                export VERSION=$(cat ../../version/version)
+#                helm package test-chart-product --version ${VERSION}
+#                helm repo add \
+#                    --username ${HARBOR_USERNAME} \
+#                    --password ${HARBOR_PASSWORD} \
+#                    tanzu_isv_engineering \
+#                    https://harbor-repo.vmware.com/chartrepo/tanzu_isv_engineering
+#                helm plugin install https://github.com/chartmuseum/helm-push
+#                helm push test-chart-product-${VERSION}.tgz tanzu_isv_engineering
+#      - put: test-chart-product-version
+#        inputs: detect
+#        params:
+#          file: version/version
+#      - task: add-version-to-marketplace
+#        image: mkpcli
+#        config:
+#          inputs:
+#            - name: version
+#          platform: linux
+#          params:
+#            CSP_API_TOKEN: ((marketplace_api_token))
+#            MARKETPLACE_HOST: gtwstg.market.csp.vmware.com
+#            SLUG: ((marketplace-test-products.chart))
+#          run:
+#            path: bash
+#            args:
+#              - -exc
+#              - |
+#                mkpcli product-version create --product ${SLUG} --product-version $(cat version/version)
+#      - task: add-chart-to-marketplace
+#        image: mkpcli
+#        config:
+#          inputs:
+#            - name: version
+#          platform: linux
+#          params:
+#            CSP_API_TOKEN: ((marketplace_api_token))
+#            MARKETPLACE_HOST: gtwstg.market.csp.vmware.com
+#            SLUG: ((marketplace-test-products.chart))
+#          run:
+#            path: bash
+#            args:
+#              - -exc
+#              - |
+#                export VERSION=$(cat version/version)
+#                mkpcli chart create \
+#                  --product ${SLUG} \
+#                  --product-version ${VERSION} \
+#                  --chart-name tanzu_isv_engineering/test-chart-product-${VERSION} \
+#                  --chart-version ${VERSION} \
+#                  --chart-url https://harbor-repo.vmware.com/chartrepo/tanzu_isv_engineering/charts/test-chart-product-${VERSION}.tgz \
+#                  --repository-name tanzu_isv_engineering \
+#                  --repository-url https://harbor-repo.vmware.com/chartrepo/tanzu_isv_engineering

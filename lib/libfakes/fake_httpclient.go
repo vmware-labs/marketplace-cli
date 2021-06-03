@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"sync"
 
-	"gitlab.eng.vmware.com/marketplace-partner-eng/marketplace-cli/v2/lib"
+	"github.com/vmware-labs/marketplace-cli/v2/lib"
 )
 
 type FakeHTTPClient struct {

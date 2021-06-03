@@ -1,3 +1,6 @@
+// Copyright 2021 VMware, Inc.
+// SPDX-License-Identifier: BSD-2-Clause
+
 package cmd_test
 
 import (
@@ -7,7 +10,7 @@ import (
 	"github.com/google/uuid"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"gitlab.eng.vmware.com/marketplace-partner-eng/marketplace-cli/v2/models"
+	"github.com/vmware-labs/marketplace-cli/v2/models"
 )
 
 func TestCmdSuite(t *testing.T) {

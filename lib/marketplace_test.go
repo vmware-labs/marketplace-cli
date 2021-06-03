@@ -1,3 +1,6 @@
+// Copyright 2021 VMware, Inc.
+// SPDX-License-Identifier: BSD-2-Clause
+
 package lib_test
 
 import (
@@ -8,7 +11,7 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/spf13/viper"
-	"gitlab.eng.vmware.com/marketplace-partner-eng/marketplace-cli/v2/lib"
+	"github.com/vmware-labs/marketplace-cli/v2/lib"
 )
 
 var _ = Describe("Pagination", func() {

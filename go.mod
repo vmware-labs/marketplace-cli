@@ -1,4 +1,7 @@
-module gitlab.eng.vmware.com/marketplace-partner-eng/marketplace-cli/v2
+// Copyright 2021 VMware, Inc.
+// SPDX-License-Identifier: BSD-2-Clause
+
+module github.com/vmware-labs/marketplace-cli/v2
 
 go 1.16
 

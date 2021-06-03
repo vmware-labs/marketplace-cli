@@ -1,3 +1,6 @@
+// Copyright 2021 VMware, Inc.
+// SPDX-License-Identifier: BSD-2-Clause
+
 // +build feature
 
 package features_test
@@ -7,7 +10,7 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/gbytes"
-	. "gitlab.eng.vmware.com/marketplace-partner-eng/marketplace-cli/v2/features"
+	. "github.com/vmware-labs/marketplace-cli/v2/features"
 )
 
 var _ = Describe("Report version", func() {

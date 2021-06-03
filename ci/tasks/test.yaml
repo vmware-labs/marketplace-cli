@@ -1,3 +1,6 @@
+# Copyright 2021 VMware, Inc.
+# SPDX-License-Identifier: BSD-2-Clause
+
 ---
 platform: linux
 
@@ -11,18 +14,12 @@ image_resource:
 
 params:
   CSP_API_TOKEN:
-  GIT_SSH_KEY:
-  GOPRIVATE: gitlab.eng.vmware.com
   MARKETPLACE_HOST:
 
 inputs:
   - name: source
 
 run:
-  path: /bin/bash
+  path: make
   dir: source
-  args:
-    - -exc
-    - |
-      ci/scripts/install-git-ssh-key
-      make test
+  args: [test]

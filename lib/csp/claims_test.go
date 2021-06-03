@@ -1,10 +1,13 @@
+// Copyright 2021 VMware, Inc.
+// SPDX-License-Identifier: BSD-2-Clause
+
 package csp_test
 
 import (
 	jwt "github.com/dgrijalva/jwt-go"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"gitlab.eng.vmware.com/marketplace-partner-eng/marketplace-cli/v2/lib/csp"
+	"github.com/vmware-labs/marketplace-cli/v2/lib/csp"
 )
 
 var _ = Describe("CSP Claims", func() {

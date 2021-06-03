@@ -1,3 +1,6 @@
+// Copyright 2021 VMware, Inc.
+// SPDX-License-Identifier: BSD-2-Clause
+
 package features
 
 import (
@@ -19,9 +22,9 @@ var (
 var _ = BeforeSuite(func() {
 	var err error
 	MkpcliPath, err = gexec.Build(
-		"gitlab.eng.vmware.com/marketplace-partner-eng/marketplace-cli/v2",
+		"github.com/vmware-labs/marketplace-cli/v2",
 		"-ldflags",
-		"-X gitlab.eng.vmware.com/marketplace-partner-eng/marketplace-cli/v2/cmd.Version=1.2.3",
+		"-X github.com/vmware-labs/marketplace-cli/v2/cmd.Version=1.2.3",
 	)
 	Expect(err).NotTo(HaveOccurred())
 })

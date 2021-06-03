@@ -1,7 +1,10 @@
+// Copyright 2021 VMware, Inc.
+// SPDX-License-Identifier: BSD-2-Clause
+
 package main
 
 import (
-	"gitlab.eng.vmware.com/marketplace-partner-eng/marketplace-cli/v2/cmd"
+	"github.com/vmware-labs/marketplace-cli/v2/cmd"
 )
 
 func main() {
