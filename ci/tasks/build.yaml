@@ -1,0 +1,32 @@
+---
+platform: linux
+
+image_resource:
+  type: registry-image
+  source:
+    repository: harbor-repo.vmware.com/dockerhub-proxy-cache/library/golang
+    tag: 1.16
+    username: ((harbor.username))
+    password: ((harbor.token))
+
+params:
+  GIT_SSH_KEY:
+  GOPRIVATE: gitlab.eng.vmware.com
+
+inputs:
+  - name: source
+  - name: version
+
+outputs:
+  - name: build
+
+run:
+  path: /bin/bash
+  dir: source
+  args:
+    - -exc
+    - |
+      ci/scripts/install-git-ssh-key
+      export VERSION=$(cat ../version/version)
+      make build-all
+      cp build/* ../build
