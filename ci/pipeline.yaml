@@ -193,7 +193,7 @@ jobs:
           params:
             CSP_API_TOKEN: ((marketplace_api_token))
             MARKETPLACE_HOST: gtwstg.market.csp.vmware.com
-            SLUG: ((marketplace-test-products.container))
+            SLUG: test-container-product-21
           run:
             path: bash
             args:
@@ -210,7 +210,7 @@ jobs:
           params:
             CSP_API_TOKEN: ((marketplace_api_token))
             MARKETPLACE_HOST: gtwstg.market.csp.vmware.com
-            SLUG: ((marketplace-test-products.container))
+            SLUG: test-container-product-21
           run:
             path: bash
             args:
@@ -281,7 +281,7 @@ jobs:
           params:
             CSP_API_TOKEN: ((marketplace_api_token))
             MARKETPLACE_HOST: gtwstg.market.csp.vmware.com
-            SLUG: ((marketplace-test-products.chart))
+            SLUG: test-chart-product-21
           run:
             path: bash
             args:
@@ -297,7 +297,7 @@ jobs:
           params:
             CSP_API_TOKEN: ((marketplace_api_token))
             MARKETPLACE_HOST: gtwstg.market.csp.vmware.com
-            SLUG: ((marketplace-test-products.chart))
+            SLUG: test-chart-product-21
           run:
             path: bash
             args:
