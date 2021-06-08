@@ -5,11 +5,11 @@ package lib
 
 import (
 	"encoding/json"
+	"fmt"
 	"io"
 	"net/http"
 	"net/url"
 
-	"github.com/pkg/errors"
 	"github.com/spf13/viper"
 )
 
@@ -40,7 +40,7 @@ func MakeRequest(method, path string, params url.Values, header map[string]strin
 
 	req, err := http.NewRequest(method, marketplaceURL.String(), content)
 	if err != nil {
-		return nil, errors.Wrapf(err, "failed to build %s request", path)
+		return nil, fmt.Errorf("failed to build %s request: %w", path, err)
 	}
 
 	if header != nil {

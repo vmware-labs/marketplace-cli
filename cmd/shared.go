@@ -3,11 +3,17 @@
 
 package cmd
 
+import "github.com/aws/aws-sdk-go-v2/aws"
+
 // Variables set from CLI flags
 var (
 	OutputFormat   string
 	ProductSlug    string
 	ProductVersion string
+
+	UploadCredentials = aws.Credentials{}
+
+	OVAFile string
 
 	ImageRepository string
 	ImageTag        string

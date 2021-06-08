@@ -4,11 +4,16 @@
 package cmd
 
 import (
+	"encoding/json"
 	"fmt"
+	"io/ioutil"
+	"net/http"
+	"net/url"
+	"time"
 
-	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"github.com/vmware-labs/marketplace-cli/v2/lib"
 	"github.com/vmware-labs/marketplace-cli/v2/lib/csp"
 )
 
@@ -29,20 +34,60 @@ func GetRefreshToken(cmd *cobra.Command, args []string) error {
 		fmt.Sprintf("https://%s/", viper.GetString("csp.host")),
 	)
 	if err != nil {
-		return errors.Wrap(err, "failed to initialize token services")
+		return fmt.Errorf("failed to initialize token services: %w", err)
 	}
 
 	apiToken := viper.GetString("csp.api-token")
 	if apiToken == "" {
-		return errors.New("missing CSP API token")
+		return fmt.Errorf("missing CSP API token")
 	}
 
 	claims, err := tokenServices.Redeem(apiToken)
 	if err != nil {
-		return errors.Wrap(err, "failed to exchange api token")
+		return fmt.Errorf("failed to exchange api token: %w", err)
 	}
 
 	viper.Set("csp.refresh-token", claims.Token)
+	return nil
+}
+
+type CredentialsResponse struct {
+	AccessId     string    `json:"accessId"`
+	AccessKey    string    `json:"accessKey"`
+	SessionToken string    `json:"sessionToken"`
+	Expiration   time.Time `json:"expiration"`
+}
+
+func GetUploadCredentials(cmd *cobra.Command, args []string) error {
+	credentialsRequest, err := lib.MakeGetRequest("/aws/credentials/generate", url.Values{})
+	if err != nil {
+		return err
+	}
+	credentialsRequest.Host = "apistg.market.csp.vmware.com"
+	credentialsRequest.URL.Host = "apistg.market.csp.vmware.com"
+
+	response, err := lib.Client.Do(credentialsRequest)
+	if err != nil {
+		return err
+	}
+
+	if response.StatusCode != http.StatusOK {
+		return fmt.Errorf("failed to fetch credentials: %d", response.StatusCode)
+	}
+
+	body, err := ioutil.ReadAll(response.Body)
+	if err != nil {
+		return err
+	}
+
+	credsResponse := &CredentialsResponse{}
+	err = json.Unmarshal(body, &UploadCredentials)
+
+	UploadCredentials.AccessKeyID = credsResponse.AccessId
+	UploadCredentials.SecretAccessKey = credsResponse.AccessKey
+	UploadCredentials.SessionToken = credsResponse.SessionToken
+	UploadCredentials.Expires = credsResponse.Expiration
+
 	return nil
 }
 

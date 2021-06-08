@@ -4,11 +4,11 @@
 package cmd
 
 import (
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/url"
 
-	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	. "github.com/vmware-labs/marketplace-cli/v2/lib"
 )
@@ -35,12 +35,12 @@ var CurlCmd = &cobra.Command{
 		}
 
 		if resp.StatusCode != http.StatusOK {
-			return errors.Errorf("request failed (%d)", resp.StatusCode)
+			return fmt.Errorf("request failed (%d)", resp.StatusCode)
 		}
 
 		body, err := ioutil.ReadAll(resp.Body)
 		if err != nil {
-			return errors.Wrap(err, "failed to read response")
+			return fmt.Errorf("failed to read response: %w", err)
 		}
 
 		cmd.Println(string(body))

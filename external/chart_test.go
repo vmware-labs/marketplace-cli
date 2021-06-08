@@ -1,9 +1,9 @@
 // Copyright 2021 VMware, Inc.
 // SPDX-License-Identifier: BSD-2-Clause
 
-// +build enemy
+// +build external
 
-package features_test
+package external_test
 
 import (
 	"fmt"

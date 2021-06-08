@@ -4,7 +4,8 @@
 package cmd
 
 import (
-	"github.com/pkg/errors"
+	"fmt"
+
 	"github.com/spf13/cobra"
 	. "github.com/vmware-labs/marketplace-cli/v2/lib"
 	"github.com/vmware-labs/marketplace-cli/v2/models"
@@ -51,7 +52,7 @@ var ListProductVersionsCmd = &cobra.Command{
 		err = RenderVersions(OutputFormat, response.Response.Data, cmd.OutOrStdout())
 		if err != nil {
 			cmd.SilenceUsage = true
-			return errors.Wrap(err, "failed to render the product version")
+			return fmt.Errorf("failed to render the product version: %w", err)
 		}
 
 		return nil
@@ -73,13 +74,13 @@ var GetProductVersionCmd = &cobra.Command{
 		version := product.GetVersion(ProductVersion)
 		if version == nil {
 			cmd.SilenceUsage = true
-			return errors.Errorf("product \"%s\" does not have a version %s", ProductSlug, ProductVersion)
+			return fmt.Errorf("product \"%s\" does not have a version %s", ProductSlug, ProductVersion)
 		}
 
 		err = RenderVersion(OutputFormat, ProductVersion, product, cmd.OutOrStdout())
 		if err != nil {
 			cmd.SilenceUsage = true
-			return errors.Wrap(err, "failed to render the product version")
+			return fmt.Errorf("failed to render the product version: %w", err)
 		}
 
 		return nil
@@ -90,33 +91,31 @@ var CreateProductVersionCmd = &cobra.Command{
 	Use:  "create",
 	Args: cobra.NoArgs,
 	RunE: func(cmd *cobra.Command, args []string) error {
+		cmd.SilenceUsage = true
+
 		response := &GetProductResponse{}
 		err := GetProduct(ProductSlug, response)
 		if err != nil {
-			cmd.SilenceUsage = true
 			return err
 		}
 		product := response.Response.Data
 
 		if product.HasVersion(ProductVersion) {
-			cmd.SilenceUsage = true
-			return errors.Errorf("product \"%s\" already has version %s", ProductSlug, ProductVersion)
+			return fmt.Errorf("product \"%s\" already has version %s", ProductSlug, ProductVersion)
 		}
-		product.Versions = append(product.Versions, &models.Version{
+		product.Versions = append(product.AllVersions, &models.Version{
 			Number: ProductVersion,
 		})
 
 		response = &GetProductResponse{}
 		err = PutProduct(product, true, response)
 		if err != nil {
-			cmd.SilenceUsage = true
 			return err
 		}
 
 		err = RenderVersions(OutputFormat, response.Response.Data, cmd.OutOrStdout())
 		if err != nil {
-			cmd.SilenceUsage = true
-			return errors.Wrap(err, "failed to render the product version")
+			return fmt.Errorf("failed to render the product version: %w", err)
 		}
 
 		return nil

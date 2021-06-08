@@ -12,7 +12,6 @@ import (
 	"net/url"
 	"strconv"
 
-	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	. "github.com/vmware-labs/marketplace-cli/v2/lib"
 	"github.com/vmware-labs/marketplace-cli/v2/models"
@@ -64,37 +63,37 @@ var ListProductsCmd = &cobra.Command{
 		req, err := MakeGetRequest("/api/v1/products", values)
 		if err != nil {
 			cmd.SilenceUsage = true
-			return errors.Wrap(err, "preparing the request for the list of products failed")
+			return fmt.Errorf("preparing the request for the list of products failed: %w", err)
 		}
 
 		resp, err := Client.Do(req)
 		if err != nil {
 			cmd.SilenceUsage = true
-			return errors.Wrap(err, "sending the request for the list of products failed")
+			return fmt.Errorf("sending the request for the list of products failed: %w", err)
 		}
 
 		if resp.StatusCode != http.StatusOK {
 			cmd.SilenceUsage = true
-			return errors.Errorf("getting the list of products failed: (%d) %s", resp.StatusCode, resp.Status)
+			return fmt.Errorf("getting the list of products failed: (%d) %s", resp.StatusCode, resp.Status)
 		}
 
 		body, err := ioutil.ReadAll(resp.Body)
 		if err != nil {
 			cmd.SilenceUsage = true
-			return errors.Wrap(err, "failed to read the list of products")
+			return fmt.Errorf("failed to read the list of products: %w", err)
 		}
 
 		response := &ListProductResponse{}
 		err = json.Unmarshal(body, response)
 		if err != nil {
 			cmd.SilenceUsage = true
-			return errors.Wrap(err, "failed to parse the list of products")
+			return fmt.Errorf("failed to parse the list of products: %w", err)
 		}
 
 		err = RenderProductList(OutputFormat, response.Response.Products, cmd.OutOrStdout())
 		if err != nil {
 			cmd.SilenceUsage = true
-			return errors.Wrap(err, "failed to render the list of products")
+			return fmt.Errorf("failed to render the list of products: %w", err)
 		}
 
 		return nil
@@ -124,25 +123,25 @@ func GetProduct(slug string, response *GetProductResponse) error {
 
 	resp, err := Client.Do(req)
 	if err != nil {
-		return errors.Wrapf(err, "sending the request for product \"%s\" failed", ProductSlug)
+		return fmt.Errorf("sending the request for product \"%s\" failed: %w", ProductSlug, err)
 	}
 
 	if resp.StatusCode == http.StatusNotFound {
-		return errors.Errorf("product \"%s\" not found", ProductSlug)
+		return fmt.Errorf("product \"%s\" not found", ProductSlug)
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		return errors.Errorf("getting product \"%s\" failed: (%d)", ProductSlug, resp.StatusCode)
+		return fmt.Errorf("getting product \"%s\" failed: (%d)", ProductSlug, resp.StatusCode)
 	}
 
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return errors.Wrapf(err, "failed to read the response for product \"%s\"", ProductSlug)
+		return fmt.Errorf("failed to read the response for product \"%s\": %w", ProductSlug, err)
 	}
 
 	err = json.Unmarshal(body, response)
 	if err != nil {
-		return errors.Wrapf(err, "failed to parse the response for product \"%s\"", ProductSlug)
+		return fmt.Errorf("failed to parse the response for product \"%s\": %w", ProductSlug, err)
 	}
 	return nil
 }
@@ -169,16 +168,16 @@ func PutProduct(product *models.Product, versionUpdate bool, response *GetProduc
 
 	resp, err := Client.Do(req)
 	if err != nil {
-		return errors.Wrapf(err, "sending the update for product \"%s\" failed", ProductSlug)
+		return fmt.Errorf("sending the update for product \"%s\" failed: %w", ProductSlug, err)
 	}
 
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return errors.Wrapf(err, "failed to read the update response for product \"%s\"", ProductSlug)
+		return fmt.Errorf("failed to read the update response for product \"%s\": %w", ProductSlug, err)
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		return errors.Errorf("updating product \"%s\" failed: (%d)\n%s", ProductSlug, resp.StatusCode, body)
+		return fmt.Errorf("updating product \"%s\" failed: (%d)\n%s", ProductSlug, resp.StatusCode, body)
 	}
 
 	return json.Unmarshal(body, response)
@@ -198,7 +197,7 @@ var GetProductCmd = &cobra.Command{
 		err = RenderProduct(OutputFormat, response.Response.Data, cmd.OutOrStdout())
 		if err != nil {
 			cmd.SilenceUsage = true
-			return errors.Wrap(err, "failed to render the product")
+			return fmt.Errorf("failed to render the product: %w", err)
 		}
 		return nil
 	},

@@ -4,9 +4,10 @@
 package cmd_test
 
 import (
+	"fmt"
+
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"github.com/pkg/errors"
 	"github.com/spf13/viper"
 	. "github.com/vmware-labs/marketplace-cli/v2/cmd"
 	"github.com/vmware-labs/marketplace-cli/v2/cmd/cmdfakes"
@@ -49,7 +50,7 @@ var _ = Describe("Auth", func() {
 
 	Context("fails to initialize token services", func() {
 		BeforeEach(func() {
-			initializer.Returns(nil, errors.New("initializer failed"))
+			initializer.Returns(nil, fmt.Errorf("initializer failed"))
 		})
 
 		It("returns an error", func() {
@@ -61,7 +62,7 @@ var _ = Describe("Auth", func() {
 
 	Context("fails to exchange api token", func() {
 		BeforeEach(func() {
-			tokenServices.RedeemReturns(nil, errors.New("redeem failed"))
+			tokenServices.RedeemReturns(nil, fmt.Errorf("redeem failed"))
 		})
 
 		It("returns an error", func() {

@@ -1,9 +1,7 @@
 // Copyright 2021 VMware, Inc.
 // SPDX-License-Identifier: BSD-2-Clause
 
-// +build enemy
-
-package features_test
+package internal_test
 
 import (
 	"testing"
@@ -12,7 +10,7 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-func TestEnemies(t *testing.T) {
+func TestInternal(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "Enemy test suite")
+	RunSpecs(t, "Internal test suite")
 }

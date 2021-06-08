@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"strconv"
 	"strings"
 
 	"github.com/olekukonko/tablewriter"
@@ -52,14 +53,14 @@ func RenderVersions(format string, product *models.Product, output io.Writer) er
 		}
 		table.Render()
 
-		for _, version := range product.Versions {
+		for _, version := range product.AllVersions {
 			err := RenderVersion(format, version.Number, product, output)
 			if err != nil {
 				return err
 			}
 		}
 	} else if format == FormatJSON {
-		return PrintJson(output, product.Versions)
+		return PrintJson(output, product.AllVersions)
 	}
 	return nil
 }
@@ -67,7 +68,7 @@ func RenderVersions(format string, product *models.Product, output io.Writer) er
 func RenderVersion(format string, version string, product *models.Product, output io.Writer) error {
 	if format == FormatTable {
 		_, _ = fmt.Fprintf(output, "\nVersion %s:\n", version)
-		dockerList := product.GetDockerImagesForVersion(version)
+		dockerList := product.GetContainerImagesForVersion(version)
 		if dockerList != nil {
 			err := RenderContainerImages(format, dockerList, output)
 			if err != nil {
@@ -83,7 +84,37 @@ func RenderVersion(format string, version string, product *models.Product, outpu
 		}
 
 	} else if format == FormatJSON {
-		return PrintJson(output, product.Versions)
+		return PrintJson(output, product.AllVersions)
+	}
+	return nil
+}
+
+func RenderOVAs(format string, version string, product *models.Product, output io.Writer) error {
+	ovas := product.GetOVAsForVersion(version)
+	if format == FormatTable {
+		if len(ovas) == 0 {
+			_, _ = fmt.Fprintf(output, "product \"%s\" %s does not have any OVAs", product.Slug, version)
+			return nil
+		}
+
+		table := NewTableWriter(output, "Name", "Size", "Type", "Files")
+		for _, ova := range ovas {
+			details := &models.ProductItemDetails{}
+			err := json.Unmarshal([]byte(ova.ItemJson), details)
+			if err != nil {
+				return fmt.Errorf("failed to parse the list of OVA files: %w", err)
+			}
+
+			size := 0
+			for _, file := range details.Files {
+				size += file.Size
+			}
+
+			table.Append([]string{details.Name, strconv.Itoa(size), details.Type, strconv.Itoa(len(details.Files))})
+		}
+		table.Render()
+	} else if format == FormatJSON {
+		return PrintJson(output, ovas)
 	}
 	return nil
 }

@@ -6,7 +6,6 @@ package cmd_test
 import (
 	"bytes"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -119,7 +118,7 @@ var _ = Describe("ContainerImage", func() {
 
 		Context("Error fetching products", func() {
 			BeforeEach(func() {
-				httpClient.DoReturnsOnCall(0, nil, errors.New("request failed"))
+				httpClient.DoReturnsOnCall(0, nil, fmt.Errorf("request failed"))
 			})
 
 			It("prints the error", func() {
@@ -251,7 +250,7 @@ var _ = Describe("ContainerImage", func() {
 
 		Context("Error fetching product", func() {
 			BeforeEach(func() {
-				httpClient.DoReturns(nil, errors.New("request failed"))
+				httpClient.DoReturns(nil, fmt.Errorf("request failed"))
 			})
 
 			It("prints the error", func() {

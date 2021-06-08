@@ -5,7 +5,6 @@ package csp
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -100,12 +99,12 @@ func fetchPublicKey(cspLink string) ([]byte, error) {
 
 	pemData, ok := m["value"]
 	if !ok {
-		return nil, errors.New("cannot find validation key, value expected")
+		return nil, fmt.Errorf("cannot find validation key, value expected")
 	}
 
 	s, ok := pemData.(string)
 	if !ok {
-		return nil, errors.New("cannot find validation key, string expected for value")
+		return nil, fmt.Errorf("cannot find validation key, string expected for value")
 	}
 
 	return []byte(s), nil

@@ -4,6 +4,7 @@
 package cmd_test
 
 import (
+	"encoding/json"
 	"fmt"
 	"testing"
 
@@ -27,10 +28,34 @@ func CreateFakeProduct(id, name, slug, status string) *models.Product {
 		Slug:        slug,
 		DisplayName: name,
 		Status:      status,
-		Versions:    []*models.Version{},
+		AllVersions: []*models.Version{},
 		EncryptionDetails: &models.ProductEncryptionDetails{
 			List: []string{"userAuthEncryption"},
 		},
+	}
+}
+
+func CreateFakeOVA(name, version string) *models.ProductDeploymentFile {
+	details := &models.ProductItemDetails{
+		Name: name,
+		Files: []*models.ProductItemFile{
+			{
+				Name: "some-huge-file.vmdk",
+				Size: 1000000,
+			},
+			{
+				Name: "some-small-file.txt",
+				Size: 100,
+			},
+		},
+		Type: "fake.ovf",
+	}
+	detailString, err := json.Marshal(details)
+	Expect(err).ToNot(HaveOccurred())
+
+	return &models.ProductDeploymentFile{
+		AppVersion: version,
+		ItemJson:   string(detailString),
 	}
 }
 

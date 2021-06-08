@@ -4,9 +4,9 @@
 package cmd
 
 import (
+	"fmt"
 	"strings"
 
-	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	. "github.com/vmware-labs/marketplace-cli/v2/lib"
 	"github.com/vmware-labs/marketplace-cli/v2/models"
@@ -68,9 +68,9 @@ var ListContainerImageCmd = &cobra.Command{
 		product := response.Response.Data
 		if !product.HasVersion(ProductVersion) {
 			cmd.SilenceUsage = true
-			return errors.Errorf("product \"%s\" does not have a version %s", ProductSlug, ProductVersion)
+			return fmt.Errorf("product \"%s\" does not have a version %s", ProductSlug, ProductVersion)
 		}
-		containerImages := product.GetDockerImagesForVersion(ProductVersion)
+		containerImages := product.GetContainerImagesForVersion(ProductVersion)
 		if containerImages == nil {
 			cmd.Printf("product \"%s\" %s does not have any container images", ProductSlug, ProductVersion)
 			return nil
@@ -79,7 +79,7 @@ var ListContainerImageCmd = &cobra.Command{
 		err = RenderContainerImages(OutputFormat, containerImages, cmd.OutOrStdout())
 		if err != nil {
 			cmd.SilenceUsage = true
-			return errors.Wrapf(err, "failed to render the container images")
+			return fmt.Errorf("failed to render the container images: %w", err)
 		}
 
 		return nil
@@ -102,25 +102,25 @@ var GetContainerImageCmd = &cobra.Command{
 		product := response.Response.Data
 		if !product.HasVersion(ProductVersion) {
 			cmd.SilenceUsage = true
-			return errors.Errorf("product \"%s\" does not have a version %s", ProductSlug, ProductVersion)
+			return fmt.Errorf("product \"%s\" does not have a version %s", ProductSlug, ProductVersion)
 		}
 
-		containerImages := product.GetDockerImagesForVersion(ProductVersion)
+		containerImages := product.GetContainerImagesForVersion(ProductVersion)
 		if containerImages == nil {
 			cmd.SilenceUsage = true
-			return errors.Errorf("product \"%s\" does not have any container images for version %s", ProductSlug, ProductVersion)
+			return fmt.Errorf("product \"%s\" does not have any container images for version %s", ProductSlug, ProductVersion)
 		}
 
 		containerImage := containerImages.GetImage(ImageRepository)
 		if containerImage == nil {
 			cmd.SilenceUsage = true
-			return errors.Errorf("product \"%s\" %s does not have the container image \"%s\"", ProductSlug, ProductVersion, ImageRepository)
+			return fmt.Errorf("product \"%s\" %s does not have the container image \"%s\"", ProductSlug, ProductVersion, ImageRepository)
 		}
 
 		err = RenderContainerImage(OutputFormat, containerImage, cmd.OutOrStdout())
 		if err != nil {
 			cmd.SilenceUsage = true
-			return errors.Wrap(err, "failed to render the container images")
+			return fmt.Errorf("failed to render the container images: %w", err)
 		}
 
 		return nil
@@ -129,13 +129,13 @@ var GetContainerImageCmd = &cobra.Command{
 
 var CreateContainerImageCmd = &cobra.Command{
 	Use:   "create",
-	Short: "add a container image to a product version",
+	Short: "add a container image to a product",
 	Long:  "",
 	Args:  cobra.NoArgs,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		ImageTagType = strings.ToUpper(ImageTagType)
 		if ImageTagType != ImageTagTypeFixed && ImageTagType != ImageTagTypeFloating {
-			return errors.Errorf("invalid image tag type: %s. must be either \"%s\" or \"%s\"", ImageTagType, ImageTagTypeFixed, ImageTagTypeFloating)
+			return fmt.Errorf("invalid image tag type: %s. must be either \"%s\" or \"%s\"", ImageTagType, ImageTagTypeFixed, ImageTagTypeFloating)
 		}
 
 		response := &GetProductResponse{}
@@ -148,15 +148,15 @@ var CreateContainerImageCmd = &cobra.Command{
 
 		if !product.HasVersion(ProductVersion) {
 			cmd.SilenceUsage = true
-			return errors.Errorf("product \"%s\" does not have a version %s, please add it first", ProductSlug, ProductVersion)
+			return fmt.Errorf("product \"%s\" does not have a version %s, please add it first", ProductSlug, ProductVersion)
 		}
 
 		product.SetDeploymentType(models.DeploymentTypesDocker)
 
-		containerImages := product.GetDockerImagesForVersion(ProductVersion)
+		containerImages := product.GetContainerImagesForVersion(ProductVersion)
 		if containerImages == nil {
 			if DeploymentInstructions == "" {
-				return errors.Errorf("must specify the deployment instructions for the first container image. Please run again with --deployment-instructions <string>")
+				return fmt.Errorf("must specify the deployment instructions for the first container image. Please run again with --deployment-instructions <string>")
 			}
 
 			containerImages = &models.DockerVersionList{
@@ -179,7 +179,7 @@ var CreateContainerImageCmd = &cobra.Command{
 
 		if containerImage.HasTag(ImageTag) {
 			cmd.SilenceUsage = true
-			return errors.Errorf("product \"%s\" %s already has the container image %s:%s", ProductSlug, ProductVersion, ImageRepository, ImageTag)
+			return fmt.Errorf("product \"%s\" %s already has the container image %s:%s", ProductSlug, ProductVersion, ImageRepository, ImageTag)
 		}
 		containerImage.ImageTags = append(containerImage.ImageTags, &models.DockerImageTag{
 			Tag:  ImageTag,
@@ -193,11 +193,11 @@ var CreateContainerImageCmd = &cobra.Command{
 			return err
 		}
 
-		containerImages = response.Response.Data.GetDockerImagesForVersion(ProductVersion)
+		containerImages = response.Response.Data.GetContainerImagesForVersion(ProductVersion)
 		err = RenderContainerImages(OutputFormat, containerImages, cmd.OutOrStdout())
 		if err != nil {
 			cmd.SilenceUsage = true
-			return errors.Wrap(err, "failed to render the container images")
+			return fmt.Errorf("failed to render the container images: %w", err)
 		}
 		return nil
 	},

@@ -88,32 +88,51 @@ type TechSpecs struct {
 }
 
 const (
-	DeploymentTypeHelm    = "HELM"
 	DeploymentTypesDocker = "DOCKERLINK"
+	DeploymentTypeHelm    = "HELM"
+	DeploymentTypeOVA     = "OVA"
 )
+
+type ProductItemFile struct {
+	Name string `json:"name,omitempty"`
+	Size int    `json:"size"`
+}
+
+type ProductItemDetails struct {
+	Id    string             `json:"id,omitempty"`
+	Name  string             `json:"name,omitempty"`
+	Files []*ProductItemFile `json:"files,omitempty"`
+	Type  string             `json:"type"`
+}
 
 type ProductDeploymentFile struct {
 	Id              string `json:"id,omitempty"` // uuid
 	Name            string `json:"name,omitempty"`
 	Url             string `json:"url,omitempty"`
-	ImageType       string `json:"imagetype"`
+	ImageType       string `json:"imagetype,omitempty"`
 	Status          string `json:"status,omitempty"`
-	UploadedOn      int32  `json:"uploadedon"`
-	UploadedBy      string `json:"uploadedby"`
-	UpdatedOn       int32  `json:"updatedon"`
-	UpdatedBy       string `json:"updatedby"`
-	ItemJson        string `json:"itemjson"`
+	UploadedOn      int32  `json:"uploadedon,omitempty"`
+	UploadedBy      string `json:"uploadedby,omitempty"`
+	UpdatedOn       int32  `json:"updatedon,omitempty"`
+	UpdatedBy       string `json:"updatedby,omitempty"`
+	ItemJson        string `json:"itemjson,omitempty"`
 	Itemkey         string `json:"itemkey,omitempty"`
-	FileID          string `json:"fileid"`
-	IsSubscribed    bool   `json:"issubscribed"`
+	FileID          string `json:"fileid,omitempty"`
+	IsSubscribed    bool   `json:"issubscribed,omitempty"`
 	AppVersion      string `json:"appversion"` // Mandatory
 	HashDigest      string `json:"hashdigest"`
-	IsThirdPartyUrl bool   `json:"isthirdpartyurl"`
-	ThirdPartyUrl   string `json:"thirdpartyurl"`
+	IsThirdPartyUrl bool   `json:"isthirdpartyurl,omitempty"`
+	ThirdPartyUrl   string `json:"thirdpartyurl,omitempty"`
+	IsRedirectUrl   bool   `json:"isredirecturl,omitempty"`
 	Comment         string `json:"comment,omitempty"`
 	HashAlgo        string `json:"hashalgo"`
-	DownloadCount   int64  `json:"downloadcount"`
+	DownloadCount   int64  `json:"downloadcount,omitempty"`
 }
+
+const (
+	HashAlgoSHA1   = "SHA1"
+	HashAlgoSHA256 = "SAH256"
+)
 
 const (
 	ImageTypeJPG  = "JPG"
@@ -374,7 +393,17 @@ func (product *Product) HasVersion(version string) bool {
 	return product.GetVersion(version) != nil
 }
 
-func (product *Product) GetDockerImagesForVersion(version string) *DockerVersionList {
+func (product *Product) GetOVAsForVersion(version string) []*ProductDeploymentFile {
+	var results []*ProductDeploymentFile
+	for _, deploymentFile := range product.ProductDeploymentFiles {
+		if deploymentFile.AppVersion == version {
+			results = append(results, deploymentFile)
+		}
+	}
+	return results
+}
+
+func (product *Product) GetContainerImagesForVersion(version string) *DockerVersionList {
 	for _, dockerVersionLink := range product.DockerLinkVersions {
 		if dockerVersionLink.AppVersion == version {
 			return dockerVersionLink

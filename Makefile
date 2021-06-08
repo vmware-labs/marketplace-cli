@@ -73,15 +73,19 @@ build-image: build/mkpcli-linux
 .PHONY: lint test test-features test-units
 
 test-units: deps
-	ginkgo -r -skipPackage features .
+	ginkgo -r -skipPackage external,features .
 
 test-features: deps
 	ginkgo -r -tags=feature features
 
-test-enemies: deps
-	ginkgo -r -tags=enemy features
+test-external: deps
+ifndef CSP_API_TOKEN
+	$(error CSP_API_TOKEN must be defined to run external tests)
+else
+	ginkgo -r -tags=external external
+endif
 
-test: deps lint test-units test-features test-enemies
+test: deps lint test-units test-features test-external
 
 lint: deps-goimports
 	git ls-files | grep '.go$$' | xargs goimports -l -w

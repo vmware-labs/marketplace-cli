@@ -4,7 +4,7 @@
 package lib_test
 
 import (
-	"errors"
+	"fmt"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -28,7 +28,7 @@ var _ = Describe("NewTableWriter", func() {
 
 type BadWriter struct{}
 
-func (w *BadWriter) Write(p []byte) (n int, err error) { return 0, errors.New("bad write") }
+func (w *BadWriter) Write(p []byte) (n int, err error) { return 0, fmt.Errorf("bad write") }
 
 var _ = Describe("PrintJson", func() {
 	It("prints the object as JSON", func() {

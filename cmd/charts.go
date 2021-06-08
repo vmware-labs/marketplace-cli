@@ -4,7 +4,8 @@
 package cmd
 
 import (
-	"github.com/pkg/errors"
+	"fmt"
+
 	"github.com/spf13/cobra"
 	. "github.com/vmware-labs/marketplace-cli/v2/lib"
 	"github.com/vmware-labs/marketplace-cli/v2/models"
@@ -64,7 +65,7 @@ var ListChartsCmd = &cobra.Command{
 		product := response.Response.Data
 		if !product.HasVersion(ProductVersion) {
 			cmd.SilenceUsage = true
-			return errors.Errorf("product \"%s\" does not have a version %s", ProductSlug, ProductVersion)
+			return fmt.Errorf("product \"%s\" does not have a version %s", ProductSlug, ProductVersion)
 		}
 		charts := product.GetChartsForVersion(ProductVersion)
 		if len(charts) == 0 {
@@ -75,7 +76,7 @@ var ListChartsCmd = &cobra.Command{
 		err = RenderCharts(OutputFormat, charts, cmd.OutOrStdout())
 		if err != nil {
 			cmd.SilenceUsage = true
-			return errors.Wrapf(err, "failed to render the charts")
+			return fmt.Errorf("failed to render the charts: %w", err)
 		}
 
 		return nil
@@ -84,7 +85,7 @@ var ListChartsCmd = &cobra.Command{
 
 var CreateChartCmd = &cobra.Command{
 	Use:   "create",
-	Short: "add a chart to a product version",
+	Short: "add a chart to a product",
 	Long:  "",
 	Args:  cobra.NoArgs,
 	RunE: func(cmd *cobra.Command, args []string) error {
@@ -98,7 +99,7 @@ var CreateChartCmd = &cobra.Command{
 
 		if !product.HasVersion(ProductVersion) {
 			cmd.SilenceUsage = true
-			return errors.Errorf("product \"%s\" does not have a version %s, please add it first", ProductSlug, ProductVersion)
+			return fmt.Errorf("product \"%s\" does not have a version %s, please add it first", ProductSlug, ProductVersion)
 		}
 
 		product.SetDeploymentType(models.DeploymentTypeHelm)
@@ -126,7 +127,7 @@ var CreateChartCmd = &cobra.Command{
 		err = RenderCharts(OutputFormat, response.Response.Data.ChartVersions, cmd.OutOrStdout())
 		if err != nil {
 			cmd.SilenceUsage = true
-			return errors.Wrapf(err, "failed to render the charts")
+			return fmt.Errorf("failed to render the charts: %w", err)
 		}
 		return nil
 	},
