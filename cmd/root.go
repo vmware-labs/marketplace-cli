@@ -14,9 +14,9 @@ import (
 
 var rootCmd = &cobra.Command{
 	Use:   AppName,
-	Short: fmt.Sprintf("%s is a CLI interface for the VMware Tanzu Marketplace", AppName),
-	Long: fmt.Sprintf(`%s is a CLI interface for the VMware Tanzu Marketplace,
-	enabling users to view, get, and manage their Marketplace entries.`, AppName),
+	Short: fmt.Sprintf("%s is a CLI interface for the VMware Marketplace", AppName),
+	Long: fmt.Sprintf(`%s is a CLI interface for the VMware Marketplace,
+enabling users to view, get, and manage their Marketplace entries.`, AppName),
 }
 
 func init() {

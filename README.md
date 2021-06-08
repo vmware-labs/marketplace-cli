@@ -68,7 +68,27 @@ graph LR
 * Platform test support - List platform test results, initiate platform tests
 * Investigate consumer needs - See what worthwhile features
 
+## Building
+
+Building from source is simple with our Makefile.
+
+```bash
+$ make build
+...
+go build -o build/mkpcli -ldflags "-X github.com/vmware-labs/marketplace-cli/v2/cmd.Version=dev" ./main.go
+$ file build/mkpcli 
+build/mkpcli: Mach-O 64-bit executable x86_64
+$ ./build/mkpcli 
+mkpcli is a CLI interface for the VMware Marketplace,
+enabling users to view, get, and manage their Marketplace entries.
+...
+```
+
 ## Developing
+
+Please see our [Code of Conduct](CODE-OF-CONDUCT.md) and [Contributors guide](CONTRIBUTING.md).
+
+A few prerequisites will be helpful for setting up your development environment:
 
 ### Set up vault (VMware internal)
 
