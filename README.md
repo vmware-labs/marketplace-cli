@@ -3,7 +3,6 @@
 The Marketplace CLI is a tool that can be used to interact with the [VMware Marketplace](http://marketplace.cloud.vmware.com/).
 The primary focus for the CLI is to assist publishers with automation.
 
-
 ## Examples
 
 ### CI/CI examples
@@ -43,30 +42,6 @@ jobs:
             --product my-marketplace-product1 \
             --product-version $(cat version/version)
 ```
-
-## Roadmap
-
-```mermaid
-graph LR 
-   id1(Basic product<br />actions) --> id2;
-   id2(Container image<br />support) --> id3;
-   id3(Helm chart<br />support) --> id4;
-   id4(OVA support) --> id5;
-   id5(Platform test<br />support) --> id6;
-   
-   id6(Investigate consumer needs);
-
-   classDef completed fill:#090;
-   class id1,id2,id3 completed;
-```
-
-### Feature descriptions
-* Basic product actions - Basic CLI and getting/putting products  
-* Container image support - Listing and adding container images to products
-* Helm chart support - Listing and adding Helm charts to products
-* OVA support - Listing and adding OVAs to products
-* Platform test support - List platform test results, initiate platform tests
-* Investigate consumer needs - See what worthwhile features
 
 ## Building
 
