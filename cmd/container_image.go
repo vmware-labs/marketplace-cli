@@ -23,7 +23,7 @@ func init() {
 	ContainerImageCmd.AddCommand(ListContainerImageCmd)
 	ContainerImageCmd.AddCommand(GetContainerImageCmd)
 	ContainerImageCmd.AddCommand(CreateContainerImageCmd)
-	ContainerImageCmd.PersistentFlags().StringVarP(&OutputFormat, "OutputFormat", "f", FormatTable, "Output OutputFormat")
+	ContainerImageCmd.PersistentFlags().StringVarP(&OutputFormat, "output-format", "f", FormatTable, "Output OutputFormat")
 
 	ContainerImageCmd.PersistentFlags().StringVarP(&ProductSlug, "product", "p", "", "Product slug")
 	_ = ContainerImageCmd.MarkPersistentFlagRequired("product")

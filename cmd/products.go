@@ -22,7 +22,9 @@ func init() {
 	rootCmd.AddCommand(ProductCmd)
 	ProductCmd.AddCommand(ListProductsCmd)
 	ProductCmd.AddCommand(GetProductCmd)
-	ProductCmd.PersistentFlags().StringVarP(&OutputFormat, "OutputFormat", "f", FormatTable, "Output OutputFormat")
+	ProductCmd.PersistentFlags().StringVarP(&OutputFormat, "output-format", "f", FormatTable, "Output format")
+
+	ListProductsCmd.Flags().StringVar(&SearchTerm, "search-text", "", "Filter by text")
 
 	GetProductCmd.Flags().StringVarP(&ProductSlug, "product", "p", "", "Product slug")
 	_ = GetProductCmd.MarkFlagRequired("product")
@@ -51,13 +53,15 @@ var ListProductsCmd = &cobra.Command{
 	Use:  "list",
 	Args: cobra.NoArgs,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		req, err := MakeGetRequest(
-			"/api/v1/products",
-			url.Values{
-				"pagination": Pagination(0, 20),
-				"ownOrg":     []string{"true"},
-			},
-		)
+		values := url.Values{
+			"pagination": Pagination(0, 20),
+			"ownOrg":     []string{"true"},
+		}
+		if SearchTerm != "" {
+			values.Set("search", SearchTerm)
+		}
+
+		req, err := MakeGetRequest("/api/v1/products", values)
 		if err != nil {
 			cmd.SilenceUsage = true
 			return errors.Wrap(err, "preparing the request for the list of products failed")

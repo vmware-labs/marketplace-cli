@@ -20,4 +20,6 @@ var (
 	ChartURL            string
 
 	DeploymentInstructions string
+
+	SearchTerm string
 )

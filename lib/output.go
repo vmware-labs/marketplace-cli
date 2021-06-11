@@ -140,12 +140,15 @@ func RenderCharts(format string, charts []*models.ChartVersion, output io.Writer
 
 func RenderProductList(format string, products []*models.Product, output io.Writer) error {
 	if format == FormatTable {
-		table := NewTableWriter(output, "Slug", "Name")
+		table := NewTableWriter(output, "Slug", "Name", "Type", "Latest Version")
 		for _, product := range products {
-			table.Append([]string{product.Slug, product.DisplayName})
+			latestVersion := "N/A"
+			if len(product.AllVersions) > 0 {
+				latestVersion = product.AllVersions[len(product.AllVersions) - 1].Number
+			}
+			table.Append([]string{product.Slug, product.DisplayName, product.SolutionType, latestVersion})
 		}
-		table.SetFooter([]string{"", "", fmt.Sprintf("Total count: %d", len(products))})
-		table.SetAutoMergeCells(true)
+		table.SetFooter([]string{"", "", "", "", fmt.Sprintf("Total count: %d", len(products))})
 		table.Render()
 	} else if format == FormatJSON {
 		return PrintJson(output, products)
@@ -153,15 +156,15 @@ func RenderProductList(format string, products []*models.Product, output io.Writ
 	return nil
 }
 
-func RenderProduct(format string, response *models.Product, output io.Writer) error {
+func RenderProduct(format string, product *models.Product, output io.Writer) error {
 	if format == FormatTable {
 		_, _ = fmt.Fprintln(output, "Product Details:")
-		table := NewTableWriter(output, "Slug", "Name")
-		table.Append([]string{response.Slug, response.DisplayName})
+		table := NewTableWriter(output, "Slug", "Name", "Type")
+		table.Append([]string{product.Slug, product.DisplayName, product.SolutionType})
 		table.Render()
-		return RenderVersions(format, response, output)
+		return RenderVersions(format, product, output)
 	} else if format == FormatJSON {
-		return PrintJson(output, response)
+		return PrintJson(output, product)
 	}
 	return nil
 }

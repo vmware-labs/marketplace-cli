@@ -99,6 +99,26 @@ var _ = Describe("Products", func() {
 			})
 		})
 
+		Context("with search term", func() {
+			BeforeEach(func() {
+				cmd.SearchTerm = "tanzu"
+			})
+			AfterEach(func() {
+				cmd.SearchTerm = ""
+			})
+
+			It("sends the request with the search term", func() {
+				err := cmd.ListProductsCmd.RunE(cmd.ListProductsCmd, []string{})
+				Expect(err).ToNot(HaveOccurred())
+
+				By("including the search term", func() {
+					Expect(httpClient.DoCallCount()).To(Equal(1))
+					request := httpClient.DoArgsForCall(0)
+					Expect(request.URL.Query().Get("search")).To(Equal("tanzu"))
+				})
+			})
+		})
+
 		Context("Error fetching products", func() {
 			BeforeEach(func() {
 				httpClient.DoReturns(nil, errors.New("request failed"))
