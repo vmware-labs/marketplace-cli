@@ -148,8 +148,7 @@ jobs:
         inputs: [image, version]
         params:
           image: image/image.tar
-          version: version
-          bump_aliases: true
+          additional_tags: version/version  # Update the parameter list if/when concourse is updated
       - put: release
         inputs: [build, source, version]
         params:
