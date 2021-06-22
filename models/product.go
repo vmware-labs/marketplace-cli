@@ -400,6 +400,13 @@ func (product *Product) PrepForUpdate() {
 			product.Encryption.List[key] = true
 		}
 	}
+
+	for _, version := range product.Versions {
+		if !product.HasVersion(version.Number) {
+			product.AllVersions = append(product.AllVersions, version)
+		}
+	}
+	product.Versions = product.AllVersions
 }
 
 func (product *Product) SetDeploymentType(deploymentType string) {
