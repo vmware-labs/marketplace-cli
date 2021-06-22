@@ -18,12 +18,8 @@ import (
 var _ = Describe("Chart", func() {
 	steps := NewSteps()
 
-	var (
-		knownProductVersion = "0.0.21"
-	)
-
 	Scenario("Listing charts", func() {
-		steps.When(fmt.Sprintf("running mkpcli chart list --product test-chart-product1 --product-version %s", knownProductVersion))
+		steps.When(fmt.Sprintf("running mkpcli chart list --product %s --product-version %s", ChartProductSlug, ChartProductVersion))
 		steps.Then("the command exits without error")
 		steps.And("the table of charts is printed")
 	})
@@ -37,8 +33,8 @@ var _ = Describe("Chart", func() {
 			Eventually(CommandSession.Out).Should(Say("URL"))
 			Eventually(CommandSession.Out).Should(Say("REPOSITORY"))
 
-			Eventually(CommandSession.Out).Should(Say(knownProductVersion))
-			Eventually(CommandSession.Out).Should(Say(fmt.Sprintf("https://harbor-repo.vmware.com/chartrepo/tanzu_isv_engineering/charts/test-chart-product-%s.tgz", knownProductVersion)))
+			Eventually(CommandSession.Out).Should(Say(ChartProductVersion))
+			Eventually(CommandSession.Out).Should(Say(fmt.Sprintf("https://harbor-repo.vmware.com/chartrepo/tanzu_isv_engineering/charts/test-chart-product-%s.tgz", ChartProductVersion)))
 			Eventually(CommandSession.Out).Should(Say("https://harbor-repo.vmware.com/chartrepo/tanzu_isv_engineering tanzu_isv_engineering"))
 		})
 	})

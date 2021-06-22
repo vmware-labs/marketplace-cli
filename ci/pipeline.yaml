@@ -23,7 +23,7 @@ resources:
       commit_message: "[ci skip] bump version to %version%"
 
   - name: mkpcli
-    type: docker-image
+    type: registry-image
     icon: docker
     source:
       repository: harbor-repo.vmware.com/tanzu_isv_engineering/mkpcli
@@ -122,15 +122,34 @@ jobs:
           - get: version
             params:
               bump: patch
-      - task: build
+      - task: build-cli
         file: source/ci/tasks/build.yaml
+      - task: build-image
+        privileged: true
+        config:
+          platform: linux
+          image_resource:
+            type: registry-image
+            source:
+              repository: harbor-repo.vmware.com/dockerhub-proxy-cache/concourse/oci-build-task
+              username: ((harbor.username))
+              password: ((harbor.token))
+          inputs:
+            - name: build
+            - name: source
+          outputs:
+            - name: image
+          params:
+            DOCKERFILE: source/Dockerfile
+          run:
+            path: build
+
       - put: mkpcli
-        inputs: [build, source, version]
+        inputs: [image, version]
         params:
-          build: .
-          dockerfile: source/Dockerfile
-          tag_file: version/version
-          tag_as_latest: true
+          image: image/image.tar
+          version: version
+          bump_aliases: true
       - put: release
         inputs: [build, source, version]
         params:

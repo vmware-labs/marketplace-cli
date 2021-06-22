@@ -47,7 +47,7 @@ func RenderVersions(format string, product *models.Product, output io.Writer) er
 	if format == FormatTable {
 		_, _ = fmt.Fprintln(output, "\nVersions:")
 		table := NewTableWriter(output, "Number", "Status")
-		for _, version := range product.Versions {
+		for _, version := range product.AllVersions {
 			table.Append([]string{version.Number, version.Status})
 		}
 		table.Render()
@@ -144,7 +144,7 @@ func RenderProductList(format string, products []*models.Product, output io.Writ
 		for _, product := range products {
 			latestVersion := "N/A"
 			if len(product.AllVersions) > 0 {
-				latestVersion = product.AllVersions[len(product.AllVersions) - 1].Number
+				latestVersion = product.AllVersions[len(product.AllVersions)-1].Number
 			}
 			table.Append([]string{product.Slug, product.DisplayName, product.SolutionType, latestVersion})
 		}

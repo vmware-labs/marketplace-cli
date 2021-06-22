@@ -58,12 +58,17 @@ func CreateFakeContainerImage(url string, tags ...string) *models.DockerURLDetai
 
 func AddVerions(product *models.Product, versions ...string) *models.Product {
 	for _, version := range versions {
-		product.Versions = append(product.Versions, &models.Version{
+		versionObject := &models.Version{
 			Number:       version,
 			Details:      fmt.Sprintf("Details for %s", version),
 			Status:       "PENDING",
 			Instructions: fmt.Sprintf("Instructions for %s", version),
-		})
+		}
+		product.AllVersions = append(product.AllVersions, versionObject)
+
+		if versionObject.Status != "PENDING" {
+			product.Versions = append(product.Versions, versionObject)
+		}
 	}
 	return product
 }

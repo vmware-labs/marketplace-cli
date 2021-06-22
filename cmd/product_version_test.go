@@ -90,8 +90,6 @@ var _ = Describe("ProductVersions", func() {
 				Expect(stdout).To(Say("NUMBER  STATUS"))
 				Expect(stdout).To(Say("0.1.2   PENDING"))
 				Expect(stdout).To(Say("1.2.3   PENDING"))
-				Expect(stdout).To(Say("Version 0.1.2:"))
-				Expect(stdout).To(Say("Version 1.2.3:"))
 			})
 		})
 
@@ -359,9 +357,6 @@ var _ = Describe("ProductVersions", func() {
 				Expect(stdout).To(Say("0.1.2   PENDING"))
 				Expect(stdout).To(Say("1.2.3   PENDING"))
 				Expect(stdout).To(Say("9.9.9   PENDING"))
-				Expect(stdout).To(Say("Version 0.1.2:"))
-				Expect(stdout).To(Say("Version 1.2.3:"))
-				Expect(stdout).To(Say("Version 9.9.9:"))
 			})
 		})
 

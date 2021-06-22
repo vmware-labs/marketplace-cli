@@ -362,7 +362,7 @@ type Product struct {
 }
 
 func (product *Product) GetVersion(version string) *Version {
-	for _, v := range product.Versions {
+	for _, v := range product.AllVersions {
 		if v.Number == version {
 			return v
 		}
