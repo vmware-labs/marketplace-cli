@@ -30,6 +30,14 @@ resources:
       username: ((harbor.username))
       password: ((harbor.token))
 
+  - name: mkpcli-public
+    type: registry-image
+    icon: docker
+    source:
+      repository: projects.registry.vmware.com/tanzu_isv_engineering/mkpcli
+      username: ((harbor-public.username))
+      password: ((harbor-public.token))
+
   - name: release
     type: github-release
     icon: github
@@ -191,6 +199,10 @@ jobs:
             trigger: true
             passed:
               - build
+          - get: mkpcli-version
+            resource: version
+            passed:
+              - build
       - put: test-container-product
         inputs: all
         params:
@@ -253,6 +265,10 @@ jobs:
             params: { bump: patch }
           - get: mkpcli
             trigger: true
+            passed:
+              - build
+          - get: mkpcli-version
+            resource: version
             passed:
               - build
       - task: publish-chart
@@ -330,3 +346,21 @@ jobs:
                   --chart-url https://harbor-repo.vmware.com/chartrepo/tanzu_isv_engineering/charts/test-chart-product-${VERSION}.tgz \
                   --repository-name tanzu_isv_engineering \
                   --repository-url https://harbor-repo.vmware.com/chartrepo/tanzu_isv_engineering
+
+  - name: publish
+    plan:
+      - get: mkpcli
+        trigger: true
+        passed:
+          - test-chart-product
+          - test-container-product
+        params:
+          format: oci
+      - get: version
+        passed:
+          - test-chart-product
+          - test-container-product
+      - put: mkpcli-public
+        params:
+          image: mkpcli/image.tar
+          additional_tags: version/version
