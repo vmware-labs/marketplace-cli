@@ -1,0 +1,29 @@
+name: "install-marketplace-cli-action"
+description: "Install Marketplace CLI on a Linux"
+inputs:
+  version:
+    description: "1=latest version of v1, 2=latest version of v2, #.#.#=specific version"
+    required: false
+    default: "0.2.4"
+  marketplace_api_token:
+    description: "API token to manage products on VMWare market place"
+    required: true    
+outputs:
+  version:
+    description: "The Marketplace CLI version that was installed"
+    value: ${{ steps.set-output.outputs.version }}
+
+runs:
+  using: "composite"
+  steps:
+    - id: set-env-vars
+      run: |
+        echo "MARKETPLACE_CLI_VERSION=${{ inputs.version }}" >> $GITHUB_ENV
+      shell: bash
+    - id: install-marketplace-cli
+      run: sudo --preserve-env ${{ github.action_path }}/entrypoint.sh
+      shell: bash
+    - id: set-output
+      run: echo "::set-output name=version::$(mkpcli --version)"
+      shell: bash
+      
