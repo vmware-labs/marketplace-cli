@@ -1,0 +1,26 @@
+name: release
+on: 
+  push:
+
+jobs:
+  release:
+    name: release
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+  test_latest_version_v1:
+    runs-on: ubuntu-latest
+    name: latest v1
+    env:
+      MARKETPLACE_CLI_VERSION: "0.2.4"    
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          marketplace_api_token: "testtoken"
+          version: "0.2.4"
+      - name: test on Runner
+        run: |
+          sudo ./entrypoint.sh 
