@@ -16,7 +16,7 @@ func init() {
 	ProductVersionCmd.AddCommand(ListProductVersionsCmd)
 	ProductVersionCmd.AddCommand(GetProductVersionCmd)
 	ProductVersionCmd.AddCommand(CreateProductVersionCmd)
-	ProductVersionCmd.PersistentFlags().StringVarP(&OutputFormat, "output-format", "f", FormatTable, "Output OutputFormat")
+	ProductVersionCmd.PersistentFlags().StringVarP(&OutputFormat, "output-format", "f", FormatTable, "Output format")
 
 	ProductVersionCmd.PersistentFlags().StringVarP(&ProductSlug, "product", "p", "", "Product slug")
 	_ = ProductVersionCmd.MarkPersistentFlagRequired("product")

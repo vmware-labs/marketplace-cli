@@ -29,6 +29,7 @@ var CurlCmd = &cobra.Command{
 			return err
 		}
 
+		cmd.Printf("Sending %s request to %s...\n", req.Method, req.URL.String())
 		resp, err := Client.Do(req)
 		if err != nil {
 			return err

@@ -16,7 +16,7 @@ func init() {
 	rootCmd.AddCommand(OVACmd)
 	OVACmd.AddCommand(ListOVACmd)
 	OVACmd.AddCommand(CreateOVACmd)
-	OVACmd.PersistentFlags().StringVarP(&OutputFormat, "OutputFormat", "f", FormatTable, "Output OutputFormat")
+	OVACmd.PersistentFlags().StringVarP(&OutputFormat, "output-format", "f", FormatTable, "Output format")
 
 	OVACmd.PersistentFlags().StringVarP(&ProductSlug, "product", "p", "", "Product slug")
 	_ = OVACmd.MarkPersistentFlagRequired("product")

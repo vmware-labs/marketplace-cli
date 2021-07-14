@@ -52,13 +52,6 @@ func RenderVersions(format string, product *models.Product, output io.Writer) er
 			table.Append([]string{version.Number, version.Status})
 		}
 		table.Render()
-
-		for _, version := range product.AllVersions {
-			err := RenderVersion(format, version.Number, product, output)
-			if err != nil {
-				return err
-			}
-		}
 	} else if format == FormatJSON {
 		return PrintJson(output, product.AllVersions)
 	}
@@ -93,7 +86,7 @@ func RenderOVAs(format string, version string, product *models.Product, output i
 	ovas := product.GetOVAsForVersion(version)
 	if format == FormatTable {
 		if len(ovas) == 0 {
-			_, _ = fmt.Fprintf(output, "product \"%s\" %s does not have any OVAs", product.Slug, version)
+			_, _ = fmt.Fprintf(output, "product \"%s\" %s does not have any OVAs\n", product.Slug, version)
 			return nil
 		}
 

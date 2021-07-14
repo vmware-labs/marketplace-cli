@@ -16,7 +16,7 @@ func init() {
 	ChartCmd.AddCommand(ListChartsCmd)
 	//ChartCmd.AddCommand(GetChartCmd)
 	ChartCmd.AddCommand(CreateChartCmd)
-	ChartCmd.PersistentFlags().StringVarP(&OutputFormat, "output-format", "f", FormatTable, "Output OutputFormat")
+	ChartCmd.PersistentFlags().StringVarP(&OutputFormat, "output-format", "f", FormatTable, "Output format")
 
 	ChartCmd.PersistentFlags().StringVarP(&ProductSlug, "product", "p", "", "Product slug")
 	_ = ChartCmd.MarkPersistentFlagRequired("product")
