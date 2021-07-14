@@ -98,6 +98,28 @@ resources:
       file: test-chart-product/version
       commit_message: "[ci skip] Updating to version %version%"
 
+  - name: test-ova-product-source
+    type: git
+    icon: gitlab
+    source:
+      uri: git@gitlab.eng.vmware.com:marketplace-partner-eng/test-products.git
+      private_key: ((gitlab.private_key))
+      branch: master
+      paths:
+        - test-ova-product/*
+        - test-ova-product/**
+
+  - name: test-ova-product-version
+    type: semver
+    icon: gitlab
+    source:
+      driver: git
+      uri: git@gitlab.eng.vmware.com:marketplace-partner-eng/test-products.git
+      private_key: ((gitlab.private_key))
+      branch: master
+      file: test-ova-product/version
+      commit_message: "[ci skip] Updating to version %version%"
+
   - name: daily
     type: time
     icon: clock-outline
@@ -177,14 +199,14 @@ jobs:
 #        inputs: detect
 #        params:
 #          bump: major
-
-  - name: bump-minor-version
-    serial_groups: [version]
-    plan:
-      - put: version
-        inputs: detect
-        params:
-          bump: minor
+#
+#  - name: bump-minor-version
+#    serial_groups: [version]
+#    plan:
+#      - put: version
+#        inputs: detect
+#        params:
+#          bump: minor
 
   - name: test-container-product
     plan:
@@ -337,15 +359,90 @@ jobs:
             args:
               - -exc
               - |
-                export VERSION=$(cat version/version)
                 mkpcli chart create \
                   --product ${SLUG} \
-                  --product-version ${VERSION} \
+                  --product-version $(cat version/version) \
                   --chart-name tanzu_isv_engineering/test-chart-product-${VERSION} \
                   --chart-version ${VERSION} \
                   --chart-url https://harbor-repo.vmware.com/chartrepo/tanzu_isv_engineering/charts/test-chart-product-${VERSION}.tgz \
                   --repository-name tanzu_isv_engineering \
                   --repository-url https://harbor-repo.vmware.com/chartrepo/tanzu_isv_engineering
+
+  - name: test-ova-product
+    plan:
+      - in_parallel:
+          - get: source
+            resource: test-ova-product-source
+            trigger: true
+          - get: version
+            resource: test-ova-product-version
+            params: { bump: patch }
+          - get: mkpcli
+            trigger: true
+            passed:
+              - build
+          - get: mkpcli-version
+            resource: version
+            passed:
+              - build
+      - put: test-ova-product-version
+        inputs: detect
+        params:
+          file: version/version
+      - task: download-ova
+        config:
+          platform: linux
+          image_resource:
+            type: registry-image
+            source:
+              repository: harbor-repo.vmware.com/dockerhub-proxy-cache/library/buildpack-deps
+              tag: buster
+              username: ((harbor.username))
+              password: ((harbor.token))
+          inputs:
+            - name: source
+          outputs:
+            - name: source
+          run:
+            path: make
+            dir: source/test-ova-product
+            args: [ check ]
+      - task: add-version-to-marketplace
+        image: mkpcli
+        config:
+          inputs:
+            - name: version
+          platform: linux
+          params:
+            CSP_API_TOKEN: ((marketplace_api_token))
+            MARKETPLACE_HOST: gtwstg.market.csp.vmware.com
+            SLUG: test-ova-product-11
+          run:
+            path: bash
+            args:
+              - -exc
+              - |
+                mkpcli product-version create --product ${SLUG} --product-version $(cat version/version)
+      - task: add-ova-to-marketplace
+        image: mkpcli
+        config:
+          inputs:
+            - name: source
+            - name: version
+          platform: linux
+          params:
+            CSP_API_TOKEN: ((marketplace_api_token))
+            MARKETPLACE_HOST: gtwstg.market.csp.vmware.com
+            SLUG: test-ova-product-11
+          run:
+            path: bash
+            args:
+              - -exc
+              - |
+                mkpcli ova create \
+                  --product ${SLUG} \
+                  --product-version $(cat version/version) \
+                  --ova-file source/test-ova-product/*.ova
 
   - name: publish
     plan:
@@ -354,12 +451,14 @@ jobs:
         passed:
           - test-chart-product
           - test-container-product
+          - test-ova-product
         params:
           format: oci
       - get: version
         passed:
           - test-chart-product
           - test-container-product
+          - test-ova-product
       - put: mkpcli-public
         params:
           image: mkpcli/image.tar
