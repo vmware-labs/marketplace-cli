@@ -59,12 +59,12 @@ type CredentialsResponse struct {
 }
 
 func GetUploadCredentials(cmd *cobra.Command, args []string) error {
-	credentialsRequest, err := lib.MakeGetRequest("/aws/credentials/generate", url.Values{})
+	credentialsRequest, err := MarketplaceConfig.MakeGetRequest("/aws/credentials/generate", url.Values{})
 	if err != nil {
 		return err
 	}
-	credentialsRequest.Host = "apistg.market.csp.vmware.com"
-	credentialsRequest.URL.Host = "apistg.market.csp.vmware.com"
+	credentialsRequest.Host = MarketplaceConfig.APIHost
+	credentialsRequest.URL.Host = MarketplaceConfig.APIHost
 
 	response, err := lib.Client.Do(credentialsRequest)
 	if err != nil {

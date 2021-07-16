@@ -24,7 +24,7 @@ var CurlCmd = &cobra.Command{
 	Args:    cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		cmd.SilenceUsage = true
-		req, err := MakeGetRequest(args[0], url.Values{})
+		req, err := MarketplaceConfig.MakeGetRequest(args[0], url.Values{})
 		if err != nil {
 			return err
 		}

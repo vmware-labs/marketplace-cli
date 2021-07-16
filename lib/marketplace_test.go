@@ -14,6 +14,10 @@ import (
 	"github.com/vmware-labs/marketplace-cli/v2/lib"
 )
 
+var TestConfig = &lib.MarketplaceConfiguration{
+	Host: "marketplace.vmware.example",
+}
+
 var _ = Describe("Pagination", func() {
 	It("returns a valid pagination URL value", func() {
 		pagination := lib.Pagination(1, 25)
@@ -25,12 +29,11 @@ var _ = Describe("Pagination", func() {
 var _ = Describe("MakeRequest", func() {
 	BeforeEach(func() {
 		viper.Set("csp.refresh-token", "secrets")
-		viper.Set("marketplace.host", "marketplace.vmware.example")
 	})
 
 	It("Makes a valid request object", func() {
 		content := strings.NewReader("everything totally passed")
-		request, err := lib.MakeRequest(
+		request, err := TestConfig.MakeRequest(
 			"POST",
 			"/api/v1/unit-tests",
 			url.Values{
@@ -67,11 +70,10 @@ var _ = Describe("MakeRequest", func() {
 var _ = Describe("MakeGetRequest", func() {
 	BeforeEach(func() {
 		viper.Set("csp.refresh-token", "secrets")
-		viper.Set("marketplace.host", "marketplace.vmware.example")
 	})
 
 	It("Makes a valid request object", func() {
-		request, err := lib.MakeGetRequest(
+		request, err := TestConfig.MakeGetRequest(
 			"/api/v1/unit-tests",
 			url.Values{
 				"color": []string{"blue", "green"},

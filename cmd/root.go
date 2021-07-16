@@ -12,6 +12,9 @@ import (
 	. "github.com/vmware-labs/marketplace-cli/v2/lib"
 )
 
+
+var MarketplaceConfig *MarketplaceConfiguration
+
 var rootCmd = &cobra.Command{
 	Use:   AppName,
 	Short: fmt.Sprintf("%s is a CLI interface for the VMware Marketplace", AppName),
@@ -37,16 +40,9 @@ func init() {
 	_ = viper.BindPFlag("csp.host", rootCmd.PersistentFlags().Lookup("csp-host"))
 	viper.SetDefault("csp.host", "console.cloud.vmware.com")
 
-	_ = viper.BindEnv("marketplace.host", "MARKETPLACE_HOST")
-	rootCmd.PersistentFlags().String(
-		"marketplace-host",
-		"",
-		"Host for the Marketplace API",
-	)
-	_ = rootCmd.PersistentFlags().MarkHidden("marketplace-host")
-	_ = viper.BindPFlag("marketplace.host", rootCmd.PersistentFlags().Lookup("marketplace-host"))
-	if viper.GetString("marketplace.host") == "" {
-		viper.Set("marketplace.host", "gtw.marketplace.cloud.vmware.com")
+	MarketplaceConfig = ProductionConfig
+	if os.Getenv("MARKETPLACE_ENV") == "staging" {
+		MarketplaceConfig = StagingConfig
 	}
 }
 

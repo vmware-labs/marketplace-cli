@@ -139,7 +139,7 @@ jobs:
         file: source/ci/tasks/test.yaml
         params:
           CSP_API_TOKEN: ((marketplace_api_token))
-          MARKETPLACE_HOST: gtwstg.market.csp.vmware.com
+          MARKETPLACE_ENV: staging
 
   - name: build
     serial_groups: [version]
@@ -244,7 +244,7 @@ jobs:
           platform: linux
           params:
             CSP_API_TOKEN: ((marketplace_api_token))
-            MARKETPLACE_HOST: gtwstg.market.csp.vmware.com
+            MARKETPLACE_ENV: staging
             SLUG: test-container-product-21
           run:
             path: bash
@@ -261,7 +261,7 @@ jobs:
           platform: linux
           params:
             CSP_API_TOKEN: ((marketplace_api_token))
-            MARKETPLACE_HOST: gtwstg.market.csp.vmware.com
+            MARKETPLACE_ENV: staging
             SLUG: test-container-product-21
           run:
             path: bash
@@ -336,7 +336,7 @@ jobs:
           platform: linux
           params:
             CSP_API_TOKEN: ((marketplace_api_token))
-            MARKETPLACE_HOST: gtwstg.market.csp.vmware.com
+            MARKETPLACE_ENV: staging
             SLUG: test-chart-product-21
           run:
             path: bash
@@ -352,7 +352,7 @@ jobs:
           platform: linux
           params:
             CSP_API_TOKEN: ((marketplace_api_token))
-            MARKETPLACE_HOST: gtwstg.market.csp.vmware.com
+            MARKETPLACE_ENV: staging
             SLUG: test-chart-product-21
           run:
             path: bash
@@ -415,7 +415,7 @@ jobs:
           platform: linux
           params:
             CSP_API_TOKEN: ((marketplace_api_token))
-            MARKETPLACE_HOST: gtwstg.market.csp.vmware.com
+            MARKETPLACE_ENV: staging
             SLUG: test-ova-product-11
           run:
             path: bash
@@ -432,7 +432,7 @@ jobs:
           platform: linux
           params:
             CSP_API_TOKEN: ((marketplace_api_token))
-            MARKETPLACE_HOST: gtwstg.market.csp.vmware.com
+            MARKETPLACE_ENV: staging
             SLUG: test-ova-product-11
           run:
             path: bash

@@ -60,7 +60,7 @@ var ListProductsCmd = &cobra.Command{
 			values.Set("search", SearchTerm)
 		}
 
-		req, err := MakeGetRequest("/api/v1/products", values)
+		req, err := MarketplaceConfig.MakeGetRequest("/api/v1/products", values)
 		if err != nil {
 			cmd.SilenceUsage = true
 			return fmt.Errorf("preparing the request for the list of products failed: %w", err)
@@ -110,7 +110,7 @@ type GetProductResponsePayload struct {
 }
 
 func GetProduct(slug string, response *GetProductResponse) error {
-	req, err := MakeGetRequest(
+	req, err := MarketplaceConfig.MakeGetRequest(
 		fmt.Sprintf("api/v1/products/%s", slug),
 		url.Values{
 			"increaseViewCount": []string{"false"},
@@ -153,7 +153,7 @@ func PutProduct(product *models.Product, versionUpdate bool, response *GetProduc
 		return err
 	}
 
-	req, err := MakeRequest(
+	req, err := MarketplaceConfig.MakeRequest(
 		"PUT",
 		fmt.Sprintf("/api/v1/products/%s", product.ProductId),
 		url.Values{

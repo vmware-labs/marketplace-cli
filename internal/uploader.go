@@ -62,7 +62,7 @@ func NewS3Uploader(region, hashAlgorithm, orgId string, credentials aws.Credenti
 	}
 }
 
-func (u *S3Uploader) Upload(filePath string) (string, string, error) {
+func (u *S3Uploader) Upload(bucket, filePath string) (string, string, error) {
 	file, err := os.Open(filePath)
 	if err != nil {
 		return "", "", fmt.Errorf("failed to open %s: %w", filePath, err)
@@ -86,7 +86,7 @@ func (u *S3Uploader) Upload(filePath string) (string, string, error) {
 	filename := MakeUniqueFilename(filepath.Base(filePath))
 	client := s3.NewFromConfig(s3Config)
 	input := &s3.PutObjectInput{
-		Bucket: aws.String("cspmarketplacestage"),
+		Bucket: aws.String(bucket),
 		Key:    aws.String(path.Join(u.orgId, "marketplace-product-files", filename)),
 		Body:   file,
 	}

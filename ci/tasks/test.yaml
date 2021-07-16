@@ -14,7 +14,7 @@ image_resource:
 
 params:
   CSP_API_TOKEN:
-  MARKETPLACE_HOST:
+  MARKETPLACE_ENV:
 
 inputs:
   - name: source

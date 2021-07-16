@@ -81,11 +81,9 @@ var CreateOVACmd = &cobra.Command{
 			return fmt.Errorf("product \"%s\" does not have a version %s, please add it first", ProductSlug, ProductVersion)
 		}
 
-		product.SetDeploymentType(models.DeploymentTypeOVA)
-
 		hashAlgo := internal.HashAlgoSHA1
-		uploader := internal.NewS3Uploader("us-east-2", hashAlgo, product.PublisherDetails.OrgId, UploadCredentials)
-		fileURL, fileHash, err := uploader.Upload(OVAFile)
+		uploader := internal.NewS3Uploader(MarketplaceConfig.StorageRegion, hashAlgo, product.PublisherDetails.OrgId, UploadCredentials)
+		fileURL, fileHash, err := uploader.Upload(MarketplaceConfig.StorageRegion, OVAFile)
 		if err != nil {
 			return err
 		}

@@ -90,7 +90,6 @@ type TechSpecs struct {
 const (
 	DeploymentTypesDocker = "DOCKERLINK"
 	DeploymentTypeHelm    = "HELM"
-	DeploymentTypeOVA     = "OVA"
 )
 
 type ProductItemFile struct {
@@ -439,10 +438,5 @@ func (product *Product) PrepForUpdate() {
 }
 
 func (product *Product) SetDeploymentType(deploymentType string) {
-	for _, depType := range product.DeploymentTypes {
-		if depType == deploymentType {
-			return
-		}
-	}
-	product.DeploymentTypes = append(product.DeploymentTypes, deploymentType)
+	product.DeploymentTypes = []string{deploymentType}
 }
