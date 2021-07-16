@@ -5,6 +5,6 @@ const (
 	ChartProductVersion = "0.2.4"
 
 	ContainerProductSlug            = "test-container-product-21"
-	ContainerProductVersion         = "0.2.4"
-	ContainerProductVersionButOlder = "0.2.3"
+	ContainerProductVersion         = "0.2.8"
+	ContainerProductVersionButOlder = "0.2.7"
 )
