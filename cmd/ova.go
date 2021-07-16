@@ -83,7 +83,7 @@ var CreateOVACmd = &cobra.Command{
 
 		hashAlgo := internal.HashAlgoSHA1
 		uploader := internal.NewS3Uploader(MarketplaceConfig.StorageRegion, hashAlgo, product.PublisherDetails.OrgId, UploadCredentials)
-		fileURL, fileHash, err := uploader.Upload(MarketplaceConfig.StorageRegion, OVAFile)
+		fileURL, fileHash, err := uploader.Upload(MarketplaceConfig.StorageBucket, OVAFile)
 		if err != nil {
 			return err
 		}
@@ -101,6 +101,6 @@ var CreateOVACmd = &cobra.Command{
 			return err
 		}
 
-		return RenderOVAs(OutputFormat, ProductVersion, putResponse.Response.Data, cmd.OutOrStdout())
+		return nil // RenderOVAs(OutputFormat, ProductVersion, putResponse.Response.Data, cmd.OutOrStdout())
 	},
 }
