@@ -425,6 +425,8 @@ func (product *Product) PrepForUpdate() {
 	// Send an empty compatibility matrix, any entries in here will multiply
 	product.CompatibilityMatrix = []*CompatibilityMatrix{}
 
+	// For updates, the encryption hash needs to be populated
+	// with the contents of the encryption details list
 	product.Encryption = &ProductEncryption{List: map[string]bool{}}
 	if product.EncryptionDetails != nil {
 		for _, key := range product.EncryptionDetails.List {
@@ -432,6 +434,8 @@ func (product *Product) PrepForUpdate() {
 		}
 	}
 
+	// On updates, there is no Versions, only AllVersions, so
+	// make sure AllVersions truly has all versions
 	for _, version := range product.Versions {
 		if !product.HasVersion(version.Number) {
 			product.AllVersions = append(product.AllVersions, version)
