@@ -337,7 +337,7 @@ jobs:
           params:
             CSP_API_TOKEN: ((marketplace_api_token))
             MARKETPLACE_ENV: staging
-            SLUG: test-chart-product-21
+            SLUG: test-chart-product-31
           run:
             path: bash
             args:
@@ -353,7 +353,7 @@ jobs:
           params:
             CSP_API_TOKEN: ((marketplace_api_token))
             MARKETPLACE_ENV: staging
-            SLUG: test-chart-product-21
+            SLUG: test-chart-product-31
           run:
             path: bash
             args:
