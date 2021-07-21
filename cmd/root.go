@@ -12,7 +12,6 @@ import (
 	. "github.com/vmware-labs/marketplace-cli/v2/lib"
 )
 
-
 var MarketplaceConfig *MarketplaceConfiguration
 
 var rootCmd = &cobra.Command{
