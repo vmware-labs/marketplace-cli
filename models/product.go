@@ -422,6 +422,9 @@ func (product *Product) GetChartsForVersion(version string) []*ChartVersion {
 }
 
 func (product *Product) PrepForUpdate() {
+	// Send an empty compatibility matrix, any entries in here will multiply
+	product.CompatibilityMatrix = []*CompatibilityMatrix{}
+
 	product.Encryption = &ProductEncryption{List: map[string]bool{}}
 	if product.EncryptionDetails != nil {
 		for _, key := range product.EncryptionDetails.List {
