@@ -362,9 +362,9 @@ jobs:
                 mkpcli chart create \
                   --product ${SLUG} \
                   --product-version $(cat version/version) \
-                  --chart-name tanzu_isv_engineering/test-chart-product-${VERSION} \
-                  --chart-version ${VERSION} \
-                  --chart-url https://harbor-repo.vmware.com/chartrepo/tanzu_isv_engineering/charts/test-chart-product-${VERSION}.tgz \
+                  --chart-name tanzu_isv_engineering/test-chart-product-$(cat version/version) \
+                  --chart-version $(cat version/version) \
+                  --chart-url https://harbor-repo.vmware.com/chartrepo/tanzu_isv_engineering/charts/test-chart-product-$(cat version/version).tgz \
                   --repository-name tanzu_isv_engineering \
                   --repository-url https://harbor-repo.vmware.com/chartrepo/tanzu_isv_engineering
 
