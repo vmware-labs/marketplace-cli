@@ -40,8 +40,6 @@ var _ = Describe("Product Version", func() {
 
 			Eventually(CommandSession.Out).Should(Say(ContainerProductVersion))
 			Eventually(CommandSession.Out).Should(Say("PENDING"))
-			Eventually(CommandSession.Out).Should(Say(ContainerProductVersionButOlder))
-			Eventually(CommandSession.Out).Should(Say("PENDING"))
 		})
 
 		define.Then(`^the table of the product version is printed$`, func() {
