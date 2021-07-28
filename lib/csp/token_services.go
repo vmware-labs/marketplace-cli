@@ -9,7 +9,7 @@ import (
 	"net/http"
 	"net/url"
 
-	jwt "github.com/dgrijalva/jwt-go"
+	jwt "github.com/golang-jwt/jwt"
 )
 
 type TokenServices struct {
