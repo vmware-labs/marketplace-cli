@@ -4,7 +4,7 @@
 package csp_test
 
 import (
-	jwt "github.com/dgrijalva/jwt-go"
+	"github.com/golang-jwt/jwt"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/vmware-labs/marketplace-cli/v2/lib/csp"
