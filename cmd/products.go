@@ -17,6 +17,8 @@ import (
 	"github.com/vmware-labs/marketplace-cli/v2/models"
 )
 
+var allOrgs bool = false
+
 func init() {
 	rootCmd.AddCommand(ProductCmd)
 	ProductCmd.AddCommand(ListProductsCmd)
@@ -24,6 +26,7 @@ func init() {
 	ProductCmd.PersistentFlags().StringVarP(&OutputFormat, "output-format", "f", FormatTable, "Output format")
 
 	ListProductsCmd.Flags().StringVar(&SearchTerm, "search-text", "", "Filter by text")
+	ListProductsCmd.Flags().BoolVarP(&allOrgs, "all-orgs", "a", false, "Show products from all organizations")
 
 	GetProductCmd.Flags().StringVarP(&ProductSlug, "product", "p", "", "Product slug")
 	_ = GetProductCmd.MarkFlagRequired("product")
@@ -46,6 +49,10 @@ type ListProductResponsePayload struct {
 	Message    string            `json:"string"`
 	StatusCode int               `json:"statuscode"`
 	Products   []*models.Product `json:"dataList"`
+	Params     struct {
+		ProductCount int         `json:"itemsnumber"`
+		Pagination   *Pagination `json:"pagination"`
+	} `json:"params"`
 }
 
 var ListProductsCmd = &cobra.Command{
@@ -53,44 +60,55 @@ var ListProductsCmd = &cobra.Command{
 	Args: cobra.NoArgs,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		values := url.Values{
-			"pagination": Pagination(0, 20),
-			"ownOrg":     []string{"true"},
+			"managed": []string{strconv.FormatBool(!allOrgs)},
 		}
 		if SearchTerm != "" {
 			values.Set("search", SearchTerm)
 		}
 
-		req, err := MarketplaceConfig.MakeGetRequest("/api/v1/products", values)
-		if err != nil {
-			cmd.SilenceUsage = true
-			return fmt.Errorf("preparing the request for the list of products failed: %w", err)
+		var products []*models.Product
+		totalProducts := 1
+		pagination := &Pagination{
+			Page:     1,
+			PageSize: 20,
 		}
 
-		resp, err := Client.Do(req)
-		if err != nil {
-			cmd.SilenceUsage = true
-			return fmt.Errorf("sending the request for the list of products failed: %w", err)
+		for ; len(products) < totalProducts; pagination.Page += 1 {
+			req, err := MarketplaceConfig.MakeGetRequest("/api/v1/products", values)
+			if err != nil {
+				cmd.SilenceUsage = true
+				return fmt.Errorf("preparing the request for the list of products failed: %w", err)
+			}
+
+			req.URL = pagination.Apply(req.URL)
+			resp, err := Client.Do(req)
+			if err != nil {
+				cmd.SilenceUsage = true
+				return fmt.Errorf("sending the request for the list of products failed: %w", err)
+			}
+
+			if resp.StatusCode != http.StatusOK {
+				cmd.SilenceUsage = true
+				return fmt.Errorf("getting the list of products failed: (%d) %s", resp.StatusCode, resp.Status)
+			}
+
+			body, err := ioutil.ReadAll(resp.Body)
+			if err != nil {
+				cmd.SilenceUsage = true
+				return fmt.Errorf("failed to read the list of products: %w", err)
+			}
+
+			response := &ListProductResponse{}
+			err = json.Unmarshal(body, response)
+			if err != nil {
+				cmd.SilenceUsage = true
+				return fmt.Errorf("failed to parse the list of products: %w", err)
+			}
+			totalProducts = response.Response.Params.ProductCount
+			products = append(products, response.Response.Products...)
 		}
 
-		if resp.StatusCode != http.StatusOK {
-			cmd.SilenceUsage = true
-			return fmt.Errorf("getting the list of products failed: (%d) %s", resp.StatusCode, resp.Status)
-		}
-
-		body, err := ioutil.ReadAll(resp.Body)
-		if err != nil {
-			cmd.SilenceUsage = true
-			return fmt.Errorf("failed to read the list of products: %w", err)
-		}
-
-		response := &ListProductResponse{}
-		err = json.Unmarshal(body, response)
-		if err != nil {
-			cmd.SilenceUsage = true
-			return fmt.Errorf("failed to parse the list of products: %w", err)
-		}
-
-		err = RenderProductList(OutputFormat, response.Response.Products, cmd.OutOrStdout())
+		err := RenderProductList(OutputFormat, products, cmd.OutOrStdout())
 		if err != nil {
 			cmd.SilenceUsage = true
 			return fmt.Errorf("failed to render the list of products: %w", err)

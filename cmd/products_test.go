@@ -88,7 +88,7 @@ var _ = Describe("Products", func() {
 				request := httpClient.DoArgsForCall(0)
 				Expect(request.Method).To(Equal("GET"))
 				Expect(request.URL.Path).To(Equal("/api/v1/products"))
-				Expect(request.URL.Query().Get("pagination")).To(Equal("{\"page\":0,\"pagesize\":20}"))
+				Expect(request.URL.Query().Get("pagination")).To(Equal("{\"page\":1,\"pageSize\":20}"))
 			})
 
 			By("outputting the response", func() {
@@ -115,6 +115,95 @@ var _ = Describe("Products", func() {
 					Expect(httpClient.DoCallCount()).To(Equal(1))
 					request := httpClient.DoArgsForCall(0)
 					Expect(request.URL.Query().Get("search")).To(Equal("tanzu"))
+				})
+			})
+		})
+
+		Context("Multiple pages of results", func() {
+			BeforeEach(func() {
+				var products []*models.Product
+				for i := 0; i < 30; i += 1 {
+					product := CreateFakeProduct(
+						"",
+						fmt.Sprintf("My Super Product %d", i),
+						fmt.Sprintf("my-super-product-%d", i),
+						"PENDING")
+					AddVerions(product, "1.0.0")
+					products = append(products, product)
+				}
+
+				response1 := &cmd.ListProductResponse{
+					Response: &cmd.ListProductResponsePayload{
+						Products:   products[:20],
+						StatusCode: http.StatusOK,
+						Params: struct {
+							ProductCount int             `json:"itemsnumber"`
+							Pagination   *lib.Pagination `json:"pagination"`
+						}{
+							ProductCount: len(products),
+							Pagination: &lib.Pagination{
+								Enabled:  true,
+								Page:     1,
+								PageSize: 20,
+							},
+						},
+						Message: "testing",
+					},
+				}
+				response2 := &cmd.ListProductResponse{
+					Response: &cmd.ListProductResponsePayload{
+						Products:   products[20:],
+						StatusCode: http.StatusOK,
+						Params: struct {
+							ProductCount int             `json:"itemsnumber"`
+							Pagination   *lib.Pagination `json:"pagination"`
+						}{
+							ProductCount: len(products),
+							Pagination: &lib.Pagination{
+								Enabled:  true,
+								Page:     1,
+								PageSize: 20,
+							},
+						},
+						Message: "testing",
+					},
+				}
+				responseBytes, err := json.Marshal(response1)
+				Expect(err).ToNot(HaveOccurred())
+
+				httpClient.DoReturnsOnCall(0, &http.Response{
+					StatusCode: http.StatusOK,
+					Body:       ioutil.NopCloser(bytes.NewReader(responseBytes)),
+				}, nil)
+
+				responseBytes, err = json.Marshal(response2)
+				Expect(err).ToNot(HaveOccurred())
+
+				httpClient.DoReturnsOnCall(1, &http.Response{
+					StatusCode: http.StatusOK,
+					Body:       ioutil.NopCloser(bytes.NewReader(responseBytes)),
+				}, nil)
+			})
+
+			It("returns all results", func() {
+				err := cmd.ListProductsCmd.RunE(cmd.ListProductsCmd, []string{})
+				Expect(err).ToNot(HaveOccurred())
+
+				By("sending the correct requests", func() {
+					Expect(httpClient.DoCallCount()).To(Equal(2))
+					request := httpClient.DoArgsForCall(0)
+					Expect(request.Method).To(Equal("GET"))
+					Expect(request.URL.Path).To(Equal("/api/v1/products"))
+					Expect(request.URL.Query().Get("pagination")).To(Equal("{\"page\":1,\"pageSize\":20}"))
+
+					request = httpClient.DoArgsForCall(1)
+					Expect(request.Method).To(Equal("GET"))
+					Expect(request.URL.Path).To(Equal("/api/v1/products"))
+					Expect(request.URL.Query().Get("pagination")).To(Equal("{\"page\":2,\"pageSize\":20}"))
+				})
+
+				By("outputting the response", func() {
+					Expect(stdout).To(Say("TOTAL COUNT: 30"))
 				})
 			})
 		})

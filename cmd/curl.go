@@ -14,22 +14,29 @@ import (
 )
 
 func init() {
-	rootCmd.AddCommand(CurlCmd)
+	rootCmd.AddCommand(curlCmd)
+	curlCmd.SetOut(curlCmd.OutOrStdout())
 }
 
-var CurlCmd = &cobra.Command{
+var curlCmd = &cobra.Command{
 	Use:     "curl",
 	Hidden:  true,
 	PreRunE: GetRefreshToken,
 	Args:    cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		cmd.SilenceUsage = true
-		req, err := MarketplaceConfig.MakeGetRequest(args[0], url.Values{})
+
+		requestUrl, err := url.Parse(args[0])
 		if err != nil {
 			return err
 		}
 
-		cmd.Printf("Sending %s request to %s...\n", req.Method, req.URL.String())
+		req, err := MarketplaceConfig.MakeGetRequest(requestUrl.Path, requestUrl.Query())
+		if err != nil {
+			return err
+		}
+
+		cmd.PrintErrf("Sending %s request to %s...\n", req.Method, req.URL.String())
 		resp, err := Client.Do(req)
 		if err != nil {
 			return err

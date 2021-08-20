@@ -19,10 +19,38 @@ var TestConfig = &lib.MarketplaceConfiguration{
 }
 
 var _ = Describe("Pagination", func() {
-	It("returns a valid pagination URL value", func() {
-		pagination := lib.Pagination(1, 25)
-		Expect(pagination).To(HaveLen(1))
-		Expect(pagination[0]).To(Equal(`{"page":1,"pagesize":25}`))
+	Describe("Apply", func() {
+		It("modifies a URL to add pagination with a very specific encoding format", func() {
+			pagination := lib.Pagination{
+				Page:     1,
+				PageSize: 25,
+			}
+
+			By("appending to an existing query", func() {
+				baseUrl := &url.URL{
+					Scheme: "https",
+					Host:   "marketplace.vmware.com",
+					Path:   "/api/products",
+				}
+				baseUrl.RawQuery = url.Values{
+					"price": []string{"free"},
+				}.Encode()
+				paginatedUrl := pagination.Apply(baseUrl)
+				Expect(paginatedUrl.RawQuery).To(Equal("price=free&pagination={%22page%22:1,%22pageSize%22:25}"))
+				Expect(paginatedUrl.String()).To(Equal("https://marketplace.vmware.com/api/products?price=free&pagination={%22page%22:1,%22pageSize%22:25}"))
+			})
+
+			By("working with urls without an existing query", func() {
+				baseUrl := &url.URL{
+					Scheme: "https",
+					Host:   "marketplace.vmware.com",
+					Path:   "/api/products",
+				}
+				paginatedUrl := pagination.Apply(baseUrl)
+				Expect(paginatedUrl.RawQuery).To(Equal("pagination={%22page%22:1,%22pageSize%22:25}"))
+				Expect(paginatedUrl.String()).To(Equal("https://marketplace.vmware.com/api/products?pagination={%22page%22:1,%22pageSize%22:25}"))
+			})
+		})
 	})
 })
 
