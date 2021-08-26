@@ -10,7 +10,6 @@ import (
 	"net/url"
 
 	"github.com/spf13/cobra"
-	. "github.com/vmware-labs/marketplace-cli/v2/lib"
 )
 
 func init() {
@@ -26,18 +25,15 @@ var curlCmd = &cobra.Command{
 	RunE: func(cmd *cobra.Command, args []string) error {
 		cmd.SilenceUsage = true
 
-		requestUrl, err := url.Parse(args[0])
+		inputURL, err := url.Parse(args[0])
 		if err != nil {
 			return err
 		}
 
-		req, err := MarketplaceConfig.MakeGetRequest(requestUrl.Path, requestUrl.Query())
-		if err != nil {
-			return err
-		}
+		requestURL := Marketplace.MakeURL(inputURL.Path, inputURL.Query())
 
-		cmd.PrintErrf("Sending %s request to %s...\n", req.Method, req.URL.String())
-		resp, err := Client.Do(req)
+		cmd.PrintErrf("Sending request to %s...\n", requestURL.String())
+		resp, err := Marketplace.Get(requestURL)
 		if err != nil {
 			return err
 		}

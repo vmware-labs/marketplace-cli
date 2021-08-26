@@ -1,7 +1,7 @@
 // Copyright 2021 VMware, Inc.
 // SPDX-License-Identifier: BSD-2-Clause
 
-package lib
+package cmd
 
 import (
 	"encoding/json"
@@ -11,7 +11,7 @@ import (
 	"strings"
 
 	"github.com/olekukonko/tablewriter"
-	"github.com/vmware-labs/marketplace-cli/v2/models"
+	"github.com/vmware-labs/marketplace-cli/v2/internal/models"
 )
 
 var outputSupportsColor = false
@@ -53,7 +53,7 @@ func RenderVersions(format string, product *models.Product, output io.Writer) er
 		}
 		table.Render()
 	} else if format == FormatJSON {
-		return PrintJson(output, product.AllVersions)
+		return PrintJSON(output, product.AllVersions)
 	}
 	return nil
 }
@@ -77,7 +77,7 @@ func RenderVersion(format string, version string, product *models.Product, outpu
 		}
 
 	} else if format == FormatJSON {
-		return PrintJson(output, product.AllVersions)
+		return PrintJSON(output, product.AllVersions)
 	}
 	return nil
 }
@@ -107,7 +107,7 @@ func RenderOVAs(format string, version string, product *models.Product, output i
 		}
 		table.Render()
 	} else if format == FormatJSON {
-		return PrintJson(output, ovas)
+		return PrintJSON(output, ovas)
 	}
 	return nil
 }
@@ -126,7 +126,7 @@ func RenderContainerImages(format string, images *models.DockerVersionList, outp
 		_, _ = fmt.Fprintln(output, "Deployment instructions:")
 		_, _ = fmt.Fprintln(output, images.DeploymentInstruction)
 	} else if format == FormatJSON {
-		return PrintJson(output, images)
+		return PrintJSON(output, images)
 	}
 	return nil
 }
@@ -139,7 +139,7 @@ func RenderContainerImage(format string, image *models.DockerURLDetails, output 
 		}
 		table.Render()
 	} else if format == FormatJSON {
-		return PrintJson(output, image)
+		return PrintJSON(output, image)
 	}
 	return nil
 }
@@ -157,7 +157,7 @@ func RenderCharts(format string, charts []*models.ChartVersion, output io.Writer
 		}
 		table.Render()
 	} else if format == FormatJSON {
-		return PrintJson(output, charts)
+		return PrintJSON(output, charts)
 	}
 	return nil
 }
@@ -175,7 +175,7 @@ func RenderProductList(format string, products []*models.Product, output io.Writ
 		table.SetFooter([]string{"", "", "", "", fmt.Sprintf("Total count: %d", len(products))})
 		table.Render()
 	} else if format == FormatJSON {
-		return PrintJson(output, products)
+		return PrintJSON(output, products)
 	}
 	return nil
 }
@@ -188,12 +188,12 @@ func RenderProduct(format string, product *models.Product, output io.Writer) err
 		table.Render()
 		return RenderVersions(format, product, output)
 	} else if format == FormatJSON {
-		return PrintJson(output, product)
+		return PrintJSON(output, product)
 	}
 	return nil
 }
 
-func PrintJson(output io.Writer, object interface{}) error {
+func PrintJSON(output io.Writer, object interface{}) error {
 	data, err := json.Marshal(object)
 	if err != nil {
 		return err

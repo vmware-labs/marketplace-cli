@@ -13,20 +13,19 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"github.com/vmware-labs/marketplace-cli/v2/lib"
-	"github.com/vmware-labs/marketplace-cli/v2/lib/csp"
+	csp2 "github.com/vmware-labs/marketplace-cli/v2/internal/csp"
 )
 
 //go:generate counterfeiter . TokenServices
 type TokenServices interface {
-	Redeem(refreshToken string) (*csp.Claims, error)
+	Redeem(refreshToken string) (*csp2.Claims, error)
 }
 
 //go:generate counterfeiter . TokenServicesInitializer
 type TokenServicesInitializer func(cspHost string) (TokenServices, error)
 
 var InitializeTokenServices TokenServicesInitializer = func(cspHost string) (TokenServices, error) {
-	return csp.NewTokenServices(cspHost)
+	return csp2.NewTokenServices(cspHost)
 }
 
 func GetRefreshToken(cmd *cobra.Command, args []string) error {
@@ -52,21 +51,16 @@ func GetRefreshToken(cmd *cobra.Command, args []string) error {
 }
 
 type CredentialsResponse struct {
-	AccessId     string    `json:"accessId"`
+	AccessID     string    `json:"accessId"`
 	AccessKey    string    `json:"accessKey"`
 	SessionToken string    `json:"sessionToken"`
 	Expiration   time.Time `json:"expiration"`
 }
 
 func GetUploadCredentials(cmd *cobra.Command, args []string) error {
-	credentialsRequest, err := MarketplaceConfig.MakeGetRequest("/aws/credentials/generate", url.Values{})
-	if err != nil {
-		return err
-	}
-	credentialsRequest.Host = MarketplaceConfig.APIHost
-	credentialsRequest.URL.Host = MarketplaceConfig.APIHost
-
-	response, err := lib.Client.Do(credentialsRequest)
+	requestURL := Marketplace.MakeURL("/aws/credentials/generate", url.Values{})
+	requestURL.Host = Marketplace.APIHost
+	response, err := Marketplace.Get(requestURL)
 	if err != nil {
 		return err
 	}
@@ -86,7 +80,7 @@ func GetUploadCredentials(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	UploadCredentials.AccessKeyID = credsResponse.AccessId
+	UploadCredentials.AccessKeyID = credsResponse.AccessID
 	UploadCredentials.SecretAccessKey = credsResponse.AccessKey
 	UploadCredentials.SessionToken = credsResponse.SessionToken
 	UploadCredentials.Expires = credsResponse.Expiration

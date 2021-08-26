@@ -1,3 +1,6 @@
+// Copyright 2021 VMware, Inc.
+// SPDX-License-Identifier: BSD-2-Clause
+
 package internal
 
 import (
@@ -43,10 +46,10 @@ type S3Uploader struct {
 	region        string
 	hashAlgorithm hash.Hash
 	credentials   aws.Credentials
-	orgId         string
+	orgID         string
 }
 
-func NewS3Uploader(region, hashAlgorithm, orgId string, credentials aws.Credentials) *S3Uploader {
+func NewS3Uploader(region, hashAlgorithm, orgID string, credentials aws.Credentials) *S3Uploader {
 	var hashAlgo hash.Hash
 	if hashAlgorithm == HashAlgoSHA1 {
 		hashAlgo = sha1.New()
@@ -58,7 +61,7 @@ func NewS3Uploader(region, hashAlgorithm, orgId string, credentials aws.Credenti
 		region:        region,
 		hashAlgorithm: hashAlgo,
 		credentials:   credentials,
-		orgId:         orgId,
+		orgID:         orgID,
 	}
 }
 
@@ -87,7 +90,7 @@ func (u *S3Uploader) Upload(bucket, filePath string) (string, string, error) {
 	client := s3.NewFromConfig(s3Config)
 	input := &s3.PutObjectInput{
 		Bucket: aws.String(bucket),
-		Key:    aws.String(path.Join(u.orgId, "marketplace-product-files", filename)),
+		Key:    aws.String(path.Join(u.orgID, "marketplace-product-files", filename)),
 		Body:   file,
 	}
 

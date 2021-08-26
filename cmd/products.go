@@ -4,20 +4,15 @@
 package cmd
 
 import (
-	"bytes"
-	"encoding/json"
 	"fmt"
-	"io/ioutil"
-	"net/http"
-	"net/url"
-	"strconv"
 
 	"github.com/spf13/cobra"
-	. "github.com/vmware-labs/marketplace-cli/v2/lib"
-	"github.com/vmware-labs/marketplace-cli/v2/models"
 )
 
-var allOrgs bool = false
+var (
+	allOrgs    = false
+	searchTerm string
+)
 
 func init() {
 	rootCmd.AddCommand(ProductCmd)
@@ -25,7 +20,7 @@ func init() {
 	ProductCmd.AddCommand(GetProductCmd)
 	ProductCmd.PersistentFlags().StringVarP(&OutputFormat, "output-format", "f", FormatTable, "Output format")
 
-	ListProductsCmd.Flags().StringVar(&SearchTerm, "search-text", "", "Filter by text")
+	ListProductsCmd.Flags().StringVar(&searchTerm, "search-text", "", "Filter by text")
 	ListProductsCmd.Flags().BoolVarP(&allOrgs, "all-orgs", "a", false, "Show products from all organizations")
 
 	GetProductCmd.Flags().StringVarP(&ProductSlug, "product", "p", "", "Product slug")
@@ -42,75 +37,18 @@ var ProductCmd = &cobra.Command{
 	PersistentPreRunE: GetRefreshToken,
 }
 
-type ListProductResponse struct {
-	Response *ListProductResponsePayload `json:"response"`
-}
-type ListProductResponsePayload struct {
-	Message    string            `json:"string"`
-	StatusCode int               `json:"statuscode"`
-	Products   []*models.Product `json:"dataList"`
-	Params     struct {
-		ProductCount int         `json:"itemsnumber"`
-		Pagination   *Pagination `json:"pagination"`
-	} `json:"params"`
-}
-
 var ListProductsCmd = &cobra.Command{
 	Use:  "list",
 	Args: cobra.NoArgs,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		values := url.Values{
-			"managed": []string{strconv.FormatBool(!allOrgs)},
-		}
-		if SearchTerm != "" {
-			values.Set("search", SearchTerm)
-		}
-
-		var products []*models.Product
-		totalProducts := 1
-		pagination := &Pagination{
-			Page:     1,
-			PageSize: 20,
-		}
-
-		for ; len(products) < totalProducts; pagination.Page += 1 {
-			req, err := MarketplaceConfig.MakeGetRequest("/api/v1/products", values)
-			if err != nil {
-				cmd.SilenceUsage = true
-				return fmt.Errorf("preparing the request for the list of products failed: %w", err)
-			}
-
-			req.URL = pagination.Apply(req.URL)
-			resp, err := Client.Do(req)
-			if err != nil {
-				cmd.SilenceUsage = true
-				return fmt.Errorf("sending the request for the list of products failed: %w", err)
-			}
-
-			if resp.StatusCode != http.StatusOK {
-				cmd.SilenceUsage = true
-				return fmt.Errorf("getting the list of products failed: (%d) %s", resp.StatusCode, resp.Status)
-			}
-
-			body, err := ioutil.ReadAll(resp.Body)
-			if err != nil {
-				cmd.SilenceUsage = true
-				return fmt.Errorf("failed to read the list of products: %w", err)
-			}
-
-			response := &ListProductResponse{}
-			err = json.Unmarshal(body, response)
-			if err != nil {
-				cmd.SilenceUsage = true
-				return fmt.Errorf("failed to parse the list of products: %w", err)
-			}
-			totalProducts = response.Response.Params.ProductCount
-			products = append(products, response.Response.Products...)
-		}
-
-		err := RenderProductList(OutputFormat, products, cmd.OutOrStdout())
+		cmd.SilenceUsage = true
+		products, err := Marketplace.ListProducts(allOrgs, searchTerm)
 		if err != nil {
-			cmd.SilenceUsage = true
+			return err
+		}
+
+		err = RenderProductList(OutputFormat, products, cmd.OutOrStdout())
+		if err != nil {
 			return fmt.Errorf("failed to render the list of products: %w", err)
 		}
 
@@ -118,104 +56,17 @@ var ListProductsCmd = &cobra.Command{
 	},
 }
 
-type GetProductResponse struct {
-	Response *GetProductResponsePayload `json:"response"`
-}
-type GetProductResponsePayload struct {
-	Message    string          `json:"string"`
-	StatusCode int             `json:"statuscode"`
-	Data       *models.Product `json:"data"`
-}
-
-func GetProduct(slug string, response *GetProductResponse) error {
-	req, err := MarketplaceConfig.MakeGetRequest(
-		fmt.Sprintf("api/v1/products/%s", slug),
-		url.Values{
-			"increaseViewCount": []string{"false"},
-			"isSlug":            []string{"true"},
-		},
-	)
-	if err != nil {
-		return err
-	}
-
-	resp, err := Client.Do(req)
-	if err != nil {
-		return fmt.Errorf("sending the request for product \"%s\" failed: %w", ProductSlug, err)
-	}
-
-	if resp.StatusCode == http.StatusNotFound {
-		return fmt.Errorf("product \"%s\" not found", ProductSlug)
-	}
-
-	if resp.StatusCode != http.StatusOK {
-		return fmt.Errorf("getting product \"%s\" failed: (%d)", ProductSlug, resp.StatusCode)
-	}
-
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return fmt.Errorf("failed to read the response for product \"%s\": %w", ProductSlug, err)
-	}
-
-	err = json.Unmarshal(body, response)
-	if err != nil {
-		return fmt.Errorf("failed to parse the response for product \"%s\": %w", ProductSlug, err)
-	}
-	return nil
-}
-
-func PutProduct(product *models.Product, versionUpdate bool, response *GetProductResponse) error {
-	product.PrepForUpdate()
-	encoded, err := json.Marshal(product)
-	if err != nil {
-		return err
-	}
-
-	req, err := MarketplaceConfig.MakeRequest(
-		"PUT",
-		fmt.Sprintf("/api/v1/products/%s", product.ProductId),
-		url.Values{
-			"archivepreviousversion": []string{"false"},
-			"isversionupdate":        []string{strconv.FormatBool(versionUpdate)},
-		},
-		map[string]string{
-			"Content-Type": "application/json",
-		},
-		bytes.NewReader(encoded),
-	)
-	if err != nil {
-		return err
-	}
-
-	resp, err := Client.Do(req)
-	if err != nil {
-		return fmt.Errorf("sending the update for product \"%s\" failed: %w", ProductSlug, err)
-	}
-
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return fmt.Errorf("failed to read the update response for product \"%s\": %w", ProductSlug, err)
-	}
-
-	if resp.StatusCode != http.StatusOK {
-		return fmt.Errorf("updating product \"%s\" failed: (%d)\n%s", ProductSlug, resp.StatusCode, body)
-	}
-
-	return json.Unmarshal(body, response)
-}
-
 var GetProductCmd = &cobra.Command{
 	Use:  "get [product slug]",
 	Args: cobra.NoArgs,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		response := &GetProductResponse{}
-		err := GetProduct(ProductSlug, response)
+		cmd.SilenceUsage = true
+		product, err := Marketplace.GetProduct(ProductSlug)
 		if err != nil {
-			cmd.SilenceUsage = true
 			return err
 		}
 
-		err = RenderProduct(OutputFormat, response.Response.Data, cmd.OutOrStdout())
+		err = RenderProduct(OutputFormat, product, cmd.OutOrStdout())
 		if err != nil {
 			cmd.SilenceUsage = true
 			return fmt.Errorf("failed to render the product: %w", err)

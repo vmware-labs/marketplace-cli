@@ -1,4 +1,7 @@
-package features
+// Copyright 2021 VMware, Inc.
+// SPDX-License-Identifier: BSD-2-Clause
+
+package test
 
 const (
 	ChartProductSlug    = "test-chart-product-21"

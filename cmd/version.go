@@ -7,24 +7,22 @@ import (
 	"fmt"
 	"os"
 
-	. "github.com/vmware-labs/marketplace-cli/v2/lib"
-
 	"github.com/spf13/cobra"
 )
 
 func init() {
-	rootCmd.AddCommand(VersionCmd)
-	VersionCmd.SetOut(os.Stdout)
+	rootCmd.AddCommand(versionCmd)
+	versionCmd.SetOut(os.Stdout)
 }
 
-var Version = "dev"
+var version = "dev"
 
-var VersionCmd = &cobra.Command{
+var versionCmd = &cobra.Command{
 	Use:   "version",
 	Short: fmt.Sprintf("Print the version number of %s", AppName),
 	Long:  fmt.Sprintf("Print the version number of %s", AppName),
 	Args:  cobra.NoArgs,
 	Run: func(cmd *cobra.Command, args []string) {
-		cmd.Printf("%s version: %s\n", AppName, Version)
+		cmd.Printf("%s version: %s\n", AppName, version)
 	},
 }

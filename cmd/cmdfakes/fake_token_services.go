@@ -5,7 +5,7 @@ import (
 	"sync"
 
 	"github.com/vmware-labs/marketplace-cli/v2/cmd"
-	"github.com/vmware-labs/marketplace-cli/v2/lib/csp"
+	"github.com/vmware-labs/marketplace-cli/v2/internal/csp"
 )
 
 type FakeTokenServices struct {

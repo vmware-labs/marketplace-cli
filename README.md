@@ -50,7 +50,7 @@ Building from source is simple with our Makefile.
 ```bash
 $ make build
 ...
-go build -o build/mkpcli -ldflags "-X github.com/vmware-labs/marketplace-cli/v2/cmd.Version=dev" ./main.go
+go build -o build/mkpcli -ldflags "-X github.com/vmware-labs/marketplace-cli/v2/cmd.version=dev" ./main.go
 $ file build/mkpcli 
 build/mkpcli: Mach-O 64-bit executable x86_64
 $ ./build/mkpcli 

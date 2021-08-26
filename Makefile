@@ -64,7 +64,7 @@ deps: deps-modules deps-counterfeiter deps-ginkgo
 
 SRC = $(shell find . -name "*.go" | grep -v "_test\." )
 VERSION := $(or $(VERSION), dev)
-LDFLAGS="-X github.com/vmware-labs/marketplace-cli/v2/cmd.Version=$(VERSION)"
+LDFLAGS="-X github.com/vmware-labs/marketplace-cli/v2/cmd.version=$(VERSION)"
 
 build/mkpcli: $(SRC)
 	go build -o build/mkpcli -ldflags ${LDFLAGS} ./main.go
@@ -86,16 +86,16 @@ build-image: build/mkpcli-linux
 .PHONY: lint test test-features test-units
 
 test-units: deps
-	ginkgo -r -skipPackage external,features .
+	ginkgo -r -skipPackage test .
 
 test-features: deps
-	ginkgo -r -tags=feature features
+	ginkgo -r test/features
 
 test-external: deps
 ifndef CSP_API_TOKEN
 	$(error CSP_API_TOKEN must be defined to run external tests)
 else
-	ginkgo -r -tags=external external
+	ginkgo -r test/external
 endif
 
 test: deps lint test-units test-features test-external

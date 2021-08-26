@@ -1,0 +1,35 @@
+run:
+  tests: true
+  timeout: 10m
+
+linters:
+  enable:
+    - dupl
+    - gofmt
+    - goheader
+    - goimports
+    - revive
+    - misspell
+    - nakedret
+  disable:
+    - typecheck
+
+issues:
+  # Excluding configuration per-path, per-linter, per-text and per-source
+  exclude-rules:
+    # Exclude some linters from running on tests files.
+    - path: _test\.go
+      linters:
+        - dupl
+
+linters-settings:
+  revive:
+    rules:
+      - name: dot-imports
+        disabled: true
+
+  goheader:
+    template: |-
+      Copyright {{YEAR}} VMware, Inc.
+      SPDX-License-Identifier: BSD-2-Clause
+
