@@ -53,7 +53,7 @@ clean: deps-go-binary
 # #### DEPS ####
 .PHONY: deps deps-counterfeiter deps-ginkgo deps-modules
 
-deps-modules: deps-goimports deps-go-binary
+deps-modules: deps-go-binary
 	go mod download
 
 deps: deps-modules deps-counterfeiter deps-ginkgo
