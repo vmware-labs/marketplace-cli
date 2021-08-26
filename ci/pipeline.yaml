@@ -125,7 +125,7 @@ resources:
     icon: clock-outline
     source:
       start: 5:00 AM
-      stop:  6:00 PM
+      stop: 6:00 PM
       location: US/Central
 
 jobs:
@@ -135,6 +135,22 @@ jobs:
         trigger: true
       - get: source
         trigger: true
+      - task: run-lint
+        config:
+          platform: linux
+          image_resource:
+            type: registry-image
+            source:
+              repository: harbor-repo.vmware.com/dockerhub-proxy-cache/golangci/golangci-lint
+              tag: v1.42
+              username: ((harbor.username))
+              password: ((harbor.token))
+          inputs:
+            - name: source
+          run:
+            path: make
+            dir: source
+            args: [ lint ]
       - task: run-tests
         file: source/ci/tasks/test.yaml
         params:
@@ -142,7 +158,7 @@ jobs:
           MARKETPLACE_ENV: staging
 
   - name: build
-    serial_groups: [version]
+    serial_groups: [ version ]
     plan:
       - in_parallel:
           - get: source
@@ -175,12 +191,12 @@ jobs:
             path: build
 
       - put: mkpcli
-        inputs: [image, version]
+        inputs: [ image, version ]
         params:
           image: image/image.tar
           additional_tags: version/version  # Update the parameter list if/when concourse is updated
       - put: release
-        inputs: [build, source, version]
+        inputs: [ build, source, version ]
         params:
           name: version/version
           tag: version/version
@@ -192,21 +208,21 @@ jobs:
         params:
           file: version/version
 
-#  - name: bump-major-version
-#    serial_groups: [version]
-#    plan:
-#      - put: version
-#        inputs: detect
-#        params:
-#          bump: major
-#
-#  - name: bump-minor-version
-#    serial_groups: [version]
-#    plan:
-#      - put: version
-#        inputs: detect
-#        params:
-#          bump: minor
+  #  - name: bump-major-version
+  #    serial_groups: [version]
+  #    plan:
+  #      - put: version
+  #        inputs: detect
+  #        params:
+  #          bump: major
+  #
+  #  - name: bump-minor-version
+  #    serial_groups: [version]
+  #    plan:
+  #      - put: version
+  #        inputs: detect
+  #        params:
+  #          bump: minor
 
   - name: test-container-product
     plan:

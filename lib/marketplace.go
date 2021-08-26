@@ -72,10 +72,8 @@ func (m *MarketplaceConfiguration) MakeRequest(method, path string, params url.V
 		return nil, fmt.Errorf("failed to build %s request: %w", path, err)
 	}
 
-	if header != nil {
-		for k, v := range header {
-			req.Header.Add(k, v)
-		}
+	for k, v := range header {
+		req.Header.Add(k, v)
 	}
 
 	req.Header.Add("Accept", "application/json")

@@ -44,7 +44,7 @@ func (csp *TokenServices) Redeem(refreshToken string) (*Claims, error) {
 	}
 
 	claims := &Claims{}
-	_, err = jwt.ParseWithClaims(accessToken, claims, func(t *jwt.Token) (interface{}, error) {
+	_, _ = jwt.ParseWithClaims(accessToken, claims, func(t *jwt.Token) (interface{}, error) {
 		// token was just retrieved, no need to validate
 		return "not a valid key anyway", nil
 	})
@@ -96,6 +96,9 @@ func fetchPublicKey(cspLink string) ([]byte, error) {
 
 	m := map[string]interface{}{}
 	err = json.NewDecoder(resp.Body).Decode(&m)
+	if err != nil {
+		return nil, err
+	}
 
 	pemData, ok := m["value"]
 	if !ok {

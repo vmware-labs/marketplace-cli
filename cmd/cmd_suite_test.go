@@ -107,9 +107,7 @@ func AddContainerImages(product *models.Product, version string, instructions st
 		Status:                "",
 	}
 
-	for _, image := range images {
-		imageList.DockerURLs = append(imageList.DockerURLs, image)
-	}
+	imageList.DockerURLs = append(imageList.DockerURLs, images...)
 
 	product.DockerLinkVersions = append(product.DockerLinkVersions, imageList)
 	return product

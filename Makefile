@@ -2,26 +2,45 @@
 # SPDX-License-Identifier: BSD-2-Clause
 
 SHELL = /bin/bash
-GO-VER = go1.16
 
 default: build
 
-
 # #### GO Binary Management ####
-.PHONY: deps-go-binary deps-goimports
+.PHONY: deps-go-binary deps-counterfeiter deps-ginkgo deps-golangci-lint
+
+GO_VERSION := $(shell go version)
+GO_VERSION_REQUIRED = go1.16
+GO_VERSION_MATCHED := $(shell go version | grep $(GO_VERSION_REQUIRED))
 
 deps-go-binary:
-	echo "Expect: $(GO-VER)" && \
-		echo "Actual: $$(go version)" && \
-	 	go version | grep $(GO-VER) > /dev/null
+ifndef GO_VERSION
+	$(error Go not installed)
+endif
+ifndef GO_VERSION_MATCHED
+	$(error Required Go version is $(GO_VERSION_REQUIRED), but was $(GO_VERSION))
+endif
+	@:
 
-HAS_GO_IMPORTS := $(shell command -v goimports;)
+HAS_COUNTERFEITER := $(shell command -v counterfeiter;)
+HAS_GINKGO := $(shell command -v ginkgo;)
+HAS_GOLANGCI_LINT := $(shell command -v golangci-lint;)
 
-deps-goimports: deps-go-binary
-ifndef HAS_GO_IMPORTS
-	go get -u golang.org/x/tools/cmd/goimports
+# If go get is run from inside the project directory it will add the dependencies
+# to the go.mod file. To avoid that we import from another directory
+deps-counterfeiter: deps-go-binary
+ifndef HAS_COUNTERFEITER
+	cd /; go get -u github.com/maxbrunsfeld/counterfeiter/v6
 endif
 
+deps-ginkgo: deps-go-binary
+ifndef HAS_GINKGO
+	cd /; go get github.com/onsi/ginkgo/ginkgo github.com/onsi/gomega
+endif
+
+deps-golangci-lint: deps-go-binary
+ifndef HAS_GOLANGCI_LINT
+	cd /; go get github.com/golangci/golangci-lint/cmd/golangci-lint
+endif
 
 # #### CLEAN ####
 .PHONY: clean
@@ -36,12 +55,6 @@ clean: deps-go-binary
 
 deps-modules: deps-goimports deps-go-binary
 	go mod download
-
-deps-counterfeiter: deps-modules
-	command -v counterfeiter >/dev/null 2>&1 || go get -u github.com/maxbrunsfeld/counterfeiter/v6
-
-deps-ginkgo: deps-go-binary
-	command -v ginkgo >/dev/null 2>&1 || go get -u github.com/onsi/ginkgo/ginkgo github.com/onsi/gomega
 
 deps: deps-modules deps-counterfeiter deps-ginkgo
 
@@ -87,9 +100,8 @@ endif
 
 test: deps lint test-units test-features test-external
 
-lint: deps-goimports
-	git ls-files | grep '.go$$' | xargs goimports -l -w
-
+lint: deps-golangci-lint
+	golangci-lint run
 
 # #### DEVOPS ####
 .PHONY: set-pipeline

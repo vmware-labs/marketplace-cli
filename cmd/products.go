@@ -183,6 +183,9 @@ func PutProduct(product *models.Product, versionUpdate bool, response *GetProduc
 		},
 		bytes.NewReader(encoded),
 	)
+	if err != nil {
+		return err
+	}
 
 	resp, err := Client.Do(req)
 	if err != nil {

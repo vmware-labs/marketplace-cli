@@ -82,6 +82,9 @@ func GetUploadCredentials(cmd *cobra.Command, args []string) error {
 
 	credsResponse := &CredentialsResponse{}
 	err = json.Unmarshal(body, credsResponse)
+	if err != nil {
+		return err
+	}
 
 	UploadCredentials.AccessKeyID = credsResponse.AccessId
 	UploadCredentials.SecretAccessKey = credsResponse.AccessKey
