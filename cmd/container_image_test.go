@@ -16,49 +16,44 @@ import (
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/gbytes"
 	"github.com/vmware-labs/marketplace-cli/v2/cmd"
-	"github.com/vmware-labs/marketplace-cli/v2/lib"
-	"github.com/vmware-labs/marketplace-cli/v2/lib/libfakes"
+	"github.com/vmware-labs/marketplace-cli/v2/pkg"
+	"github.com/vmware-labs/marketplace-cli/v2/pkg/pkgfakes"
+	"github.com/vmware-labs/marketplace-cli/v2/test"
 )
 
 var _ = Describe("ContainerImage", func() {
 	var (
-		stdout *Buffer
-		stderr *Buffer
-
-		originalHttpClient lib.HTTPClient
-		httpClient         *libfakes.FakeHTTPClient
+		stdout     *Buffer
+		stderr     *Buffer
+		httpClient *pkgfakes.FakeHTTPClient
 	)
 
 	BeforeEach(func() {
+		httpClient = &pkgfakes.FakeHTTPClient{}
+		cmd.Marketplace = &pkg.Marketplace{
+			Client: httpClient,
+		}
 		stdout = NewBuffer()
 		stderr = NewBuffer()
-
-		originalHttpClient = lib.Client
-		httpClient = &libfakes.FakeHTTPClient{}
-		lib.Client = httpClient
-	})
-
-	AfterEach(func() {
-		lib.Client = originalHttpClient
 	})
 
 	Describe("ListContainerImageCmd", func() {
 		BeforeEach(func() {
-			container := CreateFakeContainerImage(
+			container := test.CreateFakeContainerImage(
 				"myId",
 				"0.0.1",
 				"latest",
 			)
 
-			product := CreateFakeProduct(
+			product := test.CreateFakeProduct(
 				"",
 				"My Super Product",
 				"my-super-product",
 				"PENDING")
-			AddVerions(product, "1.2.3", "2.3.4")
-			AddContainerImages(product, "1.2.3", "Machine wash cold with like colors", container)
-			response := &cmd.GetProductResponse{
-				Response: &cmd.GetProductResponsePayload{
+			test.AddVerions(product, "1.2.3", "2.3.4")
+			test.AddContainerImages(product, "1.2.3", "Machine wash cold with like colors", container)
+			response := &pkg.GetProductResponse{
+				Response: &pkg.GetProductResponsePayload{
 					Data:       product,
 					StatusCode: http.StatusOK,
 					Message:    "testing",
@@ -153,21 +148,21 @@ var _ = Describe("ContainerImage", func() {
 
 	Describe("GetContainerImageCmd", func() {
 		BeforeEach(func() {
-			container := CreateFakeContainerImage(
+			container := test.CreateFakeContainerImage(
 				"myId",
 				"0.0.1",
 				"latest",
 			)
 
-			product := CreateFakeProduct(
+			product := test.CreateFakeProduct(
 				"",
 				"My Super Product",
 				"my-super-product",
 				"PENDING")
-			AddVerions(product, "1.2.3", "2.3.4")
-			AddContainerImages(product, "1.2.3", "Machine wash cold with like colors", container)
-			response := &cmd.GetProductResponse{
-				Response: &cmd.GetProductResponsePayload{
+			test.AddVerions(product, "1.2.3", "2.3.4")
+			test.AddContainerImages(product, "1.2.3", "Machine wash cold with like colors", container)
+			response := &pkg.GetProductResponse{
+				Response: &pkg.GetProductResponsePayload{
 					Data:       product,
 					StatusCode: http.StatusOK,
 					Message:    "testing",
@@ -265,36 +260,36 @@ var _ = Describe("ContainerImage", func() {
 	})
 
 	Describe("CreateContainerImageCmd", func() {
-		var productId string
+		var productID string
 		BeforeEach(func() {
-			nginx := CreateFakeContainerImage("nginx", "latest")
-			python := CreateFakeContainerImage("python", "1.2.3")
+			nginx := test.CreateFakeContainerImage("nginx", "latest")
+			python := test.CreateFakeContainerImage("python", "1.2.3")
 
-			productId = uuid.New().String()
-			product := CreateFakeProduct(
-				productId,
+			productID = uuid.New().String()
+			product := test.CreateFakeProduct(
+				productID,
 				"My Super Product",
 				"my-super-product",
 				"PENDING")
-			AddVerions(product, "1.2.3")
-			AddContainerImages(product, "1.2.3", "Machine wash cold with like colors", nginx)
-			response1 := &cmd.GetProductResponse{
-				Response: &cmd.GetProductResponsePayload{
+			test.AddVerions(product, "1.2.3")
+			test.AddContainerImages(product, "1.2.3", "Machine wash cold with like colors", nginx)
+			response1 := &pkg.GetProductResponse{
+				Response: &pkg.GetProductResponsePayload{
 					Data:       product,
 					StatusCode: http.StatusOK,
 					Message:    "testing",
 				},
 			}
 
-			updatedProduct := CreateFakeProduct(
-				productId,
+			updatedProduct := test.CreateFakeProduct(
+				productID,
 				"My Super Product",
 				"my-super-product",
 				"PENDING")
-			AddVerions(updatedProduct, "1.2.3")
-			AddContainerImages(updatedProduct, "1.2.3", "Machine wash cold with like colors", nginx, python)
-			response2 := &cmd.GetProductResponse{
-				Response: &cmd.GetProductResponsePayload{
+			test.AddVerions(updatedProduct, "1.2.3")
+			test.AddContainerImages(updatedProduct, "1.2.3", "Machine wash cold with like colors", nginx, python)
+			response2 := &pkg.GetProductResponse{
+				Response: &pkg.GetProductResponsePayload{
 					Data:       updatedProduct,
 					StatusCode: http.StatusOK,
 					Message:    "testing",
@@ -342,7 +337,7 @@ var _ = Describe("ContainerImage", func() {
 			By("second, sending the new product", func() {
 				request := httpClient.DoArgsForCall(1)
 				Expect(request.Method).To(Equal("PUT"))
-				Expect(request.URL.Path).To(Equal(fmt.Sprintf("/api/v1/products/%s", productId)))
+				Expect(request.URL.Path).To(Equal(fmt.Sprintf("/api/v1/products/%s", productID)))
 			})
 
 			By("outputting the response", func() {
@@ -356,34 +351,34 @@ var _ = Describe("ContainerImage", func() {
 
 		Context("Adding a new tag to an existing container image", func() {
 			BeforeEach(func() {
-				nginx := CreateFakeContainerImage("nginx", "latest")
-				nginxUpdated := CreateFakeContainerImage("nginx", "latest", "5.5.5")
+				nginx := test.CreateFakeContainerImage("nginx", "latest")
+				nginxUpdated := test.CreateFakeContainerImage("nginx", "latest", "5.5.5")
 
-				productId = uuid.New().String()
-				product := CreateFakeProduct(
-					productId,
+				productID = uuid.New().String()
+				product := test.CreateFakeProduct(
+					productID,
 					"My Super Product",
 					"my-super-product",
 					"PENDING")
-				AddVerions(product, "1.2.3")
-				AddContainerImages(product, "1.2.3", "Machine wash cold with like colors", nginx)
-				response1 := &cmd.GetProductResponse{
-					Response: &cmd.GetProductResponsePayload{
+				test.AddVerions(product, "1.2.3")
+				test.AddContainerImages(product, "1.2.3", "Machine wash cold with like colors", nginx)
+				response1 := &pkg.GetProductResponse{
+					Response: &pkg.GetProductResponsePayload{
 						Data:       product,
 						StatusCode: http.StatusOK,
 						Message:    "testing",
 					},
 				}
 
-				updatedProduct := CreateFakeProduct(
-					productId,
+				updatedProduct := test.CreateFakeProduct(
+					productID,
 					"My Super Product",
 					"my-super-product",
 					"PENDING")
-				AddVerions(updatedProduct, "1.2.3")
-				AddContainerImages(updatedProduct, "1.2.3", "Machine wash cold with like colors", nginxUpdated)
-				response2 := &cmd.GetProductResponse{
-					Response: &cmd.GetProductResponsePayload{
+				test.AddVerions(updatedProduct, "1.2.3")
+				test.AddContainerImages(updatedProduct, "1.2.3", "Machine wash cold with like colors", nginxUpdated)
+				response2 := &pkg.GetProductResponse{
+					Response: &pkg.GetProductResponsePayload{
 						Data:       updatedProduct,
 						StatusCode: http.StatusOK,
 						Message:    "testing",
@@ -431,7 +426,7 @@ var _ = Describe("ContainerImage", func() {
 				By("second, sending the new product", func() {
 					request := httpClient.DoArgsForCall(1)
 					Expect(request.Method).To(Equal("PUT"))
-					Expect(request.URL.Path).To(Equal(fmt.Sprintf("/api/v1/products/%s", productId)))
+					Expect(request.URL.Path).To(Equal(fmt.Sprintf("/api/v1/products/%s", productID)))
 				})
 
 				By("outputting the response", func() {

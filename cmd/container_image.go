@@ -8,8 +8,7 @@ import (
 	"strings"
 
 	"github.com/spf13/cobra"
-	. "github.com/vmware-labs/marketplace-cli/v2/lib"
-	"github.com/vmware-labs/marketplace-cli/v2/models"
+	"github.com/vmware-labs/marketplace-cli/v2/internal/models"
 )
 
 const (
@@ -58,16 +57,13 @@ var ListContainerImageCmd = &cobra.Command{
 	Long:  "",
 	Args:  cobra.NoArgs,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		response := &GetProductResponse{}
-		err := GetProduct(ProductSlug, response)
+		cmd.SilenceUsage = true
+		product, err := Marketplace.GetProduct(ProductSlug)
 		if err != nil {
-			cmd.SilenceUsage = true
 			return err
 		}
 
-		product := response.Response.Data
 		if !product.HasVersion(ProductVersion) {
-			cmd.SilenceUsage = true
 			return fmt.Errorf("product \"%s\" does not have a version %s", ProductSlug, ProductVersion)
 		}
 		containerImages := product.GetContainerImagesForVersion(ProductVersion)
@@ -78,7 +74,6 @@ var ListContainerImageCmd = &cobra.Command{
 
 		err = RenderContainerImages(OutputFormat, containerImages, cmd.OutOrStdout())
 		if err != nil {
-			cmd.SilenceUsage = true
 			return fmt.Errorf("failed to render the container images: %w", err)
 		}
 
@@ -92,34 +87,28 @@ var GetContainerImageCmd = &cobra.Command{
 	Long:  "",
 	Args:  cobra.NoArgs,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		response := &GetProductResponse{}
-		err := GetProduct(ProductSlug, response)
+		cmd.SilenceUsage = true
+		product, err := Marketplace.GetProduct(ProductSlug)
 		if err != nil {
-			cmd.SilenceUsage = true
 			return err
 		}
 
-		product := response.Response.Data
 		if !product.HasVersion(ProductVersion) {
-			cmd.SilenceUsage = true
 			return fmt.Errorf("product \"%s\" does not have a version %s", ProductSlug, ProductVersion)
 		}
 
 		containerImages := product.GetContainerImagesForVersion(ProductVersion)
 		if containerImages == nil {
-			cmd.SilenceUsage = true
 			return fmt.Errorf("product \"%s\" does not have any container images for version %s", ProductSlug, ProductVersion)
 		}
 
 		containerImage := containerImages.GetImage(ImageRepository)
 		if containerImage == nil {
-			cmd.SilenceUsage = true
 			return fmt.Errorf("product \"%s\" %s does not have the container image \"%s\"", ProductSlug, ProductVersion, ImageRepository)
 		}
 
 		err = RenderContainerImage(OutputFormat, containerImage, cmd.OutOrStdout())
 		if err != nil {
-			cmd.SilenceUsage = true
 			return fmt.Errorf("failed to render the container images: %w", err)
 		}
 
@@ -138,16 +127,13 @@ var CreateContainerImageCmd = &cobra.Command{
 			return fmt.Errorf("invalid image tag type: %s. must be either \"%s\" or \"%s\"", ImageTagType, ImageTagTypeFixed, ImageTagTypeFloating)
 		}
 
-		response := &GetProductResponse{}
-		err := GetProduct(ProductSlug, response)
+		cmd.SilenceUsage = true
+		product, err := Marketplace.GetProduct(ProductSlug)
 		if err != nil {
-			cmd.SilenceUsage = true
 			return err
 		}
-		product := response.Response.Data
 
 		if !product.HasVersion(ProductVersion) {
-			cmd.SilenceUsage = true
 			return fmt.Errorf("product \"%s\" does not have a version %s, please add it first", ProductSlug, ProductVersion)
 		}
 
@@ -156,6 +142,7 @@ var CreateContainerImageCmd = &cobra.Command{
 		containerImages := product.GetContainerImagesForVersion(ProductVersion)
 		if containerImages == nil {
 			if DeploymentInstructions == "" {
+				cmd.SilenceUsage = false
 				return fmt.Errorf("must specify the deployment instructions for the first container image. Please run again with --deployment-instructions <string>")
 			}
 
@@ -178,7 +165,6 @@ var CreateContainerImageCmd = &cobra.Command{
 		}
 
 		if containerImage.HasTag(ImageTag) {
-			cmd.SilenceUsage = true
 			return fmt.Errorf("product \"%s\" %s already has the container image %s:%s", ProductSlug, ProductVersion, ImageRepository, ImageTag)
 		}
 		containerImage.ImageTags = append(containerImage.ImageTags, &models.DockerImageTag{
@@ -186,14 +172,13 @@ var CreateContainerImageCmd = &cobra.Command{
 			Type: ImageTagType,
 		})
 
-		response = &GetProductResponse{}
-		err = PutProduct(product, false, response)
+		updatedProduct, err := Marketplace.PutProduct(product, false)
 		if err != nil {
 			cmd.SilenceUsage = true
 			return err
 		}
 
-		containerImages = response.Response.Data.GetContainerImagesForVersion(ProductVersion)
+		containerImages = updatedProduct.GetContainerImagesForVersion(ProductVersion)
 		err = RenderContainerImages(OutputFormat, containerImages, cmd.OutOrStdout())
 		if err != nil {
 			cmd.SilenceUsage = true

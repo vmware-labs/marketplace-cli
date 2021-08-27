@@ -14,43 +14,38 @@ import (
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/gbytes"
 	"github.com/vmware-labs/marketplace-cli/v2/cmd"
-	"github.com/vmware-labs/marketplace-cli/v2/lib"
-	"github.com/vmware-labs/marketplace-cli/v2/lib/libfakes"
+	"github.com/vmware-labs/marketplace-cli/v2/pkg"
+	"github.com/vmware-labs/marketplace-cli/v2/pkg/pkgfakes"
+	"github.com/vmware-labs/marketplace-cli/v2/test"
 )
 
 var _ = Describe("OVA", func() {
 	var (
-		stdout *Buffer
-		stderr *Buffer
-
-		originalHttpClient lib.HTTPClient
-		httpClient         *libfakes.FakeHTTPClient
+		stdout     *Buffer
+		stderr     *Buffer
+		httpClient *pkgfakes.FakeHTTPClient
 	)
 
 	BeforeEach(func() {
+		httpClient = &pkgfakes.FakeHTTPClient{}
+		cmd.Marketplace = &pkg.Marketplace{
+			Client: httpClient,
+		}
 		stdout = NewBuffer()
 		stderr = NewBuffer()
-
-		originalHttpClient = lib.Client
-		httpClient = &libfakes.FakeHTTPClient{}
-		lib.Client = httpClient
-	})
-
-	AfterEach(func() {
-		lib.Client = originalHttpClient
 	})
 
 	Describe("ListOVACmd", func() {
 		BeforeEach(func() {
-			product := CreateFakeProduct(
+			product := test.CreateFakeProduct(
 				"",
 				"My Super Product",
 				"my-super-product",
 				"PENDING")
-			AddVerions(product, "1.2.3", "2.3.4")
-			product.ProductDeploymentFiles = append(product.ProductDeploymentFiles, CreateFakeOVA("fake-ova", "1.2.3"))
-			response := &cmd.GetProductResponse{
-				Response: &cmd.GetProductResponsePayload{
+			test.AddVerions(product, "1.2.3", "2.3.4")
+			product.ProductDeploymentFiles = append(product.ProductDeploymentFiles, test.CreateFakeOVA("fake-ova", "1.2.3"))
+			response := &pkg.GetProductResponse{
+				Response: &pkg.GetProductResponsePayload{
 					Data:       product,
 					StatusCode: http.StatusOK,
 					Message:    "testing",

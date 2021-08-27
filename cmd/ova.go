@@ -8,9 +8,10 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/vmware-labs/marketplace-cli/v2/internal"
-	. "github.com/vmware-labs/marketplace-cli/v2/lib"
-	"github.com/vmware-labs/marketplace-cli/v2/models"
+	"github.com/vmware-labs/marketplace-cli/v2/internal/models"
 )
+
+var pvaFile string
 
 func init() {
 	rootCmd.AddCommand(OVACmd)
@@ -23,7 +24,7 @@ func init() {
 	OVACmd.PersistentFlags().StringVarP(&ProductVersion, "product-version", "v", "", "Product version")
 	_ = OVACmd.MarkPersistentFlagRequired("product-version")
 
-	CreateOVACmd.Flags().StringVar(&OVAFile, "ova-file", "", "OVA file to upload")
+	CreateOVACmd.Flags().StringVar(&pvaFile, "ova-file", "", "OVA file to upload")
 }
 
 var OVACmd = &cobra.Command{
@@ -44,13 +45,11 @@ var ListOVACmd = &cobra.Command{
 	RunE: func(cmd *cobra.Command, args []string) error {
 		cmd.SilenceUsage = true
 
-		response := &GetProductResponse{}
-		err := GetProduct(ProductSlug, response)
+		product, err := Marketplace.GetProduct(ProductSlug)
 		if err != nil {
 			return err
 		}
 
-		product := response.Response.Data
 		if !product.HasVersion(ProductVersion) {
 			return fmt.Errorf("product \"%s\" does not have a version %s", ProductSlug, ProductVersion)
 		}
@@ -68,13 +67,11 @@ var CreateOVACmd = &cobra.Command{
 	RunE: func(cmd *cobra.Command, args []string) error {
 		cmd.SilenceUsage = true
 
-		response := &GetProductResponse{}
-		err := GetProduct(ProductSlug, response)
+		product, err := Marketplace.GetProduct(ProductSlug)
 		if err != nil {
 			cmd.SilenceUsage = true
 			return err
 		}
-		product := response.Response.Data
 
 		if !product.HasVersion(ProductVersion) {
 			cmd.SilenceUsage = true
@@ -82,8 +79,8 @@ var CreateOVACmd = &cobra.Command{
 		}
 
 		hashAlgo := internal.HashAlgoSHA1
-		uploader := internal.NewS3Uploader(MarketplaceConfig.StorageRegion, hashAlgo, product.PublisherDetails.OrgId, UploadCredentials)
-		fileURL, fileHash, err := uploader.Upload(MarketplaceConfig.StorageBucket, OVAFile)
+		uploader := internal.NewS3Uploader(Marketplace.StorageRegion, hashAlgo, product.PublisherDetails.OrgId, UploadCredentials)
+		fileURL, fileHash, err := uploader.Upload(Marketplace.StorageBucket, pvaFile)
 		if err != nil {
 			return err
 		}
@@ -95,8 +92,7 @@ var CreateOVACmd = &cobra.Command{
 			HashAlgo:   models.HashAlgoSHA1,
 		}}
 
-		var putResponse GetProductResponse
-		err = PutProduct(product, false, &putResponse)
+		_, err = Marketplace.PutProduct(product, false)
 		if err != nil {
 			return err
 		}

@@ -1,7 +1,7 @@
 // Copyright 2021 VMware, Inc.
 // SPDX-License-Identifier: BSD-2-Clause
 
-package cmd_test
+package pkg_test
 
 import (
 	"bytes"
@@ -13,52 +13,43 @@ import (
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	. "github.com/onsi/gomega/gbytes"
-	"github.com/vmware-labs/marketplace-cli/v2/cmd"
-	"github.com/vmware-labs/marketplace-cli/v2/lib"
-	"github.com/vmware-labs/marketplace-cli/v2/lib/libfakes"
-	"github.com/vmware-labs/marketplace-cli/v2/models"
+	"github.com/vmware-labs/marketplace-cli/v2/internal"
+	"github.com/vmware-labs/marketplace-cli/v2/internal/models"
+	"github.com/vmware-labs/marketplace-cli/v2/pkg"
+	"github.com/vmware-labs/marketplace-cli/v2/pkg/pkgfakes"
+	"github.com/vmware-labs/marketplace-cli/v2/test"
 )
 
-var _ = Describe("Products", func() {
+var _ = Describe("Product", func() {
 	var (
-		stdout *Buffer
-		stderr *Buffer
-
-		originalHttpClient lib.HTTPClient
-		httpClient         *libfakes.FakeHTTPClient
+		httpClient  *pkgfakes.FakeHTTPClient
+		marketplace *pkg.Marketplace
 	)
 
 	BeforeEach(func() {
-		stdout = NewBuffer()
-		stderr = NewBuffer()
-
-		originalHttpClient = lib.Client
-		httpClient = &libfakes.FakeHTTPClient{}
-		lib.Client = httpClient
+		httpClient = &pkgfakes.FakeHTTPClient{}
+		marketplace = &pkg.Marketplace{
+			Client: httpClient,
+		}
 	})
 
-	AfterEach(func() {
-		lib.Client = originalHttpClient
-	})
-
-	Describe("ListProductCmd", func() {
+	Describe("ListProduct", func() {
 		BeforeEach(func() {
-			product1 := CreateFakeProduct(
+			product1 := test.CreateFakeProduct(
 				"",
 				"My Super Product",
 				"my-super-product",
 				"PENDING")
-			AddVerions(product1, "1.1.1")
-			product2 := CreateFakeProduct(
+			test.AddVerions(product1, "1.1.1")
+			product2 := test.CreateFakeProduct(
 				"",
 				"My Other Product",
 				"my-other-product",
 				"PENDING")
-			AddVerions(product2, "2.2.2")
+			test.AddVerions(product2, "2.2.2")
 
-			response := &cmd.ListProductResponse{
-				Response: &cmd.ListProductResponsePayload{
+			response := &pkg.ListProductResponse{
+				Response: &pkg.ListProductResponsePayload{
 					Products: []*models.Product{
 						product1,
 						product2,
@@ -74,16 +65,13 @@ var _ = Describe("Products", func() {
 				StatusCode: http.StatusOK,
 				Body:       ioutil.NopCloser(bytes.NewReader(responseBytes)),
 			}, nil)
-
-			cmd.ListProductsCmd.SetOut(stdout)
-			cmd.ListProductsCmd.SetErr(stderr)
 		})
 
-		It("sends the right request", func() {
-			err := cmd.ListProductsCmd.RunE(cmd.ListProductsCmd, []string{})
+		It("gets the list of products", func() {
+			products, err := marketplace.ListProducts(false, "")
 			Expect(err).ToNot(HaveOccurred())
 
-			By("sending the correct request", func() {
+			By("sending the right request", func() {
 				Expect(httpClient.DoCallCount()).To(Equal(1))
 				request := httpClient.DoArgsForCall(0)
 				Expect(request.Method).To(Equal("GET"))
@@ -91,24 +79,14 @@ var _ = Describe("Products", func() {
 				Expect(request.URL.Query().Get("pagination")).To(Equal("{\"page\":1,\"pageSize\":20}"))
 			})
 
-			By("outputting the response", func() {
-				Expect(stdout).To(Say("SLUG              NAME"))
-				Expect(stdout).To(Say("my-super-product  My Super Product"))
-				Expect(stdout).To(Say("my-other-product  My Other Product"))
-				Expect(stdout).To(Say("TOTAL COUNT: 2"))
-			})
+			Expect(products).To(HaveLen(2))
+			Expect(products[0].Slug).To(Equal("my-super-product"))
+			Expect(products[1].Slug).To(Equal("my-other-product"))
 		})
 
 		Context("with search term", func() {
-			BeforeEach(func() {
-				cmd.SearchTerm = "tanzu"
-			})
-			AfterEach(func() {
-				cmd.SearchTerm = ""
-			})
-
 			It("sends the request with the search term", func() {
-				err := cmd.ListProductsCmd.RunE(cmd.ListProductsCmd, []string{})
+				_, err := marketplace.ListProducts(false, "tanzu")
 				Expect(err).ToNot(HaveOccurred())
 
 				By("including the search term", func() {
@@ -122,26 +100,26 @@ var _ = Describe("Products", func() {
 		Context("Multiple pages of results", func() {
 			BeforeEach(func() {
 				var products []*models.Product
-				for i := 0; i < 30; i += 1 {
-					product := CreateFakeProduct(
+				for i := 0; i < 30; i++ {
+					product := test.CreateFakeProduct(
 						"",
 						fmt.Sprintf("My Super Product %d", i),
 						fmt.Sprintf("my-super-product-%d", i),
 						"PENDING")
-					AddVerions(product, "1.0.0")
+					test.AddVerions(product, "1.0.0")
 					products = append(products, product)
 				}
 
-				response1 := &cmd.ListProductResponse{
-					Response: &cmd.ListProductResponsePayload{
+				response1 := &pkg.ListProductResponse{
+					Response: &pkg.ListProductResponsePayload{
 						Products:   products[:20],
 						StatusCode: http.StatusOK,
 						Params: struct {
-							ProductCount int             `json:"itemsnumber"`
-							Pagination   *lib.Pagination `json:"pagination"`
+							ProductCount int                  `json:"itemsnumber"`
+							Pagination   *internal.Pagination `json:"pagination"`
 						}{
 							ProductCount: len(products),
-							Pagination: &lib.Pagination{
+							Pagination: &internal.Pagination{
 								Enabled:  true,
 								Page:     1,
 								PageSize: 20,
@@ -150,16 +128,16 @@ var _ = Describe("Products", func() {
 						Message: "testing",
 					},
 				}
-				response2 := &cmd.ListProductResponse{
-					Response: &cmd.ListProductResponsePayload{
+				response2 := &pkg.ListProductResponse{
+					Response: &pkg.ListProductResponsePayload{
 						Products:   products[20:],
 						StatusCode: http.StatusOK,
 						Params: struct {
-							ProductCount int             `json:"itemsnumber"`
-							Pagination   *lib.Pagination `json:"pagination"`
+							ProductCount int                  `json:"itemsnumber"`
+							Pagination   *internal.Pagination `json:"pagination"`
 						}{
 							ProductCount: len(products),
-							Pagination: &lib.Pagination{
+							Pagination: &internal.Pagination{
 								Enabled:  true,
 								Page:     1,
 								PageSize: 20,
@@ -186,7 +164,7 @@ var _ = Describe("Products", func() {
 			})
 
 			It("returns all results", func() {
-				err := cmd.ListProductsCmd.RunE(cmd.ListProductsCmd, []string{})
+				products, err := marketplace.ListProducts(false, "")
 				Expect(err).ToNot(HaveOccurred())
 
 				By("sending the correct requests", func() {
@@ -202,8 +180,8 @@ var _ = Describe("Products", func() {
 					Expect(request.URL.Query().Get("pagination")).To(Equal("{\"page\":2,\"pageSize\":20}"))
 				})
 
-				By("outputting the response", func() {
-					Expect(stdout).To(Say("TOTAL COUNT: 30"))
+				By("returning all products", func() {
+					Expect(products).To(HaveLen(30))
 				})
 			})
 		})
@@ -214,7 +192,7 @@ var _ = Describe("Products", func() {
 			})
 
 			It("prints the error", func() {
-				err := cmd.ListProductsCmd.RunE(cmd.ListProductsCmd, []string{})
+				_, err := marketplace.ListProducts(false, "")
 				Expect(err).To(HaveOccurred())
 				Expect(err.Error()).To(Equal("sending the request for the list of products failed: request failed"))
 			})
@@ -229,7 +207,7 @@ var _ = Describe("Products", func() {
 			})
 
 			It("prints the error", func() {
-				err := cmd.ListProductsCmd.RunE(cmd.ListProductsCmd, []string{})
+				_, err := marketplace.ListProducts(false, "")
 				Expect(err).To(HaveOccurred())
 				Expect(err.Error()).To(Equal("getting the list of products failed: (418) I'm a teapot"))
 			})
@@ -244,23 +222,23 @@ var _ = Describe("Products", func() {
 			})
 
 			It("prints the error", func() {
-				err := cmd.ListProductsCmd.RunE(cmd.ListProductsCmd, []string{})
+				_, err := marketplace.ListProducts(false, "")
 				Expect(err).To(HaveOccurred())
 				Expect(err.Error()).To(Equal("failed to parse the list of products: invalid character 'T' looking for beginning of value"))
 			})
 		})
 	})
 
-	Describe("GetProductCmd", func() {
+	Describe("GetProduct", func() {
 		BeforeEach(func() {
-			product := CreateFakeProduct(
+			product := test.CreateFakeProduct(
 				"",
 				"My Super Product",
 				"my-super-product",
 				"PENDING")
-			AddVerions(product, "0.1.2", "1.2.3")
-			response := &cmd.GetProductResponse{
-				Response: &cmd.GetProductResponsePayload{
+			test.AddVerions(product, "0.1.2", "1.2.3")
+			response := &pkg.GetProductResponse{
+				Response: &pkg.GetProductResponsePayload{
 					Data:       product,
 					StatusCode: http.StatusOK,
 					Message:    "testing",
@@ -274,14 +252,10 @@ var _ = Describe("Products", func() {
 				StatusCode: http.StatusOK,
 				Body:       ioutil.NopCloser(bytes.NewReader(responseBytes)),
 			}, nil)
-
-			cmd.GetProductCmd.SetOut(stdout)
-			cmd.GetProductCmd.SetErr(stderr)
 		})
 
-		It("outputs the product", func() {
-			cmd.ProductSlug = "my-super-product"
-			err := cmd.GetProductCmd.RunE(cmd.GetProductCmd, []string{""})
+		It("gets the product", func() {
+			product, err := marketplace.GetProduct("my-super-product")
 			Expect(err).ToNot(HaveOccurred())
 
 			By("sending the correct request", func() {
@@ -293,10 +267,7 @@ var _ = Describe("Products", func() {
 				Expect(request.URL.Query().Get("isSlug")).To(Equal("true"))
 			})
 
-			By("outputting the response", func() {
-				Expect(stdout).To(Say("  SLUG              NAME"))
-				Expect(stdout).To(Say("  my-super-product  My Super Product"))
-			})
+			Expect(product.Slug).To(Equal("my-super-product"))
 		})
 
 		Context("No product found", func() {
@@ -307,8 +278,7 @@ var _ = Describe("Products", func() {
 			})
 
 			It("says there are no products", func() {
-				cmd.ProductSlug = "my-super-product"
-				err := cmd.GetProductCmd.RunE(cmd.GetProductCmd, []string{""})
+				_, err := marketplace.GetProduct("my-super-product")
 				Expect(err).To(HaveOccurred())
 				Expect(err.Error()).To(Equal("product \"my-super-product\" not found"))
 			})
@@ -320,7 +290,7 @@ var _ = Describe("Products", func() {
 			})
 
 			It("prints the error", func() {
-				err := cmd.GetProductCmd.RunE(cmd.GetProductCmd, []string{""})
+				_, err := marketplace.GetProduct("my-super-product")
 				Expect(err).To(HaveOccurred())
 				Expect(err.Error()).To(Equal("sending the request for product \"my-super-product\" failed: request failed"))
 			})
@@ -335,7 +305,7 @@ var _ = Describe("Products", func() {
 			})
 
 			It("prints the error", func() {
-				err := cmd.GetProductCmd.RunE(cmd.GetProductCmd, []string{""})
+				_, err := marketplace.GetProduct("my-super-product")
 				Expect(err).To(HaveOccurred())
 				Expect(err.Error()).To(Equal("getting product \"my-super-product\" failed: (418)"))
 			})
@@ -350,7 +320,7 @@ var _ = Describe("Products", func() {
 			})
 
 			It("prints the error", func() {
-				err := cmd.GetProductCmd.RunE(cmd.GetProductCmd, []string{""})
+				_, err := marketplace.GetProduct("my-super-product")
 				Expect(err).To(HaveOccurred())
 				Expect(err.Error()).To(Equal("failed to parse the response for product \"my-super-product\": invalid character 'T' looking for beginning of value"))
 			})

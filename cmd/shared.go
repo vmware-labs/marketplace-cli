@@ -13,8 +13,6 @@ var (
 
 	UploadCredentials = aws.Credentials{}
 
-	OVAFile string
-
 	ImageRepository string
 	ImageTag        string
 	ImageTagType    string
@@ -26,6 +24,4 @@ var (
 	ChartURL            string
 
 	DeploymentInstructions string
-
-	SearchTerm string
 )

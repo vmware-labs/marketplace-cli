@@ -7,7 +7,7 @@ import (
 	"github.com/golang-jwt/jwt"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"github.com/vmware-labs/marketplace-cli/v2/lib/csp"
+	"github.com/vmware-labs/marketplace-cli/v2/internal/csp"
 )
 
 var _ = Describe("CSP Claims", func() {

@@ -7,14 +7,12 @@ import (
 	"fmt"
 
 	"github.com/spf13/cobra"
-	. "github.com/vmware-labs/marketplace-cli/v2/lib"
-	"github.com/vmware-labs/marketplace-cli/v2/models"
+	"github.com/vmware-labs/marketplace-cli/v2/internal/models"
 )
 
 func init() {
 	rootCmd.AddCommand(ChartCmd)
 	ChartCmd.AddCommand(ListChartsCmd)
-	//ChartCmd.AddCommand(GetChartCmd)
 	ChartCmd.AddCommand(CreateChartCmd)
 	ChartCmd.PersistentFlags().StringVarP(&OutputFormat, "output-format", "f", FormatTable, "Output format")
 
@@ -22,9 +20,6 @@ func init() {
 	_ = ChartCmd.MarkPersistentFlagRequired("product")
 	ChartCmd.PersistentFlags().StringVarP(&ProductVersion, "product-version", "v", "", "Product version")
 	_ = ChartCmd.MarkPersistentFlagRequired("product-version")
-
-	//GetChartCmd.Flags().StringVarP(&ImageRepository, "image-repository", "r", "", "container repository")
-	//_ = GetChartCmd.MarkFlagRequired("image-repository")
 
 	CreateChartCmd.Flags().StringVarP(&ChartName, "chart-name", "n", "", "chart name")
 	_ = CreateChartCmd.MarkFlagRequired("chart-name")
@@ -55,16 +50,13 @@ var ListChartsCmd = &cobra.Command{
 	Long:  "",
 	Args:  cobra.NoArgs,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		response := &GetProductResponse{}
-		err := GetProduct(ProductSlug, response)
+		cmd.SilenceUsage = true
+		product, err := Marketplace.GetProduct(ProductSlug)
 		if err != nil {
-			cmd.SilenceUsage = true
 			return err
 		}
 
-		product := response.Response.Data
 		if !product.HasVersion(ProductVersion) {
-			cmd.SilenceUsage = true
 			return fmt.Errorf("product \"%s\" does not have a version %s", ProductSlug, ProductVersion)
 		}
 		charts := product.GetChartsForVersion(ProductVersion)
@@ -75,7 +67,6 @@ var ListChartsCmd = &cobra.Command{
 
 		err = RenderCharts(OutputFormat, charts, cmd.OutOrStdout())
 		if err != nil {
-			cmd.SilenceUsage = true
 			return fmt.Errorf("failed to render the charts: %w", err)
 		}
 
@@ -89,16 +80,13 @@ var CreateChartCmd = &cobra.Command{
 	Long:  "",
 	Args:  cobra.NoArgs,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		response := &GetProductResponse{}
-		err := GetProduct(ProductSlug, response)
+		cmd.SilenceUsage = true
+		product, err := Marketplace.GetProduct(ProductSlug)
 		if err != nil {
-			cmd.SilenceUsage = true
 			return err
 		}
-		product := response.Response.Data
 
 		if !product.HasVersion(ProductVersion) {
-			cmd.SilenceUsage = true
 			return fmt.Errorf("product \"%s\" does not have a version %s, please add it first", ProductSlug, ProductVersion)
 		}
 
@@ -117,14 +105,13 @@ var CreateChartCmd = &cobra.Command{
 			},
 		})
 
-		response = &GetProductResponse{}
-		err = PutProduct(product, false, response)
+		updatedProduct, err := Marketplace.PutProduct(product, false)
 		if err != nil {
 			cmd.SilenceUsage = true
 			return err
 		}
 
-		err = RenderCharts(OutputFormat, response.Response.Data.ChartVersions, cmd.OutOrStdout())
+		err = RenderCharts(OutputFormat, updatedProduct.ChartVersions, cmd.OutOrStdout())
 		if err != nil {
 			cmd.SilenceUsage = true
 			return fmt.Errorf("failed to render the charts: %w", err)

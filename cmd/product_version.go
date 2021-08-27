@@ -7,8 +7,7 @@ import (
 	"fmt"
 
 	"github.com/spf13/cobra"
-	. "github.com/vmware-labs/marketplace-cli/v2/lib"
-	"github.com/vmware-labs/marketplace-cli/v2/models"
+	"github.com/vmware-labs/marketplace-cli/v2/internal/models"
 )
 
 func init() {
@@ -42,16 +41,14 @@ var ListProductVersionsCmd = &cobra.Command{
 	Use:  "list",
 	Args: cobra.NoArgs,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		response := &GetProductResponse{}
-		err := GetProduct(ProductSlug, response)
+		cmd.SilenceUsage = true
+		product, err := Marketplace.GetProduct(ProductSlug)
 		if err != nil {
-			cmd.SilenceUsage = true
 			return err
 		}
 
-		err = RenderVersions(OutputFormat, response.Response.Data, cmd.OutOrStdout())
+		err = RenderVersions(OutputFormat, product, cmd.OutOrStdout())
 		if err != nil {
-			cmd.SilenceUsage = true
 			return fmt.Errorf("failed to render the product version: %w", err)
 		}
 
@@ -63,23 +60,19 @@ var GetProductVersionCmd = &cobra.Command{
 	Use:  "get",
 	Args: cobra.NoArgs,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		response := &GetProductResponse{}
-		err := GetProduct(ProductSlug, response)
+		cmd.SilenceUsage = true
+		product, err := Marketplace.GetProduct(ProductSlug)
 		if err != nil {
-			cmd.SilenceUsage = true
 			return err
 		}
 
-		product := response.Response.Data
 		version := product.GetVersion(ProductVersion)
 		if version == nil {
-			cmd.SilenceUsage = true
 			return fmt.Errorf("product \"%s\" does not have a version %s", ProductSlug, ProductVersion)
 		}
 
 		err = RenderVersion(OutputFormat, ProductVersion, product, cmd.OutOrStdout())
 		if err != nil {
-			cmd.SilenceUsage = true
 			return fmt.Errorf("failed to render the product version: %w", err)
 		}
 
@@ -93,12 +86,10 @@ var CreateProductVersionCmd = &cobra.Command{
 	RunE: func(cmd *cobra.Command, args []string) error {
 		cmd.SilenceUsage = true
 
-		response := &GetProductResponse{}
-		err := GetProduct(ProductSlug, response)
+		product, err := Marketplace.GetProduct(ProductSlug)
 		if err != nil {
 			return err
 		}
-		product := response.Response.Data
 
 		if product.HasVersion(ProductVersion) {
 			return fmt.Errorf("product \"%s\" already has version %s", ProductSlug, ProductVersion)
@@ -107,13 +98,12 @@ var CreateProductVersionCmd = &cobra.Command{
 			Number: ProductVersion,
 		})
 
-		response = &GetProductResponse{}
-		err = PutProduct(product, true, response)
+		updatedProduct, err := Marketplace.PutProduct(product, true)
 		if err != nil {
 			return err
 		}
 
-		err = RenderVersions(OutputFormat, response.Response.Data, cmd.OutOrStdout())
+		err = RenderVersions(OutputFormat, updatedProduct, cmd.OutOrStdout())
 		if err != nil {
 			return fmt.Errorf("failed to render the product version: %w", err)
 		}

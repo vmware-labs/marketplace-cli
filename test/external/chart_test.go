@@ -1,8 +1,6 @@
 // Copyright 2021 VMware, Inc.
 // SPDX-License-Identifier: BSD-2-Clause
 
-// +build external
-
 package external_test
 
 import (
@@ -12,7 +10,7 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/gbytes"
-	. "github.com/vmware-labs/marketplace-cli/v2/features"
+	. "github.com/vmware-labs/marketplace-cli/v2/test"
 )
 
 var _ = Describe("Chart", func() {

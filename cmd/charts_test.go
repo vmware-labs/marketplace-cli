@@ -16,41 +16,36 @@ import (
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/gbytes"
 	"github.com/vmware-labs/marketplace-cli/v2/cmd"
-	"github.com/vmware-labs/marketplace-cli/v2/lib"
-	"github.com/vmware-labs/marketplace-cli/v2/lib/libfakes"
-	"github.com/vmware-labs/marketplace-cli/v2/models"
+	"github.com/vmware-labs/marketplace-cli/v2/internal/models"
+	"github.com/vmware-labs/marketplace-cli/v2/pkg"
+	"github.com/vmware-labs/marketplace-cli/v2/pkg/pkgfakes"
+	"github.com/vmware-labs/marketplace-cli/v2/test"
 )
 
 var _ = Describe("Charts", func() {
 	var (
-		stdout *Buffer
-		stderr *Buffer
-
-		originalHttpClient lib.HTTPClient
-		httpClient         *libfakes.FakeHTTPClient
+		stdout     *Buffer
+		stderr     *Buffer
+		httpClient *pkgfakes.FakeHTTPClient
 	)
 
 	BeforeEach(func() {
+		httpClient = &pkgfakes.FakeHTTPClient{}
+		cmd.Marketplace = &pkg.Marketplace{
+			Client: httpClient,
+		}
 		stdout = NewBuffer()
 		stderr = NewBuffer()
-
-		originalHttpClient = lib.Client
-		httpClient = &libfakes.FakeHTTPClient{}
-		lib.Client = httpClient
-	})
-
-	AfterEach(func() {
-		lib.Client = originalHttpClient
 	})
 
 	Describe("ListChartsCmd", func() {
 		BeforeEach(func() {
-			product := CreateFakeProduct(
+			product := test.CreateFakeProduct(
 				"",
 				"My Super Product",
 				"my-super-product",
 				"PENDING")
-			AddVerions(product, "1.2.3", "2.3.4")
+			test.AddVerions(product, "1.2.3", "2.3.4")
 			product.ChartVersions = []*models.ChartVersion{
 				{
 					Id:         "my-chart",
@@ -62,8 +57,8 @@ var _ = Describe("Charts", func() {
 					},
 				},
 			}
-			response := &cmd.GetProductResponse{
-				Response: &cmd.GetProductResponsePayload{
+			response := &pkg.GetProductResponse{
+				Response: &pkg.GetProductResponsePayload{
 					Data:       product,
 					StatusCode: http.StatusOK,
 					Message:    "testing",
@@ -155,7 +150,7 @@ var _ = Describe("Charts", func() {
 	})
 
 	Describe("CreateChartCmd", func() {
-		var productId string
+		var productID string
 		BeforeEach(func() {
 			chart1 := &models.ChartVersion{
 				Id:         "mydatabase",
@@ -178,31 +173,31 @@ var _ = Describe("Charts", func() {
 				},
 			}
 
-			productId = uuid.New().String()
-			product := CreateFakeProduct(
-				productId,
+			productID = uuid.New().String()
+			product := test.CreateFakeProduct(
+				productID,
 				"My Super Product",
 				"my-super-product",
 				"PENDING")
-			AddVerions(product, "1.2.3")
+			test.AddVerions(product, "1.2.3")
 			product.ChartVersions = []*models.ChartVersion{chart1}
-			response1 := &cmd.GetProductResponse{
-				Response: &cmd.GetProductResponsePayload{
+			response1 := &pkg.GetProductResponse{
+				Response: &pkg.GetProductResponsePayload{
 					Data:       product,
 					StatusCode: http.StatusOK,
 					Message:    "testing",
 				},
 			}
 
-			updatedProduct := CreateFakeProduct(
-				productId,
+			updatedProduct := test.CreateFakeProduct(
+				productID,
 				"My Super Product",
 				"my-super-product",
 				"PENDING")
-			AddVerions(updatedProduct, "1.2.3")
+			test.AddVerions(updatedProduct, "1.2.3")
 			updatedProduct.ChartVersions = []*models.ChartVersion{chart1, chart2}
-			response2 := &cmd.GetProductResponse{
-				Response: &cmd.GetProductResponsePayload{
+			response2 := &pkg.GetProductResponse{
+				Response: &pkg.GetProductResponsePayload{
 					Data:       updatedProduct,
 					StatusCode: http.StatusOK,
 					Message:    "testing",
@@ -253,7 +248,7 @@ var _ = Describe("Charts", func() {
 			By("second, sending the new product", func() {
 				request := httpClient.DoArgsForCall(1)
 				Expect(request.Method).To(Equal("PUT"))
-				Expect(request.URL.Path).To(Equal(fmt.Sprintf("/api/v1/products/%s", productId)))
+				Expect(request.URL.Path).To(Equal(fmt.Sprintf("/api/v1/products/%s", productID)))
 				updatedProduct := &models.Product{}
 				requestBody, err := ioutil.ReadAll(request.Body)
 				Expect(err).ToNot(HaveOccurred())

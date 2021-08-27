@@ -1,7 +1,7 @@
 // Copyright 2021 VMware, Inc.
 // SPDX-License-Identifier: BSD-2-Clause
 
-package features
+package test
 
 import (
 	"os/exec"
@@ -16,15 +16,15 @@ import (
 
 var (
 	CommandSession *gexec.Session
-	MkpcliPath     string
+	mkpcliPath     string
 )
 
 var _ = BeforeSuite(func() {
 	var err error
-	MkpcliPath, err = gexec.Build(
+	mkpcliPath, err = gexec.Build(
 		"github.com/vmware-labs/marketplace-cli/v2",
 		"-ldflags",
-		"-X github.com/vmware-labs/marketplace-cli/v2/cmd.Version=1.2.3",
+		"-X github.com/vmware-labs/marketplace-cli/v2/cmd.version=1.2.3",
 	)
 	Expect(err).NotTo(HaveOccurred())
 })
@@ -35,7 +35,7 @@ var _ = AfterSuite(func() {
 
 func DefineCommonSteps(define Definitions) {
 	define.When(`^running mkpcli (.*)$`, func(argString string) {
-		command := exec.Command(MkpcliPath, strings.Split(argString, " ")...)
+		command := exec.Command(mkpcliPath, strings.Split(argString, " ")...)
 		var err error
 		CommandSession, err = gexec.Start(command, GinkgoWriter, GinkgoWriter)
 		Expect(err).ToNot(HaveOccurred())

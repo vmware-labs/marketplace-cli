@@ -355,7 +355,7 @@ type Product struct {
 	IsPopular            bool                   `json:"isPopular,omitempty"`
 	IsPrivate            bool                   `json:"isprivate"`
 	IsListingProduct     bool                   `json:"islistingproduct"`
-	CompatibilityMatrix  []*CompatibilityMatrix `json:"compatibilitymatrixList"` // compatability-matrix-supported-features needed for vsx.
+	CompatibilityMatrix  []*CompatibilityMatrix `json:"compatibilitymatrixList"` // compatibility-matrix-supported-features needed for vsx.
 	CertificationType    []string               `json:"certificationtypeList"`
 	SolutionAreaId       []string               `json:"solutionareaidList"`
 	SolutionAreaName     []string               `json:"solutionareanameList"`

@@ -1,7 +1,7 @@
 // Copyright 2021 VMware, Inc.
 // SPDX-License-Identifier: BSD-2-Clause
 
-package lib_test
+package pkg_test
 
 import (
 	"testing"
@@ -10,7 +10,7 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-func TestLibraries(t *testing.T) {
+func TestPkg(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "Lib Suite")
+	RunSpecs(t, "Pkg test suite")
 }

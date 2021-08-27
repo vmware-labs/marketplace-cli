@@ -16,42 +16,37 @@ import (
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/gbytes"
 	"github.com/vmware-labs/marketplace-cli/v2/cmd"
-	"github.com/vmware-labs/marketplace-cli/v2/lib"
-	"github.com/vmware-labs/marketplace-cli/v2/lib/libfakes"
+	"github.com/vmware-labs/marketplace-cli/v2/pkg"
+	"github.com/vmware-labs/marketplace-cli/v2/pkg/pkgfakes"
+	"github.com/vmware-labs/marketplace-cli/v2/test"
 )
 
 var _ = Describe("ProductVersions", func() {
 	var (
-		stdout *Buffer
-		stderr *Buffer
-
-		originalHttpClient lib.HTTPClient
-		httpClient         *libfakes.FakeHTTPClient
+		stdout     *Buffer
+		stderr     *Buffer
+		httpClient *pkgfakes.FakeHTTPClient
 	)
 
 	BeforeEach(func() {
+		httpClient = &pkgfakes.FakeHTTPClient{}
+		cmd.Marketplace = &pkg.Marketplace{
+			Client: httpClient,
+		}
 		stdout = NewBuffer()
 		stderr = NewBuffer()
-
-		originalHttpClient = lib.Client
-		httpClient = &libfakes.FakeHTTPClient{}
-		lib.Client = httpClient
-	})
-
-	AfterEach(func() {
-		lib.Client = originalHttpClient
 	})
 
 	Describe("ListProductVersionsCmd", func() {
 		BeforeEach(func() {
-			product := CreateFakeProduct(
+			product := test.CreateFakeProduct(
 				"",
 				"My Super Product",
 				"my-super-product",
 				"PENDING")
-			AddVerions(product, "0.1.2", "1.2.3")
-			response := &cmd.GetProductResponse{
-				Response: &cmd.GetProductResponsePayload{
+			test.AddVerions(product, "0.1.2", "1.2.3")
+			response := &pkg.GetProductResponse{
+				Response: &pkg.GetProductResponsePayload{
 					Data:       product,
 					StatusCode: http.StatusOK,
 					Message:    "testing",
@@ -155,14 +150,14 @@ var _ = Describe("ProductVersions", func() {
 
 	Describe("GetProductVersionCmd", func() {
 		BeforeEach(func() {
-			product := CreateFakeProduct(
+			product := test.CreateFakeProduct(
 				"",
 				"My Super Product",
 				"my-super-product",
 				"PENDING")
-			AddVerions(product, "0.1.2", "1.2.3")
-			response := &cmd.GetProductResponse{
-				Response: &cmd.GetProductResponsePayload{
+			test.AddVerions(product, "0.1.2", "1.2.3")
+			response := &pkg.GetProductResponse{
+				Response: &pkg.GetProductResponsePayload{
 					Data:       product,
 					StatusCode: http.StatusOK,
 					Message:    "testing",
@@ -277,32 +272,32 @@ var _ = Describe("ProductVersions", func() {
 	})
 
 	Describe("CreateProductVersionCmd", func() {
-		var productId string
+		var productID string
 		BeforeEach(func() {
-			productId = uuid.New().String()
-			product := CreateFakeProduct(
-				productId,
+			productID = uuid.New().String()
+			product := test.CreateFakeProduct(
+				productID,
 				"My Super Product",
 				"my-super-product",
 				"PENDING")
-			AddVerions(product, "0.1.2", "1.2.3")
-			response1 := &cmd.GetProductResponse{
-				Response: &cmd.GetProductResponsePayload{
+			test.AddVerions(product, "0.1.2", "1.2.3")
+			response1 := &pkg.GetProductResponse{
+				Response: &pkg.GetProductResponsePayload{
 					Data:       product,
 					StatusCode: http.StatusOK,
 					Message:    "testing",
 				},
 			}
 
-			updatedProduct := CreateFakeProduct(
-				productId,
+			updatedProduct := test.CreateFakeProduct(
+				productID,
 				"My Super Product",
 				"my-super-product",
 				"PENDING")
-			AddVerions(updatedProduct, "0.1.2", "1.2.3", "9.9.9")
+			test.AddVerions(updatedProduct, "0.1.2", "1.2.3", "9.9.9")
 
-			response2 := &cmd.GetProductResponse{
-				Response: &cmd.GetProductResponsePayload{
+			response2 := &pkg.GetProductResponse{
+				Response: &pkg.GetProductResponsePayload{
 					Data:       updatedProduct,
 					StatusCode: http.StatusOK,
 					Message:    "testing",
@@ -347,7 +342,7 @@ var _ = Describe("ProductVersions", func() {
 			By("second, sending the new product", func() {
 				request := httpClient.DoArgsForCall(1)
 				Expect(request.Method).To(Equal("PUT"))
-				Expect(request.URL.Path).To(Equal(fmt.Sprintf("/api/v1/products/%s", productId)))
+				Expect(request.URL.Path).To(Equal(fmt.Sprintf("/api/v1/products/%s", productID)))
 			})
 
 			By("outputting the response", func() {

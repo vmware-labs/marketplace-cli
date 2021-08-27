@@ -9,10 +9,10 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	. "github.com/vmware-labs/marketplace-cli/v2/lib"
+	"github.com/vmware-labs/marketplace-cli/v2/pkg"
 )
 
-var MarketplaceConfig *MarketplaceConfiguration
+var Marketplace *pkg.Marketplace
 
 var rootCmd = &cobra.Command{
 	Use:   AppName,
@@ -39,9 +39,9 @@ func init() {
 	_ = viper.BindPFlag("csp.host", rootCmd.PersistentFlags().Lookup("csp-host"))
 	viper.SetDefault("csp.host", "console.cloud.vmware.com")
 
-	MarketplaceConfig = ProductionConfig
+	Marketplace = pkg.ProductionConfig
 	if os.Getenv("MARKETPLACE_ENV") == "staging" {
-		MarketplaceConfig = StagingConfig
+		Marketplace = pkg.StagingConfig
 	}
 }
 
