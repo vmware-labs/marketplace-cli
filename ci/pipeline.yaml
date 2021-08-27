@@ -2,6 +2,15 @@
 # SPDX-License-Identifier: BSD-2-Clause
 
 ---
+resource_types:
+  - name: pull-request
+    type: docker-image
+    source:
+      repository: harbor-repo.vmware.com/dockerhub-proxy-cache/teliaoss/github-pr-resource
+      tag: v0.23.0
+      username: ((harbor.username))
+      password: ((harbor.token))
+
 resources:
   - name: source
     type: git
@@ -10,6 +19,14 @@ resources:
       uri: git@github.com:vmware-labs/marketplace-cli.git
       private_key: ((github.private_key))
       branch: main
+
+  - name: pull-requests
+    type: pull-request
+    icon: github
+    check_every: 1m
+    source:
+      repository: vmware-labs/marketplace-cli
+      access_token: ((github.access_token))
 
   - name: version
     type: semver
@@ -156,6 +173,63 @@ jobs:
         params:
           CSP_API_TOKEN: ((marketplace_api_token))
           MARKETPLACE_ENV: staging
+
+  - name: test-pull-request
+    serial: true
+    plan:
+      - in_parallel:
+          - get: source
+            resource: pull-requests
+            trigger: true
+            version: every
+            params:
+              integration_tool: rebase
+            on_success:
+              put: pull-requests
+              inputs: detect
+              params:
+                path: source
+                status: pending
+            on_failure:
+              put: pull-requests
+              inputs: detect
+              params:
+                path: source
+                context: merge-conflict
+                status: failure
+      - do:
+        - task: run-lint
+          config:
+            platform: linux
+            image_resource:
+              type: registry-image
+              source:
+                repository: harbor-repo.vmware.com/dockerhub-proxy-cache/golangci/golangci-lint
+                tag: v1.42
+                username: ((harbor.username))
+                password: ((harbor.token))
+            inputs:
+              - name: source
+            run:
+              path: make
+              dir: source
+              args: [ lint ]
+        - task: run-tests
+          file: source/ci/tasks/test.yaml
+          params:
+            CSP_API_TOKEN: ((marketplace_api_token))
+            MARKETPLACE_ENV: staging
+        on_failure:
+          put: pull-requests
+          inputs: detect
+          params:
+            path: source
+            status: failure
+      - put: pull-requests
+        inputs: detect
+        params:
+          path: source
+          status: success
 
   - name: build
     serial_groups: [ version ]
