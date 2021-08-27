@@ -152,22 +152,6 @@ jobs:
         trigger: true
       - get: source
         trigger: true
-      - task: run-lint
-        config:
-          platform: linux
-          image_resource:
-            type: registry-image
-            source:
-              repository: harbor-repo.vmware.com/dockerhub-proxy-cache/golangci/golangci-lint
-              tag: v1.42
-              username: ((harbor.username))
-              password: ((harbor.token))
-          inputs:
-            - name: source
-          run:
-            path: make
-            dir: source
-            args: [ lint ]
       - task: run-tests
         file: source/ci/tasks/test.yaml
         params:
@@ -198,22 +182,6 @@ jobs:
                 context: merge-conflict
                 status: failure
       - do:
-        - task: run-lint
-          config:
-            platform: linux
-            image_resource:
-              type: registry-image
-              source:
-                repository: harbor-repo.vmware.com/dockerhub-proxy-cache/golangci/golangci-lint
-                tag: v1.42
-                username: ((harbor.username))
-                password: ((harbor.token))
-            inputs:
-              - name: source
-            run:
-              path: make
-              dir: source
-              args: [ lint ]
         - task: run-tests
           file: source/ci/tasks/test.yaml
           params:
@@ -282,21 +250,21 @@ jobs:
         params:
           file: version/version
 
-  #  - name: bump-major-version
-  #    serial_groups: [version]
-  #    plan:
-  #      - put: version
-  #        inputs: detect
-  #        params:
-  #          bump: major
-  #
-  #  - name: bump-minor-version
-  #    serial_groups: [version]
-  #    plan:
-  #      - put: version
-  #        inputs: detect
-  #        params:
-  #          bump: minor
+#  - name: bump-major-version
+#    serial_groups: [version]
+#    plan:
+#      - put: version
+#        inputs: detect
+#        params:
+#          bump: major
+
+  - name: bump-minor-version
+    serial_groups: [version]
+    plan:
+      - put: version
+        inputs: detect
+        params:
+          bump: minor
 
   - name: test-container-product
     plan:
