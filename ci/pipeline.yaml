@@ -3,6 +3,14 @@
 
 ---
 resource_types:
+  - name: helm-chart
+    type: registry-image
+    source:
+      repository: harbor-repo.vmware.com/dockerhub-proxy-cache/jghiloni/helm-chart-resource
+      tag: v0.1.1
+      username: ((harbor.username))
+      password: ((harbor.token))
+
   - name: pull-request
     type: docker-image
     source:
@@ -63,17 +71,6 @@ resources:
       repository: marketplace-cli
       access_token: ((github.access_token))
 
-  - name: test-container-product-source
-    type: git
-    icon: gitlab
-    source:
-      uri: git@gitlab.eng.vmware.com:marketplace-partner-eng/test-products.git
-      private_key: ((gitlab.private_key))
-      branch: master
-      paths:
-        - test-container-product/*
-        - test-container-product/**
-
   - name: test-container-product-version
     type: semver
     icon: gitlab
@@ -85,24 +82,19 @@ resources:
       file: test-container-product/version
       commit_message: "[ci skip] Updating to version %version%"
 
-  - name: test-container-product
-    type: docker-image
+  - name: nginx-image
+    type: registry-image
     icon: docker
     source:
-      repository: harbor-repo.vmware.com/tanzu_isv_engineering/test-container-product
-      username: ((harbor.username))
-      password: ((harbor.token))
+      repository: bitnami/nginx
+      tag: 1.21
 
-  - name: test-chart-product-source
-    type: git
-    icon: gitlab
+  - name: nginx-chart
+    type: helm-chart
+    icon: kubernetes
     source:
-      uri: git@gitlab.eng.vmware.com:marketplace-partner-eng/test-products.git
-      private_key: ((gitlab.private_key))
-      branch: master
-      paths:
-        - test-chart-product/*
-        - test-chart-product/**
+      repository_url: https://charts.bitnami.com/bitnami
+      chart: nginx
 
   - name: test-chart-product-version
     type: semver
@@ -269,9 +261,7 @@ jobs:
   - name: test-container-product
     plan:
       - in_parallel:
-          - get: source
-            resource: test-container-product-source
-            trigger: true
+          - get: nginx-image
           - get: version
             resource: test-container-product-version
             params: { bump: patch }
@@ -283,17 +273,6 @@ jobs:
             resource: version
             passed:
               - build
-      - put: test-container-product
-        inputs: all
-        params:
-          build: .
-          dockerfile: source/test-container-product/Dockerfile
-          tag_file: version/version
-          tag_as_latest: true
-      - put: test-container-product-version
-        inputs: detect
-        params:
-          file: version/version
       - task: add-version-to-marketplace
         image: mkpcli
         config:
@@ -310,11 +289,15 @@ jobs:
               - -exc
               - |
                 mkpcli product-version create --product ${SLUG} --product-version $(cat version/version)
+      - put: test-container-product-version
+        inputs: detect
+        params:
+          file: version/version
       - task: add-container-image-to-marketplace
         image: mkpcli
         config:
           inputs:
-            - name: test-container-product
+            - name: nginx-image
             - name: version
           platform: linux
           params:
@@ -329,17 +312,17 @@ jobs:
                 mkpcli container-image create \
                   --product ${SLUG} \
                   --product-version $(cat version/version) \
-                  --image-repository $(cat test-container-product/repository) \
-                  --image-tag $(cat version/version) \
+                  --image-repository $(cat nginx-image/repository) \
+                  --image-tag $(cat nginx-image/tag) \
                   --image-tag-type FIXED \
-                  --deployment-instructions "docker run $(cat test-container-product/repository):$(cat version/version)"
+                  --deployment-instructions "docker run $(cat mkpcli-public/repository):$(cat version/tag)"
 
   - name: test-chart-product
     plan:
       - in_parallel:
-          - get: source
-            resource: test-chart-product-source
-            trigger: true
+          - get: nginx-chart
+            params:
+              skip_download: true
           - get: version
             resource: test-chart-product-version
             params: { bump: patch }
@@ -351,41 +334,6 @@ jobs:
             resource: version
             passed:
               - build
-      - task: publish-chart
-        config:
-          platform: linux
-          image_resource:
-            type: registry-image
-            source:
-              repository: harbor-repo.vmware.com/dockerhub-proxy-cache/alpine/helm
-              username: ((harbor.username))
-              password: ((harbor.token))
-          inputs:
-            - name: source
-            - name: version
-          params:
-            HARBOR_USERNAME: ((harbor.username))
-            HARBOR_PASSWORD: ((harbor.token))
-          run:
-            path: sh
-            dir: source/test-chart-product
-            args:
-              - -exc
-              - |
-                apk add git
-                export VERSION=$(cat ../../version/version)
-                helm package test-chart-product --version ${VERSION}
-                helm repo add \
-                    --username ${HARBOR_USERNAME} \
-                    --password ${HARBOR_PASSWORD} \
-                    tanzu_isv_engineering \
-                    https://harbor-repo.vmware.com/chartrepo/tanzu_isv_engineering
-                helm plugin install https://github.com/chartmuseum/helm-push
-                helm push test-chart-product-${VERSION}.tgz tanzu_isv_engineering
-      - put: test-chart-product-version
-        inputs: detect
-        params:
-          file: version/version
       - task: add-version-to-marketplace
         image: mkpcli
         config:
@@ -402,10 +350,15 @@ jobs:
               - -exc
               - |
                 mkpcli product-version create --product ${SLUG} --product-version $(cat version/version)
+      - put: test-chart-product-version
+        inputs: detect
+        params:
+          file: version/version
       - task: add-chart-to-marketplace
         image: mkpcli
         config:
           inputs:
+            - name: nginx-chart
             - name: version
           platform: linux
           params:
@@ -420,11 +373,9 @@ jobs:
                 mkpcli chart create \
                   --product ${SLUG} \
                   --product-version $(cat version/version) \
-                  --chart-name tanzu_isv_engineering/test-chart-product-$(cat version/version) \
-                  --chart-version $(cat version/version) \
-                  --chart-url https://harbor-repo.vmware.com/chartrepo/tanzu_isv_engineering/charts/test-chart-product-$(cat version/version).tgz \
-                  --repository-name tanzu_isv_engineering \
-                  --repository-url https://harbor-repo.vmware.com/chartrepo/tanzu_isv_engineering
+                  --chart-name nginx \
+                  --chart-version $(cat nginx-chart/version) \
+                  --chart-url https://charts.bitnami.com/bitnami \
 
   - name: test-ova-product
     plan:
