@@ -19,11 +19,7 @@ _MARKETPLACE_CLI_VERSION="0.2.4"
 _MKP_CLI_VERSION=${_MARKETPLACE_CLI_VERSION}
 _DOWNLOAD_URL=""
 _DOWNLOAD_FILENAME="mkpcli-linux"
-msg_error(){
-    msg=$1
-    echo -e ">> [ERROR]: ${msg}"
-    exit 1
-}
+
 
 
 msg_log(){
@@ -57,8 +53,6 @@ download_mkp_cli(){
     wget "$_DOWNLOAD_URL" &&
     [[ $_VERBOSE = "true" ]] && ls -lah "$_DOWNLOAD_FILENAME"
     chmod +x mkpcli-linux
-    
-    wait 
 }
 
 install_mkp_cli(){

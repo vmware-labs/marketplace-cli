@@ -20,7 +20,7 @@ runs:
       run: |
         echo "MARKETPLACE_CLI_VERSION=${{ inputs.version }}" >> $GITHUB_ENV
       shell: bash
-    - id: install-marketplace-cli
+    - id: print-version
       run: sudo --preserve-env ${{ github.action_path }}/entrypoint.sh
       shell: bash
     - id: set-output
