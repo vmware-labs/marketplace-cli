@@ -41,11 +41,7 @@ var _ = Describe("Product Version", func() {
 		})
 
 		define.Then(`^the table of the product version is printed$`, func() {
-			Eventually(CommandSession.Out).Should(Say(fmt.Sprintf("Version %s:", ContainerProductVersion)))
-			Eventually(CommandSession.Out).Should(Say("IMAGE"))
-			Eventually(CommandSession.Out).Should(Say("TAGS"))
-			Eventually(CommandSession.Out).Should(Say(fmt.Sprintf("harbor-repo.vmware.com/tanzu_isv_engineering/test-container-product *%s", ContainerProductVersion)))
-			Eventually(CommandSession.Out).Should(Say("Deployment instructions:"))
+			Eventually(CommandSession.Out).Should(Say(fmt.Sprintf("Version %s", ContainerProductVersion)))
 		})
 	})
 })

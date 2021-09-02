@@ -13,6 +13,7 @@ require (
 	github.com/bunniesandbeatings/goerkin v0.1.4-beta
 	github.com/golang-jwt/jwt v3.2.1+incompatible
 	github.com/google/uuid v1.2.0
+	github.com/mitchellh/ioprogress v0.0.0-20180201004757-6a23b12fa88e
 	github.com/niemeyer/pretty v0.0.0-20200227124842-a10e7caefd8e // indirect
 	github.com/nxadm/tail v1.4.8 // indirect
 	github.com/olekukonko/tablewriter v0.0.5

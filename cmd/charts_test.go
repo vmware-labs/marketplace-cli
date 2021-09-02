@@ -16,6 +16,7 @@ import (
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/gbytes"
 	"github.com/vmware-labs/marketplace-cli/v2/cmd"
+	"github.com/vmware-labs/marketplace-cli/v2/cmd/output/outputfakes"
 	"github.com/vmware-labs/marketplace-cli/v2/internal/models"
 	"github.com/vmware-labs/marketplace-cli/v2/pkg"
 	"github.com/vmware-labs/marketplace-cli/v2/pkg/pkgfakes"
@@ -27,10 +28,13 @@ var _ = Describe("Charts", func() {
 		stdout     *Buffer
 		stderr     *Buffer
 		httpClient *pkgfakes.FakeHTTPClient
+		output     *outputfakes.FakeFormat
 	)
 
 	BeforeEach(func() {
 		httpClient = &pkgfakes.FakeHTTPClient{}
+		output = &outputfakes.FakeFormat{}
+		cmd.Output = output
 		cmd.Marketplace = &pkg.Marketplace{
 			Client: httpClient,
 		}
@@ -95,13 +99,10 @@ var _ = Describe("Charts", func() {
 			})
 
 			By("outputting the response", func() {
-				Expect(stdout).To(Say("ID"))
-				Expect(stdout).To(Say("VERSION"))
-				Expect(stdout).To(Say("URL"))
-				Expect(stdout).To(Say("REPOSITORY"))
-				Expect(stdout).To(Say("5.0.0"))
-				Expect(stdout).To(Say("https://charts.bitnami.com/bitnami/kube-prometheus-5.0.0.tgz"))
-				Expect(stdout).To(Say("Bitnami charts repo @ Github https://github.com/bitnami/charts/tree/master/bitnami/kube-prometheus"))
+				Expect(output.RenderChartsCallCount()).To(Equal(1))
+				product, version := output.RenderChartsArgsForCall(0)
+				Expect(product.Slug).To(Equal("my-super-product"))
+				Expect(version).To(Equal("1.2.3"))
 			})
 		})
 
@@ -131,7 +132,7 @@ var _ = Describe("Charts", func() {
 				cmd.ProductVersion = "1.2.3"
 				err := cmd.ListChartsCmd.RunE(cmd.ListChartsCmd, []string{""})
 				Expect(err).To(HaveOccurred())
-				Expect(err.Error()).To(Equal("sending the request for product \"my-super-product\" failed: request failed"))
+				Expect(err.Error()).To(Equal("sending the request for product \"my-super-product\" failed: marketplace request failed: request failed"))
 			})
 		})
 
@@ -142,16 +143,6 @@ var _ = Describe("Charts", func() {
 				err := cmd.ListChartsCmd.RunE(cmd.ListChartsCmd, []string{""})
 				Expect(err).To(HaveOccurred())
 				Expect(err.Error()).To(Equal("product \"my-super-product\" does not have a version 9.9.9"))
-			})
-		})
-
-		Context("No chart", func() {
-			It("says there are no charts", func() {
-				cmd.ProductSlug = "my-super-product"
-				cmd.ProductVersion = "2.3.4"
-				err := cmd.ListChartsCmd.RunE(cmd.ListChartsCmd, []string{""})
-				Expect(err).ToNot(HaveOccurred())
-				Expect(stdout).To(Say("product \"my-super-product\" 2.3.4 does not have any charts"))
 			})
 		})
 	})
@@ -290,17 +281,11 @@ var _ = Describe("Charts", func() {
 			})
 
 			By("outputting the response", func() {
-				Expect(stdout).To(Say("ID"))
-				Expect(stdout).To(Say("VERSION"))
-				Expect(stdout).To(Say("URL"))
-				Expect(stdout).To(Say("REPOSITORY"))
-
-				Expect(stdout).To(Say("1.0.0"))
-				Expect(stdout).To(Say("https://charts.nitbami.com/nitbami/charts/mydatabase-1.0.0.tgz"))
-				Expect(stdout).To(Say("Bitnami charts repo @ Github https://github.com/bitnami/charts/tree/master/bitnami/mydatabas"))
-				Expect(stdout).To(Say("2.0.0"))
-				Expect(stdout).To(Say("https://charts.nitbami.com/nitbami/charts/mydatabase-2.0.0.tgz"))
-				Expect(stdout).To(Say("Bitnami charts repo @ Github https://github.com/bitnami/charts/tree/master/bitnami/mydatabas"))
+				Expect(output.RenderChartsCallCount()).To(Equal(1))
+				product, version := output.RenderChartsArgsForCall(0)
+				Expect(product.Slug).To(Equal("my-super-product"))
+				Expect(product.ChartVersions).To(HaveLen(2))
+				Expect(version).To(Equal("1.2.3"))
 			})
 		})
 
@@ -337,7 +322,7 @@ var _ = Describe("Charts", func() {
 				cmd.ChartRepositoryURL = "https://github.com/bitnami/charts/tree/master/bitnami/mydatabse"
 				err := cmd.CreateChartCmd.RunE(cmd.CreateChartCmd, []string{""})
 				Expect(err).To(HaveOccurred())
-				Expect(err.Error()).To(Equal("product \"my-super-product\" does not have a version 0.0.0, please add it first"))
+				Expect(err.Error()).To(Equal("product \"my-super-product\" does not have a version 0.0.0"))
 			})
 		})
 

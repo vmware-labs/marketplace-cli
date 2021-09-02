@@ -3,8 +3,4 @@
 
 package cmd
 
-const (
-	AppName     = "mkpcli"
-	FormatJSON  = "json"
-	FormatTable = "table"
-)
+const AppName = "mkpcli"

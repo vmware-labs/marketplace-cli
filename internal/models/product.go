@@ -105,27 +105,29 @@ type ProductItemDetails struct {
 }
 
 type ProductDeploymentFile struct {
-	Id              string `json:"id,omitempty"` // uuid
-	Name            string `json:"name,omitempty"`
-	Url             string `json:"url,omitempty"`
-	ImageType       string `json:"imagetype,omitempty"`
-	Status          string `json:"status,omitempty"`
-	UploadedOn      int32  `json:"uploadedon,omitempty"`
-	UploadedBy      string `json:"uploadedby,omitempty"`
-	UpdatedOn       int32  `json:"updatedon,omitempty"`
-	UpdatedBy       string `json:"updatedby,omitempty"`
-	ItemJson        string `json:"itemjson,omitempty"`
-	Itemkey         string `json:"itemkey,omitempty"`
-	FileID          string `json:"fileid,omitempty"`
-	IsSubscribed    bool   `json:"issubscribed,omitempty"`
-	AppVersion      string `json:"appversion"` // Mandatory
-	HashDigest      string `json:"hashdigest"`
-	IsThirdPartyUrl bool   `json:"isthirdpartyurl,omitempty"`
-	ThirdPartyUrl   string `json:"thirdpartyurl,omitempty"`
-	IsRedirectUrl   bool   `json:"isredirecturl,omitempty"`
-	Comment         string `json:"comment,omitempty"`
-	HashAlgo        string `json:"hashalgo"`
-	DownloadCount   int64  `json:"downloadcount,omitempty"`
+	Id              string   `json:"id,omitempty"` // uuid
+	Name            string   `json:"name,omitempty"`
+	Url             string   `json:"url,omitempty"`
+	ImageType       string   `json:"imagetype,omitempty"`
+	Status          string   `json:"status,omitempty"`
+	UploadedOn      int32    `json:"uploadedon,omitempty"`
+	UploadedBy      string   `json:"uploadedby,omitempty"`
+	UpdatedOn       int32    `json:"updatedon,omitempty"`
+	UpdatedBy       string   `json:"updatedby,omitempty"`
+	ItemJson        string   `json:"itemjson,omitempty"`
+	Itemkey         string   `json:"itemkey,omitempty"`
+	FileID          string   `json:"fileid,omitempty"`
+	IsSubscribed    bool     `json:"issubscribed,omitempty"`
+	AppVersion      string   `json:"appversion"` // Mandatory
+	HashDigest      string   `json:"hashdigest"`
+	IsThirdPartyUrl bool     `json:"isthirdpartyurl,omitempty"`
+	ThirdPartyUrl   string   `json:"thirdpartyurl,omitempty"`
+	IsRedirectUrl   bool     `json:"isredirecturl,omitempty"`
+	Comment         string   `json:"comment,omitempty"`
+	HashAlgo        string   `json:"hashalgo"`
+	DownloadCount   int64    `json:"downloadcount,omitempty"`
+	UniqueFileID    string   `json:"uniqueFileId,omitempty"`
+	VersionList     []string `json:"versionList"`
 }
 
 const (
@@ -265,7 +267,7 @@ func (d *DockerURLDetails) HasTag(tagName string) bool {
 }
 
 type DockerVersionList struct {
-	Id                    string              `json:"id,omitempty"`
+	ID                    string              `json:"id,omitempty"`
 	AppVersion            string              `json:"appversion"`
 	DeploymentInstruction string              `json:"deploymentinstruction"`
 	DockerURLs            []*DockerURLDetails `json:"dockerurlsList"`
@@ -380,6 +382,10 @@ type Product struct {
 }
 
 func (product *Product) GetVersion(version string) *Version {
+	if version == "latest" && len(product.AllVersions) > 0 {
+		return product.AllVersions[0]
+	}
+
 	for _, v := range product.AllVersions {
 		if v.Number == version {
 			return v
@@ -392,17 +398,11 @@ func (product *Product) HasVersion(version string) bool {
 	return product.GetVersion(version) != nil
 }
 
-func (product *Product) GetOVAsForVersion(version string) []*ProductDeploymentFile {
-	var results []*ProductDeploymentFile
-	for _, deploymentFile := range product.ProductDeploymentFiles {
-		if deploymentFile.AppVersion == version {
-			results = append(results, deploymentFile)
-		}
-	}
-	return results
-}
-
 func (product *Product) GetContainerImagesForVersion(version string) *DockerVersionList {
+	if version == "latest" && len(product.AllVersions) > 0 {
+		version = product.AllVersions[0].Number
+	}
+
 	for _, dockerVersionLink := range product.DockerLinkVersions {
 		if dockerVersionLink.AppVersion == version {
 			return dockerVersionLink
@@ -412,6 +412,10 @@ func (product *Product) GetContainerImagesForVersion(version string) *DockerVers
 }
 
 func (product *Product) GetChartsForVersion(version string) []*ChartVersion {
+	if version == "latest" && len(product.AllVersions) > 0 {
+		version = product.AllVersions[0].Number
+	}
+
 	var charts []*ChartVersion
 	for _, chart := range product.ChartVersions {
 		if chart.AppVersion == version {
@@ -419,6 +423,38 @@ func (product *Product) GetChartsForVersion(version string) []*ChartVersion {
 		}
 	}
 	return charts
+}
+
+func (product *Product) GetChart(chartId string) *ChartVersion {
+	for _, chart := range product.ChartVersions {
+		if chart.Id == chartId {
+			return chart
+		}
+	}
+	return nil
+}
+
+func (product *Product) GetFilesForVersion(version string) []*ProductDeploymentFile {
+	if version == "latest" && len(product.AllVersions) > 0 {
+		version = product.AllVersions[0].Number
+	}
+
+	var files []*ProductDeploymentFile
+	for _, file := range product.ProductDeploymentFiles {
+		if file.AppVersion == version {
+			files = append(files, file)
+		}
+	}
+	return files
+}
+
+func (product *Product) GetFile(fileId string) *ProductDeploymentFile {
+	for _, file := range product.ProductDeploymentFiles {
+		if file.FileID == fileId {
+			return file
+		}
+	}
+	return nil
 }
 
 func (product *Product) PrepForUpdate() {

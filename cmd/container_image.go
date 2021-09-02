@@ -9,6 +9,7 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/vmware-labs/marketplace-cli/v2/internal/models"
+	"github.com/vmware-labs/marketplace-cli/v2/pkg"
 )
 
 const (
@@ -16,21 +17,24 @@ const (
 	ImageTagTypeFloating = "FLOATING"
 )
 
-func init() {
+var downloadedContainerImageFilename string
 
+func init() {
 	rootCmd.AddCommand(ContainerImageCmd)
 	ContainerImageCmd.AddCommand(ListContainerImageCmd)
 	ContainerImageCmd.AddCommand(GetContainerImageCmd)
+	ContainerImageCmd.AddCommand(DownloadContainerImageCmd)
 	ContainerImageCmd.AddCommand(CreateContainerImageCmd)
-	ContainerImageCmd.PersistentFlags().StringVarP(&OutputFormat, "output-format", "f", FormatTable, "Output format")
 
 	ContainerImageCmd.PersistentFlags().StringVarP(&ProductSlug, "product", "p", "", "Product slug")
 	_ = ContainerImageCmd.MarkPersistentFlagRequired("product")
-	ContainerImageCmd.PersistentFlags().StringVarP(&ProductVersion, "product-version", "v", "", "Product version")
+	ContainerImageCmd.PersistentFlags().StringVarP(&ProductVersion, "product-version", "v", "latest", "Product version")
 	_ = ContainerImageCmd.MarkPersistentFlagRequired("product-version")
 
 	GetContainerImageCmd.Flags().StringVarP(&ImageRepository, "image-repository", "r", "", "container repository")
-	_ = GetContainerImageCmd.MarkFlagRequired("image-repository")
+
+	DownloadContainerImageCmd.Flags().StringVarP(&ImageRepository, "image-repository", "r", "", "container repository")
+	DownloadContainerImageCmd.Flags().StringVarP(&downloadedContainerImageFilename, "filename", "f", "image.tar", "output file name")
 
 	CreateContainerImageCmd.Flags().StringVarP(&ImageRepository, "image-repository", "r", "", "container repository")
 	_ = CreateContainerImageCmd.MarkFlagRequired("image-repository")
@@ -42,84 +46,115 @@ func init() {
 }
 
 var ContainerImageCmd = &cobra.Command{
-	Use:               "container-image",
-	Aliases:           []string{"container-images"},
-	Short:             "container images",
-	Long:              "",
-	Args:              cobra.OnlyValidArgs,
-	ValidArgs:         []string{"get", "list", "create"},
-	PersistentPreRunE: GetRefreshToken,
+	Use:       "container-image",
+	Aliases:   []string{"container-images"},
+	Short:     "Container image related commands",
+	Long:      "Interact with container images attached to a Marketplace product",
+	Args:      cobra.OnlyValidArgs,
+	ValidArgs: []string{"list", "get", "download", "create"},
 }
 
 var ListContainerImageCmd = &cobra.Command{
 	Use:   "list",
-	Short: "list container images",
-	Long:  "",
+	Short: "List container images",
+	Long:  "List the container images attached to a product",
 	Args:  cobra.NoArgs,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		cmd.SilenceUsage = true
-		product, err := Marketplace.GetProduct(ProductSlug)
+		product, err := Marketplace.GetProductWithVersion(ProductSlug, ProductVersion)
 		if err != nil {
 			return err
 		}
 
-		if !product.HasVersion(ProductVersion) {
-			return fmt.Errorf("product \"%s\" does not have a version %s", ProductSlug, ProductVersion)
-		}
-		containerImages := product.GetContainerImagesForVersion(ProductVersion)
-		if containerImages == nil {
-			cmd.Printf("product \"%s\" %s does not have any container images", ProductSlug, ProductVersion)
-			return nil
-		}
-
-		err = RenderContainerImages(OutputFormat, containerImages, cmd.OutOrStdout())
-		if err != nil {
-			return fmt.Errorf("failed to render the container images: %w", err)
-		}
-
-		return nil
+		return Output.RenderContainerImages(product, ProductVersion)
 	},
 }
 
 var GetContainerImageCmd = &cobra.Command{
 	Use:   "get",
-	Short: "get a container image",
-	Long:  "",
+	Short: "Get container image details",
+	Long:  "Get details for a container image attached to a product",
 	Args:  cobra.NoArgs,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		cmd.SilenceUsage = true
-		product, err := Marketplace.GetProduct(ProductSlug)
+		product, err := Marketplace.GetProductWithVersion(ProductSlug, ProductVersion)
 		if err != nil {
 			return err
 		}
 
-		if !product.HasVersion(ProductVersion) {
-			return fmt.Errorf("product \"%s\" does not have a version %s", ProductSlug, ProductVersion)
+		containerImages := product.GetContainerImagesForVersion(ProductVersion)
+		if containerImages == nil {
+			return fmt.Errorf("%s %s does not have any container images\n", product.Slug, version)
+		}
+
+		var containerImage *models.DockerURLDetails
+		if ImageRepository != "" {
+			containerImage = containerImages.GetImage(ImageRepository)
+			if containerImage == nil {
+				return fmt.Errorf("%s %s does not have the container image \"%s\"", ProductSlug, ProductVersion, ImageRepository)
+			}
+		} else {
+			if len(containerImages.DockerURLs) == 0 {
+				return fmt.Errorf("%s %s does not have any container images\n", product.Slug, version)
+			} else if len(containerImages.DockerURLs) == 1 {
+				containerImage = containerImages.DockerURLs[0]
+			} else {
+				return fmt.Errorf("multiple container images found for %s %s, please use the --image-repository parameter", ProductSlug, ProductVersion)
+			}
+		}
+
+		return Output.RenderContainerImage(product, ProductVersion, containerImage)
+	},
+}
+
+var DownloadContainerImageCmd = &cobra.Command{
+	Use:   "download",
+	Short: "Download a container image",
+	Long:  "Download a container image attached to a product",
+	Args:  cobra.NoArgs,
+	RunE: func(cmd *cobra.Command, args []string) error {
+		cmd.SilenceUsage = true
+		product, err := Marketplace.GetProductWithVersion(ProductSlug, ProductVersion)
+		if err != nil {
+			return err
 		}
 
 		containerImages := product.GetContainerImagesForVersion(ProductVersion)
 		if containerImages == nil {
-			return fmt.Errorf("product \"%s\" does not have any container images for version %s", ProductSlug, ProductVersion)
+			return fmt.Errorf("%s %s does not have any container images\n", product.Slug, version)
 		}
 
-		containerImage := containerImages.GetImage(ImageRepository)
-		if containerImage == nil {
-			return fmt.Errorf("product \"%s\" %s does not have the container image \"%s\"", ProductSlug, ProductVersion, ImageRepository)
+		var containerImage *models.DockerURLDetails
+		if ImageRepository != "" {
+			containerImage = containerImages.GetImage(ImageRepository)
+			if containerImage == nil {
+				return fmt.Errorf("%s %s does not have the container image \"%s\"", ProductSlug, ProductVersion, ImageRepository)
+			}
+		} else {
+			if len(containerImages.DockerURLs) == 0 {
+				return fmt.Errorf("no container images found for %s %s", ProductSlug, ProductVersion)
+			} else if len(containerImages.DockerURLs) == 1 {
+				containerImage = containerImages.DockerURLs[0]
+			} else {
+				return fmt.Errorf("multiple container images found for %s %s, please use the --image-repository parameter", ProductSlug, ProductVersion)
+			}
 		}
 
-		err = RenderContainerImage(OutputFormat, containerImage, cmd.OutOrStdout())
-		if err != nil {
-			return fmt.Errorf("failed to render the container images: %w", err)
-		}
-
-		return nil
+		cmd.Printf("Downloading image to %s...\n", downloadedContainerImageFilename)
+		return Marketplace.Download(product.ProductId, downloadedContainerImageFilename, &pkg.DownloadRequestPayload{
+			DockerlinkVersionID: containerImages.ID,
+			DockerUrlId:         containerImage.ID,
+			ImageTagId:          containerImage.ImageTags[0].ID,
+			AppVersion:          containerImages.AppVersion,
+			EulaAccepted:        true,
+		}, cmd.ErrOrStderr())
 	},
 }
 
 var CreateContainerImageCmd = &cobra.Command{
 	Use:   "create",
-	Short: "add a container image to a product",
-	Long:  "",
+	Short: "Attach a container image",
+	Long:  "Attach a container image to a product",
 	Args:  cobra.NoArgs,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		ImageTagType = strings.ToUpper(ImageTagType)
@@ -128,13 +163,9 @@ var CreateContainerImageCmd = &cobra.Command{
 		}
 
 		cmd.SilenceUsage = true
-		product, err := Marketplace.GetProduct(ProductSlug)
+		product, err := Marketplace.GetProductWithVersion(ProductSlug, ProductVersion)
 		if err != nil {
 			return err
-		}
-
-		if !product.HasVersion(ProductVersion) {
-			return fmt.Errorf("product \"%s\" does not have a version %s, please add it first", ProductSlug, ProductVersion)
 		}
 
 		product.SetDeploymentType(models.DeploymentTypesDocker)
@@ -165,7 +196,7 @@ var CreateContainerImageCmd = &cobra.Command{
 		}
 
 		if containerImage.HasTag(ImageTag) {
-			return fmt.Errorf("product \"%s\" %s already has the container image %s:%s", ProductSlug, ProductVersion, ImageRepository, ImageTag)
+			return fmt.Errorf("%s %s already has the container image %s:%s", ProductSlug, ProductVersion, ImageRepository, ImageTag)
 		}
 		containerImage.ImageTags = append(containerImage.ImageTags, &models.DockerImageTag{
 			Tag:  ImageTag,
@@ -174,16 +205,9 @@ var CreateContainerImageCmd = &cobra.Command{
 
 		updatedProduct, err := Marketplace.PutProduct(product, false)
 		if err != nil {
-			cmd.SilenceUsage = true
 			return err
 		}
 
-		containerImages = updatedProduct.GetContainerImagesForVersion(ProductVersion)
-		err = RenderContainerImages(OutputFormat, containerImages, cmd.OutOrStdout())
-		if err != nil {
-			cmd.SilenceUsage = true
-			return fmt.Errorf("failed to render the container images: %w", err)
-		}
-		return nil
+		return Output.RenderContainerImages(updatedProduct, ProductVersion)
 	},
 }

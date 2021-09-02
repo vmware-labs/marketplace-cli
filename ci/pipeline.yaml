@@ -87,7 +87,7 @@ resources:
     icon: docker
     source:
       repository: bitnami/nginx
-      tag: 1.21
+      tag: 1.21.1
 
   - name: nginx-chart
     type: helm-chart
@@ -282,7 +282,7 @@ jobs:
           params:
             CSP_API_TOKEN: ((marketplace_api_token))
             MARKETPLACE_ENV: staging
-            SLUG: test-container-product-31
+            SLUG: test-container-product-41
           run:
             path: bash
             args:
@@ -303,7 +303,7 @@ jobs:
           params:
             CSP_API_TOKEN: ((marketplace_api_token))
             MARKETPLACE_ENV: staging
-            SLUG: test-container-product-31
+            SLUG: test-container-product-41
           run:
             path: bash
             args:
@@ -312,10 +312,10 @@ jobs:
                 mkpcli container-image create \
                   --product ${SLUG} \
                   --product-version $(cat version/version) \
-                  --image-repository $(cat nginx-image/repository) \
+                  --image-repository bitnami/nginx \
                   --image-tag $(cat nginx-image/tag) \
                   --image-tag-type FIXED \
-                  --deployment-instructions "docker run $(cat mkpcli-public/repository):$(cat version/tag)"
+                  --deployment-instructions "docker run bitnami/nginx:$(cat nginx-image/tag)"
 
   - name: test-chart-product
     plan:
@@ -343,7 +343,7 @@ jobs:
           params:
             CSP_API_TOKEN: ((marketplace_api_token))
             MARKETPLACE_ENV: staging
-            SLUG: test-chart-product-31
+            SLUG: test-chart-product-42
           run:
             path: bash
             args:
@@ -364,7 +364,7 @@ jobs:
           params:
             CSP_API_TOKEN: ((marketplace_api_token))
             MARKETPLACE_ENV: staging
-            SLUG: test-chart-product-31
+            SLUG: test-chart-product-42
           run:
             path: bash
             args:

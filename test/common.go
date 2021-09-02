@@ -48,6 +48,8 @@ func CreateFakeOVA(name, version string) *models.ProductDeploymentFile {
 
 	return &models.ProductDeploymentFile{
 		AppVersion: version,
+		FileID:     uuid.New().String(),
+		Status:     "STORED",
 		ItemJson:   string(detailString),
 	}
 }
@@ -93,7 +95,7 @@ func AddVerions(product *models.Product, versions ...string) *models.Product {
 
 func AddContainerImages(product *models.Product, version string, instructions string, images ...*models.DockerURLDetails) *models.Product {
 	imageList := &models.DockerVersionList{
-		Id:                    "",
+		ID:                    "",
 		AppVersion:            version,
 		DeploymentInstruction: instructions,
 		DockerURLs:            []*models.DockerURLDetails{},

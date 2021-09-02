@@ -21,6 +21,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/credentials"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
+	"github.com/vmware-labs/marketplace-cli/v2/internal/models"
 )
 
 func makeTimestamp() int64 {
@@ -33,8 +34,12 @@ func MakeUniqueFilename(filename string) string {
 	return fmt.Sprintf("%s-%d%s", base, makeTimestamp(), ext)
 }
 
+func makeUniqueFileID() string {
+	return fmt.Sprintf("fileuploader%d.url", makeTimestamp())
+}
+
 type Uploader interface {
-	Upload(filePath string) (string, string, error)
+	Upload(filePath string) (*models.ProductDeploymentFile, error)
 }
 
 const (
@@ -65,15 +70,15 @@ func NewS3Uploader(region, hashAlgorithm, orgID string, credentials aws.Credenti
 	}
 }
 
-func (u *S3Uploader) Upload(bucket, filePath string) (string, string, error) {
+func (u *S3Uploader) Upload(bucket, filePath string) (*models.ProductDeploymentFile, error) {
 	file, err := os.Open(filePath)
 	if err != nil {
-		return "", "", fmt.Errorf("failed to open %s: %w", filePath, err)
+		return nil, fmt.Errorf("failed to open %s: %w", filePath, err)
 	}
 
 	_, err = io.Copy(u.hashAlgorithm, file)
 	if err != nil {
-		return "", "", fmt.Errorf("failed to generate the hash for %s: %w", filePath, err)
+		return nil, fmt.Errorf("failed to generate the hash for %s: %w", filePath, err)
 	}
 
 	s3Config, err := config.LoadDefaultConfig(context.Background(),
@@ -83,7 +88,7 @@ func (u *S3Uploader) Upload(bucket, filePath string) (string, string, error) {
 		config.WithRegion(u.region),
 	)
 	if err != nil {
-		return "", "", err
+		return nil, err
 	}
 
 	filename := MakeUniqueFilename(filepath.Base(filePath))
@@ -96,15 +101,21 @@ func (u *S3Uploader) Upload(bucket, filePath string) (string, string, error) {
 
 	_, err = client.PutObject(context.Background(), input)
 	if err != nil {
-		return "", "", err
+		return nil, err
 	}
 
 	err = file.Close()
 	if err != nil {
-		return "", "", fmt.Errorf("failed to close file: %w", err)
+		return nil, fmt.Errorf("failed to close file: %w", err)
 	}
 
-	fileURL := fmt.Sprintf("https://%s.s3.%s.amazonaws.com/%s", *input.Bucket, u.region, *input.Key)
-	fileHash := hex.EncodeToString(u.hashAlgorithm.Sum(nil))
-	return fileURL, fileHash, nil
+	return &models.ProductDeploymentFile{
+		Name:          filename,
+		Url:           fmt.Sprintf("https://%s.s3.%s.amazonaws.com/%s", *input.Bucket, u.region, *input.Key),
+		HashAlgo:      models.HashAlgoSHA1,
+		HashDigest:    hex.EncodeToString(u.hashAlgorithm.Sum(nil)),
+		IsRedirectUrl: false,
+		UniqueFileID:  makeUniqueFileID(),
+		VersionList:   []string{},
+	}, nil
 }

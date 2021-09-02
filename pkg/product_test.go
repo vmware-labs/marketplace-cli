@@ -194,7 +194,7 @@ var _ = Describe("Product", func() {
 			It("prints the error", func() {
 				_, err := marketplace.ListProducts(false, "")
 				Expect(err).To(HaveOccurred())
-				Expect(err.Error()).To(Equal("sending the request for the list of products failed: request failed"))
+				Expect(err.Error()).To(Equal("sending the request for the list of products failed: marketplace request failed: request failed"))
 			})
 		})
 
@@ -292,7 +292,7 @@ var _ = Describe("Product", func() {
 			It("prints the error", func() {
 				_, err := marketplace.GetProduct("my-super-product")
 				Expect(err).To(HaveOccurred())
-				Expect(err.Error()).To(Equal("sending the request for product \"my-super-product\" failed: request failed"))
+				Expect(err.Error()).To(Equal("sending the request for product \"my-super-product\" failed: marketplace request failed: request failed"))
 			})
 		})
 
