@@ -12,5 +12,5 @@ import (
 
 func TestCmdSuite(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "Cmd Suite")
+	RunSpecs(t, "Cmd test suite")
 }

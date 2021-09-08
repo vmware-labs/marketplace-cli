@@ -60,6 +60,13 @@ func (m *Marketplace) Get(requestURL *url.URL) (*http.Response, error) {
 	return m.SendRequest("GET", requestURL, map[string]string{}, nil)
 }
 
+func (m *Marketplace) Post(requestURL *url.URL, content io.Reader, contentType string) (*http.Response, error) {
+	headers := map[string]string{
+		"Content-Type": contentType,
+	}
+	return m.SendRequest("POST", requestURL, headers, content)
+}
+
 func (m *Marketplace) Put(requestURL *url.URL, content io.Reader, contentType string) (*http.Response, error) {
 	headers := map[string]string{
 		"Content-Type": contentType,
@@ -80,5 +87,10 @@ func (m *Marketplace) SendRequest(method string, requestURL *url.URL, headers ma
 	req.Header.Add("Accept", "application/json")
 	req.Header.Add("csp-auth-token", viper.GetString("csp.refresh-token"))
 
-	return m.Client.Do(req)
+	resp, err := m.Client.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("marketplace request failed: %w", err)
+	}
+
+	return resp, nil
 }

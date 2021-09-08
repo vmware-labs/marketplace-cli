@@ -15,7 +15,6 @@ func init() {
 	ProductVersionCmd.AddCommand(ListProductVersionsCmd)
 	ProductVersionCmd.AddCommand(GetProductVersionCmd)
 	ProductVersionCmd.AddCommand(CreateProductVersionCmd)
-	ProductVersionCmd.PersistentFlags().StringVarP(&OutputFormat, "output-format", "f", FormatTable, "Output format")
 
 	ProductVersionCmd.PersistentFlags().StringVarP(&ProductSlug, "product", "p", "", "Product slug")
 	_ = ProductVersionCmd.MarkPersistentFlagRequired("product")
@@ -28,13 +27,12 @@ func init() {
 }
 
 var ProductVersionCmd = &cobra.Command{
-	Use:               "product-version",
-	Aliases:           []string{"product-versions"},
-	Short:             "product versions",
-	Long:              "",
-	Args:              cobra.OnlyValidArgs,
-	ValidArgs:         []string{"get", "list", "create"},
-	PersistentPreRunE: GetRefreshToken,
+	Use:       "product-version",
+	Aliases:   []string{"product-versions"},
+	Short:     "product versions",
+	Long:      "",
+	Args:      cobra.OnlyValidArgs,
+	ValidArgs: []string{"get", "list", "create"},
 }
 
 var ListProductVersionsCmd = &cobra.Command{
@@ -47,12 +45,7 @@ var ListProductVersionsCmd = &cobra.Command{
 			return err
 		}
 
-		err = RenderVersions(OutputFormat, product, cmd.OutOrStdout())
-		if err != nil {
-			return fmt.Errorf("failed to render the product version: %w", err)
-		}
-
-		return nil
+		return Output.RenderVersions(product)
 	},
 }
 
@@ -71,12 +64,7 @@ var GetProductVersionCmd = &cobra.Command{
 			return fmt.Errorf("product \"%s\" does not have a version %s", ProductSlug, ProductVersion)
 		}
 
-		err = RenderVersion(OutputFormat, ProductVersion, product, cmd.OutOrStdout())
-		if err != nil {
-			return fmt.Errorf("failed to render the product version: %w", err)
-		}
-
-		return nil
+		return Output.RenderVersion(product, ProductVersion)
 	},
 }
 
@@ -103,11 +91,6 @@ var CreateProductVersionCmd = &cobra.Command{
 			return err
 		}
 
-		err = RenderVersions(OutputFormat, updatedProduct, cmd.OutOrStdout())
-		if err != nil {
-			return fmt.Errorf("failed to render the product version: %w", err)
-		}
-
-		return nil
+		return Output.RenderVersions(updatedProduct)
 	},
 }

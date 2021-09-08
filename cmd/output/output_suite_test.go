@@ -1,7 +1,7 @@
 // Copyright 2021 VMware, Inc.
 // SPDX-License-Identifier: BSD-2-Clause
 
-package csp_test
+package output_test
 
 import (
 	"testing"
@@ -10,7 +10,7 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-func TestCmdSuite(t *testing.T) {
+func TestOutputSuite(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "CSP test suite")
+	RunSpecs(t, "Output test suite")
 }

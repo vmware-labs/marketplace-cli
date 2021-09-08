@@ -117,6 +117,22 @@ func (m *Marketplace) GetProduct(slug string) (*models.Product, error) {
 	return response.Response.Data, nil
 }
 
+func (m *Marketplace) GetProductWithVersion(slug, version string) (*models.Product, error) {
+	product, err := m.GetProduct(slug)
+	if err != nil {
+		return nil, err
+	}
+
+	if version == "latest" {
+		version = product.AllVersions[0].Number
+	}
+	if !product.HasVersion(version) {
+		return nil, fmt.Errorf("product \"%s\" does not have a version %s", slug, version)
+	}
+
+	return product, nil
+}
+
 func (m *Marketplace) PutProduct(product *models.Product, versionUpdate bool) (*models.Product, error) {
 	product.PrepForUpdate()
 	encoded, err := json.Marshal(product)

@@ -4,8 +4,6 @@
 package cmd
 
 import (
-	"fmt"
-
 	"github.com/spf13/cobra"
 )
 
@@ -18,7 +16,6 @@ func init() {
 	rootCmd.AddCommand(ProductCmd)
 	ProductCmd.AddCommand(ListProductsCmd)
 	ProductCmd.AddCommand(GetProductCmd)
-	ProductCmd.PersistentFlags().StringVarP(&OutputFormat, "output-format", "f", FormatTable, "Output format")
 
 	ListProductsCmd.Flags().StringVar(&searchTerm, "search-text", "", "Filter by text")
 	ListProductsCmd.Flags().BoolVarP(&allOrgs, "all-orgs", "a", false, "Show products from all organizations")
@@ -28,18 +25,19 @@ func init() {
 }
 
 var ProductCmd = &cobra.Command{
-	Use:               "product",
-	Aliases:           []string{"products"},
-	Short:             "stuff related to products",
-	Long:              "",
-	Args:              cobra.OnlyValidArgs,
-	ValidArgs:         []string{"get", "list"},
-	PersistentPreRunE: GetRefreshToken,
+	Use:       "product",
+	Aliases:   []string{"products"},
+	Short:     "Commands related to products in general",
+	Long:      "Interact with products in the Marketplace",
+	Args:      cobra.OnlyValidArgs,
+	ValidArgs: []string{"get", "list"},
 }
 
 var ListProductsCmd = &cobra.Command{
-	Use:  "list",
-	Args: cobra.NoArgs,
+	Use:   "list",
+	Short: "List products",
+	Long:  "Lists products in the Marketplace",
+	Args:  cobra.NoArgs,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		cmd.SilenceUsage = true
 		products, err := Marketplace.ListProducts(allOrgs, searchTerm)
@@ -47,18 +45,15 @@ var ListProductsCmd = &cobra.Command{
 			return err
 		}
 
-		err = RenderProductList(OutputFormat, products, cmd.OutOrStdout())
-		if err != nil {
-			return fmt.Errorf("failed to render the list of products: %w", err)
-		}
-
-		return nil
+		return Output.RenderProducts(products)
 	},
 }
 
 var GetProductCmd = &cobra.Command{
-	Use:  "get [product slug]",
-	Args: cobra.NoArgs,
+	Use:   "get",
+	Short: "Get a product",
+	Long:  "Gets details for a single product in the Marketplace",
+	Args:  cobra.NoArgs,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		cmd.SilenceUsage = true
 		product, err := Marketplace.GetProduct(ProductSlug)
@@ -66,11 +61,6 @@ var GetProductCmd = &cobra.Command{
 			return err
 		}
 
-		err = RenderProduct(OutputFormat, product, cmd.OutOrStdout())
-		if err != nil {
-			cmd.SilenceUsage = true
-			return fmt.Errorf("failed to render the product: %w", err)
-		}
-		return nil
+		return Output.RenderProduct(product)
 	},
 }

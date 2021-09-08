@@ -16,6 +16,7 @@ import (
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/gbytes"
 	"github.com/vmware-labs/marketplace-cli/v2/cmd"
+	"github.com/vmware-labs/marketplace-cli/v2/cmd/output/outputfakes"
 	"github.com/vmware-labs/marketplace-cli/v2/pkg"
 	"github.com/vmware-labs/marketplace-cli/v2/pkg/pkgfakes"
 	"github.com/vmware-labs/marketplace-cli/v2/test"
@@ -26,10 +27,13 @@ var _ = Describe("ProductVersions", func() {
 		stdout     *Buffer
 		stderr     *Buffer
 		httpClient *pkgfakes.FakeHTTPClient
+		output     *outputfakes.FakeFormat
 	)
 
 	BeforeEach(func() {
 		httpClient = &pkgfakes.FakeHTTPClient{}
+		output = &outputfakes.FakeFormat{}
+		cmd.Output = output
 		cmd.Marketplace = &pkg.Marketplace{
 			Client: httpClient,
 		}
@@ -80,10 +84,9 @@ var _ = Describe("ProductVersions", func() {
 			})
 
 			By("outputting the response", func() {
-				Expect(stdout).To(Say("Versions:"))
-				Expect(stdout).To(Say("NUMBER  STATUS"))
-				Expect(stdout).To(Say("0.1.2   PENDING"))
-				Expect(stdout).To(Say("1.2.3   PENDING"))
+				Expect(output.RenderVersionsCallCount()).To(Equal(1))
+				product := output.RenderVersionsArgsForCall(0)
+				Expect(product.Slug).To(Equal("my-super-product"))
 			})
 		})
 
@@ -111,7 +114,7 @@ var _ = Describe("ProductVersions", func() {
 				cmd.ProductSlug = "my-super-product"
 				err := cmd.ListProductVersionsCmd.RunE(cmd.ListProductVersionsCmd, []string{})
 				Expect(err).To(HaveOccurred())
-				Expect(err.Error()).To(Equal("sending the request for product \"my-super-product\" failed: request failed"))
+				Expect(err.Error()).To(Equal("sending the request for product \"my-super-product\" failed: marketplace request failed: request failed"))
 			})
 		})
 
@@ -192,7 +195,10 @@ var _ = Describe("ProductVersions", func() {
 			})
 
 			By("outputting the response", func() {
-				Expect(stdout).To(Say("Version 1.2.3:"))
+				Expect(output.RenderVersionCallCount()).To(Equal(1))
+				product, version := output.RenderVersionArgsForCall(0)
+				Expect(product.Slug).To(Equal("my-super-product"))
+				Expect(version).To(Equal("1.2.3"))
 			})
 		})
 
@@ -232,7 +238,7 @@ var _ = Describe("ProductVersions", func() {
 				cmd.ProductVersion = "1.2.3"
 				err := cmd.GetProductVersionCmd.RunE(cmd.GetProductVersionCmd, []string{""})
 				Expect(err).To(HaveOccurred())
-				Expect(err.Error()).To(Equal("sending the request for product \"my-super-product\" failed: request failed"))
+				Expect(err.Error()).To(Equal("sending the request for product \"my-super-product\" failed: marketplace request failed: request failed"))
 			})
 		})
 
@@ -346,11 +352,10 @@ var _ = Describe("ProductVersions", func() {
 			})
 
 			By("outputting the response", func() {
-				Expect(stdout).To(Say("Versions:"))
-				Expect(stdout).To(Say("NUMBER  STATUS"))
-				Expect(stdout).To(Say("0.1.2   PENDING"))
-				Expect(stdout).To(Say("1.2.3   PENDING"))
-				Expect(stdout).To(Say("9.9.9   PENDING"))
+				Expect(output.RenderVersionsCallCount()).To(Equal(1))
+				product := output.RenderVersionsArgsForCall(0)
+				Expect(product.Slug).To(Equal("my-super-product"))
+				Expect(product.AllVersions).To(HaveLen(3))
 			})
 		})
 
@@ -391,7 +396,7 @@ var _ = Describe("ProductVersions", func() {
 				cmd.ProductVersion = "9.9.9"
 				err := cmd.CreateProductVersionCmd.RunE(cmd.CreateProductVersionCmd, []string{""})
 				Expect(err).To(HaveOccurred())
-				Expect(err.Error()).To(Equal("sending the request for product \"my-super-product\" failed: request failed"))
+				Expect(err.Error()).To(Equal("sending the request for product \"my-super-product\" failed: marketplace request failed: request failed"))
 			})
 		})
 

@@ -4,12 +4,7 @@
 package cmd
 
 import (
-	"encoding/json"
 	"fmt"
-	"io/ioutil"
-	"net/http"
-	"net/url"
-	"time"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -50,41 +45,16 @@ func GetRefreshToken(cmd *cobra.Command, args []string) error {
 	return nil
 }
 
-type CredentialsResponse struct {
-	AccessID     string    `json:"accessId"`
-	AccessKey    string    `json:"accessKey"`
-	SessionToken string    `json:"sessionToken"`
-	Expiration   time.Time `json:"expiration"`
-}
-
 func GetUploadCredentials(cmd *cobra.Command, args []string) error {
-	requestURL := Marketplace.MakeURL("/aws/credentials/generate", url.Values{})
-	requestURL.Host = Marketplace.APIHost
-	response, err := Marketplace.Get(requestURL)
+	credentials, err := Marketplace.GetUploadCredentials()
 	if err != nil {
 		return err
 	}
 
-	if response.StatusCode != http.StatusOK {
-		return fmt.Errorf("failed to fetch credentials: %d", response.StatusCode)
-	}
-
-	body, err := ioutil.ReadAll(response.Body)
-	if err != nil {
-		return err
-	}
-
-	credsResponse := &CredentialsResponse{}
-	err = json.Unmarshal(body, credsResponse)
-	if err != nil {
-		return err
-	}
-
-	UploadCredentials.AccessKeyID = credsResponse.AccessID
-	UploadCredentials.SecretAccessKey = credsResponse.AccessKey
-	UploadCredentials.SessionToken = credsResponse.SessionToken
-	UploadCredentials.Expires = credsResponse.Expiration
-
+	UploadCredentials.AccessKeyID = credentials.AccessID
+	UploadCredentials.SecretAccessKey = credentials.AccessKey
+	UploadCredentials.SessionToken = credentials.SessionToken
+	UploadCredentials.Expires = credentials.Expiration
 	return nil
 }
 
@@ -94,10 +64,9 @@ func init() {
 }
 
 var AuthCmd = &cobra.Command{
-	Use:     "auth",
-	Short:   "fetch and return a valid CSP refresh token",
-	Hidden:  true,
-	PreRunE: GetRefreshToken,
+	Use:    "auth",
+	Short:  "fetch and return a valid CSP refresh token",
+	Hidden: true,
 	Run: func(cmd *cobra.Command, args []string) {
 		cmd.Println(viper.GetString("csp.refresh-token"))
 	},

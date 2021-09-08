@@ -16,6 +16,8 @@ import (
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/gbytes"
 	"github.com/vmware-labs/marketplace-cli/v2/cmd"
+	"github.com/vmware-labs/marketplace-cli/v2/cmd/output/outputfakes"
+	"github.com/vmware-labs/marketplace-cli/v2/internal/models"
 	"github.com/vmware-labs/marketplace-cli/v2/pkg"
 	"github.com/vmware-labs/marketplace-cli/v2/pkg/pkgfakes"
 	"github.com/vmware-labs/marketplace-cli/v2/test"
@@ -26,10 +28,13 @@ var _ = Describe("ContainerImage", func() {
 		stdout     *Buffer
 		stderr     *Buffer
 		httpClient *pkgfakes.FakeHTTPClient
+		output     *outputfakes.FakeFormat
 	)
 
 	BeforeEach(func() {
 		httpClient = &pkgfakes.FakeHTTPClient{}
+		output = &outputfakes.FakeFormat{}
+		cmd.Output = output
 		cmd.Marketplace = &pkg.Marketplace{
 			Client: httpClient,
 		}
@@ -88,10 +93,10 @@ var _ = Describe("ContainerImage", func() {
 			})
 
 			By("outputting the response", func() {
-				Expect(stdout).To(Say("IMAGE  TAGS"))
-				Expect(stdout).To(Say("myId   0.0.1, latest"))
-				Expect(stdout).To(Say("Deployment instructions:"))
-				Expect(stdout).To(Say("Machine wash cold with like colors"))
+				Expect(output.RenderContainerImagesCallCount()).To(Equal(1))
+				product, version := output.RenderContainerImagesArgsForCall(0)
+				Expect(product.Slug).To(Equal("my-super-product"))
+				Expect(version).To(Equal("1.2.3"))
 			})
 		})
 
@@ -121,7 +126,7 @@ var _ = Describe("ContainerImage", func() {
 				cmd.ProductVersion = "1.2.3"
 				err := cmd.ListContainerImageCmd.RunE(cmd.ListContainerImageCmd, []string{""})
 				Expect(err).To(HaveOccurred())
-				Expect(err.Error()).To(Equal("sending the request for product \"my-super-product\" failed: request failed"))
+				Expect(err.Error()).To(Equal("sending the request for product \"my-super-product\" failed: marketplace request failed: request failed"))
 			})
 		})
 
@@ -132,16 +137,6 @@ var _ = Describe("ContainerImage", func() {
 				err := cmd.ListContainerImageCmd.RunE(cmd.ListContainerImageCmd, []string{""})
 				Expect(err).To(HaveOccurred())
 				Expect(err.Error()).To(Equal("product \"my-super-product\" does not have a version 9.9.9"))
-			})
-		})
-
-		Context("No container images", func() {
-			It("says there are no container images", func() {
-				cmd.ProductSlug = "my-super-product"
-				cmd.ProductVersion = "2.3.4"
-				err := cmd.ListContainerImageCmd.RunE(cmd.ListContainerImageCmd, []string{""})
-				Expect(err).ToNot(HaveOccurred())
-				Expect(stdout).To(Say("product \"my-super-product\" 2.3.4 does not have any container images"))
 			})
 		})
 	})
@@ -198,9 +193,19 @@ var _ = Describe("ContainerImage", func() {
 			})
 
 			By("outputting the response", func() {
-				Expect(stdout).To(Say("TAG     TYPE"))
-				Expect(stdout).To(Say("0.0.1   FIXED"))
-				Expect(stdout).To(Say("latest  FLOATING"))
+				Expect(output.RenderContainerImageCallCount()).To(Equal(1))
+				product, version, containerImage := output.RenderContainerImageArgsForCall(0)
+				Expect(product.Slug).To(Equal("my-super-product"))
+				Expect(version).To(Equal("1.2.3"))
+				Expect(containerImage.Url).To(Equal("myId"))
+				Expect(containerImage.ImageTags).To(ContainElement(&models.DockerImageTag{
+					Tag:  "0.0.1",
+					Type: "FIXED",
+				}))
+				Expect(containerImage.ImageTags).To(ContainElement(&models.DockerImageTag{
+					Tag:  "latest",
+					Type: "FLOATING",
+				}))
 			})
 		})
 
@@ -239,7 +244,7 @@ var _ = Describe("ContainerImage", func() {
 				cmd.ImageRepository = "thisImageDoesNotExist"
 				err := cmd.GetContainerImageCmd.RunE(cmd.GetContainerImageCmd, []string{""})
 				Expect(err).To(HaveOccurred())
-				Expect(err.Error()).To(Equal("product \"my-super-product\" 1.2.3 does not have the container image \"thisImageDoesNotExist\""))
+				Expect(err.Error()).To(Equal("my-super-product 1.2.3 does not have the container image \"thisImageDoesNotExist\""))
 			})
 		})
 
@@ -254,7 +259,7 @@ var _ = Describe("ContainerImage", func() {
 				cmd.ImageRepository = "myId"
 				err := cmd.GetContainerImageCmd.RunE(cmd.GetContainerImageCmd, []string{""})
 				Expect(err).To(HaveOccurred())
-				Expect(err.Error()).To(Equal("sending the request for product \"my-super-product\" failed: request failed"))
+				Expect(err.Error()).To(Equal("sending the request for product \"my-super-product\" failed: marketplace request failed: request failed"))
 			})
 		})
 	})
@@ -341,11 +346,12 @@ var _ = Describe("ContainerImage", func() {
 			})
 
 			By("outputting the response", func() {
-				Expect(stdout).To(Say("IMAGE   TAGS"))
-				Expect(stdout).To(Say("nginx   latest"))
-				Expect(stdout).To(Say("python  1.2.3"))
-				Expect(stdout).To(Say("Deployment instructions:"))
-				Expect(stdout).To(Say("Machine wash cold with like colors"))
+				Expect(output.RenderContainerImagesCallCount()).To(Equal(1))
+				product, version := output.RenderContainerImagesArgsForCall(0)
+				Expect(product.Slug).To(Equal("my-super-product"))
+				containerImages := product.GetContainerImagesForVersion(version)
+				Expect(containerImages.DockerURLs).To(HaveLen(2))
+				Expect(version).To(Equal("1.2.3"))
 			})
 		})
 
@@ -430,10 +436,11 @@ var _ = Describe("ContainerImage", func() {
 				})
 
 				By("outputting the response", func() {
-					Expect(stdout).To(Say("IMAGE  TAGS"))
-					Expect(stdout).To(Say("nginx  latest"))
-					Expect(stdout).To(Say("Deployment instructions:"))
-					Expect(stdout).To(Say("Machine wash cold with like colors"))
+					Expect(output.RenderContainerImagesCallCount()).To(Equal(1))
+					product, version := output.RenderContainerImagesArgsForCall(0)
+					Expect(product.Slug).To(Equal("my-super-product"))
+					Expect(product.DockerLinkVersions[0].DockerURLs[0].ImageTags).To(HaveLen(2))
+					Expect(version).To(Equal("1.2.3"))
 				})
 			})
 		})
@@ -467,7 +474,7 @@ var _ = Describe("ContainerImage", func() {
 				cmd.ImageTagType = cmd.ImageTagTypeFixed
 				err := cmd.CreateContainerImageCmd.RunE(cmd.CreateContainerImageCmd, []string{""})
 				Expect(err).To(HaveOccurred())
-				Expect(err.Error()).To(Equal("product \"my-super-product\" does not have a version 0.0.0, please add it first"))
+				Expect(err.Error()).To(Equal("product \"my-super-product\" does not have a version 0.0.0"))
 			})
 		})
 
@@ -480,7 +487,7 @@ var _ = Describe("ContainerImage", func() {
 				cmd.ImageTagType = cmd.ImageTagTypeFloating
 				err := cmd.CreateContainerImageCmd.RunE(cmd.CreateContainerImageCmd, []string{""})
 				Expect(err).To(HaveOccurred())
-				Expect(err.Error()).To(Equal("product \"my-super-product\" 1.2.3 already has the container image nginx:latest"))
+				Expect(err.Error()).To(Equal("my-super-product 1.2.3 already has the container image nginx:latest"))
 			})
 		})
 

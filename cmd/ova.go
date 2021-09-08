@@ -9,94 +9,164 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/vmware-labs/marketplace-cli/v2/internal"
 	"github.com/vmware-labs/marketplace-cli/v2/internal/models"
+	"github.com/vmware-labs/marketplace-cli/v2/pkg"
 )
 
-var pvaFile string
+var (
+	ovaFile               string
+	downloadedOVAFilename string
+)
 
 func init() {
 	rootCmd.AddCommand(OVACmd)
 	OVACmd.AddCommand(ListOVACmd)
+	OVACmd.AddCommand(GetOVACmd)
+	OVACmd.AddCommand(DownloadOVACmd)
 	OVACmd.AddCommand(CreateOVACmd)
-	OVACmd.PersistentFlags().StringVarP(&OutputFormat, "output-format", "f", FormatTable, "Output format")
 
 	OVACmd.PersistentFlags().StringVarP(&ProductSlug, "product", "p", "", "Product slug")
 	_ = OVACmd.MarkPersistentFlagRequired("product")
-	OVACmd.PersistentFlags().StringVarP(&ProductVersion, "product-version", "v", "", "Product version")
+	OVACmd.PersistentFlags().StringVarP(&ProductVersion, "product-version", "v", "latest", "Product version")
 	_ = OVACmd.MarkPersistentFlagRequired("product-version")
 
-	CreateOVACmd.Flags().StringVar(&pvaFile, "ova-file", "", "OVA file to upload")
+	GetOVACmd.Flags().StringVar(&ovaFile, "file-id", "", "The file ID of the file to get")
+
+	DownloadOVACmd.Flags().StringVar(&ovaFile, "file-id", "", "The file ID of the file to download")
+	DownloadOVACmd.Flags().StringVarP(&downloadedOVAFilename, "filename", "f", "", "Downloaded file name (default is original file name)")
+
+	CreateOVACmd.Flags().StringVar(&ovaFile, "ova-file", "", "OVA file to upload")
 }
 
 var OVACmd = &cobra.Command{
-	Use:               "ova",
-	Aliases:           []string{"ovas"},
-	Short:             "ova",
-	Long:              "",
-	Args:              cobra.OnlyValidArgs,
-	ValidArgs:         []string{"get", "list", "create"},
-	PersistentPreRunE: GetRefreshToken,
+	Use:       "ova",
+	Aliases:   []string{"ovas"},
+	Short:     "OVA related commands",
+	Long:      "Interact with OVAs attached to a Marketplace product",
+	Args:      cobra.OnlyValidArgs,
+	ValidArgs: []string{"list", "get", "download", "create"},
 }
 
 var ListOVACmd = &cobra.Command{
 	Use:   "list",
-	Short: "list OVAs",
-	Long:  "",
+	Short: "List OVAs",
+	Long:  "List the OVAs attached to a product",
 	Args:  cobra.NoArgs,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		cmd.SilenceUsage = true
 
-		product, err := Marketplace.GetProduct(ProductSlug)
+		product, err := Marketplace.GetProductWithVersion(ProductSlug, ProductVersion)
 		if err != nil {
 			return err
 		}
 
-		if !product.HasVersion(ProductVersion) {
-			return fmt.Errorf("product \"%s\" does not have a version %s", ProductSlug, ProductVersion)
+		return Output.RenderOVAs(product, ProductVersion)
+	},
+}
+
+var GetOVACmd = &cobra.Command{
+	Use:   "get",
+	Short: "Get OVA details",
+	Long:  "Get details for an OVA file attached to a product",
+	Args:  cobra.NoArgs,
+	RunE: func(cmd *cobra.Command, args []string) error {
+		cmd.SilenceUsage = true
+
+		product, err := Marketplace.GetProductWithVersion(ProductSlug, ProductVersion)
+		if err != nil {
+			return err
 		}
 
-		return RenderOVAs(OutputFormat, ProductVersion, product, cmd.OutOrStdout())
+		var file *models.ProductDeploymentFile
+		if ovaFile != "" {
+			file = product.GetFile(ovaFile)
+			if file == nil {
+				return fmt.Errorf("no file found with ID %s", ovaFile)
+			}
+		} else {
+			files := product.GetFilesForVersion(ProductVersion)
+			if len(files) == 0 {
+				return fmt.Errorf("no files found for %s for version %s", ProductSlug, ProductVersion)
+			} else if len(files) == 1 {
+				file = files[0]
+			} else {
+				return fmt.Errorf("multiple files found for %s for version %s, please use the --file-id parameter", ProductSlug, ProductVersion)
+			}
+		}
+
+		return Output.RenderOVA(product, ProductVersion, file)
+	},
+}
+
+var DownloadOVACmd = &cobra.Command{
+	Use:   "download",
+	Short: "Download an OVA",
+	Long:  "Download an OVA attached to a product",
+	Args:  cobra.NoArgs,
+	RunE: func(cmd *cobra.Command, args []string) error {
+		cmd.SilenceUsage = true
+
+		product, err := Marketplace.GetProductWithVersion(ProductSlug, ProductVersion)
+		if err != nil {
+			return err
+		}
+
+		var file *models.ProductDeploymentFile
+		if ovaFile != "" {
+			file = product.GetFile(ovaFile)
+			if file == nil {
+				return fmt.Errorf("no file found with ID %s", ovaFile)
+			}
+		} else {
+			files := product.GetFilesForVersion(ProductVersion)
+			if len(files) == 0 {
+				return fmt.Errorf("no files found for %s for version %s", ProductSlug, ProductVersion)
+			} else if len(files) == 1 {
+				file = files[0]
+			} else {
+				return fmt.Errorf("multiple files found for %s for version %s, please use the --file-id parameter", ProductSlug, ProductVersion)
+			}
+		}
+
+		if downloadedOVAFilename == "" {
+			downloadedOVAFilename = file.Name
+		}
+		cmd.Printf("Downloading file to %s...\n", downloadedOVAFilename)
+		return Marketplace.Download(product.ProductId, downloadedOVAFilename, &pkg.DownloadRequestPayload{
+			DeploymentFileId: file.FileID,
+			AppVersion:       ProductVersion,
+			EulaAccepted:     true,
+		}, cmd.ErrOrStderr())
 	},
 }
 
 var CreateOVACmd = &cobra.Command{
 	Use:     "create",
-	Short:   "add an OVA to a product",
-	Long:    "",
+	Short:   "Upload an attach an OVA",
+	Long:    "Upload an attach an OVA to a product",
 	Args:    cobra.NoArgs,
 	PreRunE: GetUploadCredentials,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		cmd.SilenceUsage = true
 
-		product, err := Marketplace.GetProduct(ProductSlug)
-		if err != nil {
-			cmd.SilenceUsage = true
-			return err
-		}
-
-		if !product.HasVersion(ProductVersion) {
-			cmd.SilenceUsage = true
-			return fmt.Errorf("product \"%s\" does not have a version %s, please add it first", ProductSlug, ProductVersion)
-		}
-
-		hashAlgo := internal.HashAlgoSHA1
-		uploader := internal.NewS3Uploader(Marketplace.StorageRegion, hashAlgo, product.PublisherDetails.OrgId, UploadCredentials)
-		fileURL, fileHash, err := uploader.Upload(Marketplace.StorageBucket, pvaFile)
+		product, err := Marketplace.GetProductWithVersion(ProductSlug, ProductVersion)
 		if err != nil {
 			return err
 		}
 
-		product.ProductDeploymentFiles = []*models.ProductDeploymentFile{{
-			Url:        fileURL,
-			AppVersion: ProductVersion,
-			HashDigest: fileHash,
-			HashAlgo:   models.HashAlgoSHA1,
-		}}
-
-		_, err = Marketplace.PutProduct(product, false)
+		uploader := internal.NewS3Uploader(Marketplace.StorageRegion, internal.HashAlgoSHA1, product.PublisherDetails.OrgId, UploadCredentials)
+		file, err := uploader.Upload(Marketplace.StorageBucket, ovaFile)
 		if err != nil {
 			return err
 		}
 
-		return nil // RenderOVAs(OutputFormat, ProductVersion, putResponse.Response.Data, cmd.OutOrStdout())
+		file.AppVersion = ProductVersion
+		product.ProductDeploymentFiles = []*models.ProductDeploymentFile{file}
+
+		updatedProduct, err := Marketplace.PutProduct(product, false)
+		if err != nil {
+			return err
+		}
+
+		return Output.RenderOVAs(updatedProduct, ProductVersion)
 	},
 }
