@@ -182,7 +182,6 @@ var CreateContainerImageCmd = &cobra.Command{
 				DockerURLs: []*models.DockerURLDetails{},
 				//DeploymentInstruction: DeploymentInstructions,
 			}
-			product.DockerLinkVersions = append(product.DockerLinkVersions, containerImages)
 		}
 
 		containerImage := containerImages.GetImage(ImageRepository)
@@ -196,12 +195,15 @@ var CreateContainerImageCmd = &cobra.Command{
 		}
 
 		if containerImage.HasTag(ImageTag) {
-			return fmt.Errorf("%s %s already has the container image %s:%s", ProductSlug, ProductVersion, ImageRepository, ImageTag)
+			return fmt.Errorf("%s %s already has the tag %s:%s", ProductSlug, ProductVersion, ImageRepository, ImageTag)
 		}
 		containerImage.ImageTags = append(containerImage.ImageTags, &models.DockerImageTag{
 			Tag:  ImageTag,
 			Type: ImageTagType,
 		})
+
+		product.PrepForUpdate()
+		product.DockerLinkVersions = append(product.DockerLinkVersions, containerImages)
 
 		updatedProduct, err := Marketplace.PutProduct(product, false)
 		if err != nil {

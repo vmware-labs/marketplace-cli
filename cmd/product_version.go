@@ -86,6 +86,7 @@ var CreateProductVersionCmd = &cobra.Command{
 			Number: ProductVersion,
 		})
 
+		product.PrepForUpdate()
 		updatedProduct, err := Marketplace.PutProduct(product, true)
 		if err != nil {
 			return err

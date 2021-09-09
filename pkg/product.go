@@ -134,7 +134,6 @@ func (m *Marketplace) GetProductWithVersion(slug, version string) (*models.Produ
 }
 
 func (m *Marketplace) PutProduct(product *models.Product, versionUpdate bool) (*models.Product, error) {
-	product.PrepForUpdate()
 	encoded, err := json.Marshal(product)
 	if err != nil {
 		return nil, err

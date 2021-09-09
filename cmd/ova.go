@@ -160,7 +160,8 @@ var CreateOVACmd = &cobra.Command{
 		}
 
 		file.AppVersion = ProductVersion
-		product.ProductDeploymentFiles = []*models.ProductDeploymentFile{file}
+		product.PrepForUpdate()
+		product.AddFile(file)
 
 		updatedProduct, err := Marketplace.PutProduct(product, false)
 		if err != nil {

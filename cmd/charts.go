@@ -155,9 +155,8 @@ var CreateChartCmd = &cobra.Command{
 		}
 
 		product.SetDeploymentType(models.DeploymentTypeHelm)
-
-		charts := product.GetChartsForVersion(ProductVersion)
-		product.ChartVersions = append(charts, &models.ChartVersion{
+		product.PrepForUpdate()
+		product.AddChart(&models.ChartVersion{
 			Id:             ChartName,
 			TarUrl:         ChartURL,
 			Version:        ChartVersion,
@@ -169,6 +168,7 @@ var CreateChartCmd = &cobra.Command{
 			},
 		})
 
+		product.PrepForUpdate()
 		updatedProduct, err := Marketplace.PutProduct(product, false)
 		if err != nil {
 			return err

@@ -434,6 +434,10 @@ func (product *Product) GetChart(chartId string) *ChartVersion {
 	return nil
 }
 
+func (product *Product) AddChart(chart *ChartVersion) {
+	product.ChartVersions = append(product.ChartVersions, chart)
+}
+
 func (product *Product) GetFilesForVersion(version string) []*ProductDeploymentFile {
 	if version == "latest" && len(product.AllVersions) > 0 {
 		version = product.AllVersions[0].Number
@@ -457,6 +461,10 @@ func (product *Product) GetFile(fileId string) *ProductDeploymentFile {
 	return nil
 }
 
+func (product *Product) AddFile(file *ProductDeploymentFile) {
+	product.ProductDeploymentFiles = append(product.ProductDeploymentFiles, file)
+}
+
 func (product *Product) PrepForUpdate() {
 	// Send an empty compatibility matrix, any entries in here will multiply
 	product.CompatibilityMatrix = []*CompatibilityMatrix{}
@@ -478,6 +486,10 @@ func (product *Product) PrepForUpdate() {
 		}
 	}
 	product.Versions = product.AllVersions
+
+	product.ChartVersions = []*ChartVersion{}
+	product.DockerLinkVersions = []*DockerVersionList{}
+	product.ProductDeploymentFiles = []*ProductDeploymentFile{}
 }
 
 func (product *Product) SetDeploymentType(deploymentType string) {

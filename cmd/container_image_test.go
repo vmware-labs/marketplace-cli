@@ -487,7 +487,7 @@ var _ = Describe("ContainerImage", func() {
 				cmd.ImageTagType = cmd.ImageTagTypeFloating
 				err := cmd.CreateContainerImageCmd.RunE(cmd.CreateContainerImageCmd, []string{""})
 				Expect(err).To(HaveOccurred())
-				Expect(err.Error()).To(Equal("my-super-product 1.2.3 already has the container image nginx:latest"))
+				Expect(err.Error()).To(Equal("my-super-product 1.2.3 already has the tag nginx:latest"))
 			})
 		})
 
