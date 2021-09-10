@@ -23,4 +23,5 @@ run:
       if [[ $? -ne 0 ]] ; then
         set -e
         mkpcli product-version create --product "${SLUG}" --product-version "${VERSION}"
+        mkpcli product-version list --product "${SLUG}" | grep "${VERSION}"
       fi

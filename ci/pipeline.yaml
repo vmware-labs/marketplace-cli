@@ -3,6 +3,13 @@
 
 ---
 resource_types:
+  # Re-define github-release to use a newer version to fix a known issue
+  - name: github-release
+    type: registry-image
+    source:
+      repository: harbor-repo.vmware.com/dockerhub-proxy-cache/concourse/github-release-resource
+      tag: 1.6.4
+
   - name: helm-chart
     type: registry-image
     source:
