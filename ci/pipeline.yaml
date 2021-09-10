@@ -201,7 +201,7 @@ jobs:
             trigger: true
           - get: version
             params:
-              bump: patch
+              pre: rc
       - task: build-cli
         file: source/ci/tasks/build.yaml
       - task: build-image
@@ -229,14 +229,15 @@ jobs:
         params:
           image: image/image.tar
           additional_tags: version/version  # Update the parameter list if/when concourse is updated
-      - put: release
-        inputs: [ build, source, version ]
-        params:
-          name: version/version
-          tag: version/version
-          commitish: source/.git/ref
-          globs:
-            - build/*
+#      - put: release
+#        inputs: [ build, source, version ]
+#        params:
+#          name: version/version
+#          tag: version/version
+#          tag_prefix: v
+#          commitish: source/.git/ref
+#          globs:
+#            - build/*
       - put: version
         inputs: detect
         params:
@@ -262,43 +263,31 @@ jobs:
     plan:
       - in_parallel:
           - get: nginx-image
-          - get: version
-            resource: test-container-product-version
+          - get: test-container-product-version
             params: { bump: patch }
           - get: mkpcli
             trigger: true
-            passed:
-              - build
-          - get: mkpcli-version
-            resource: version
-            passed:
-              - build
+            passed: [build]
+          - get: source
+            passed: [build]
+          - get: version
+            passed: [build]
       - task: add-version-to-marketplace
         image: mkpcli
-        config:
-          inputs:
-            - name: version
-          platform: linux
-          params:
-            CSP_API_TOKEN: ((marketplace_api_token))
-            MARKETPLACE_ENV: staging
-            SLUG: test-container-product-41
-          run:
-            path: bash
-            args:
-              - -exc
-              - |
-                mkpcli product-version create --product ${SLUG} --product-version $(cat version/version)
+        file: source/ci/tasks/add-version.yaml
+        input_mapping: {version: test-container-product-version}
+        params:
+          SLUG: test-container-product-41
       - put: test-container-product-version
         inputs: detect
         params:
-          file: version/version
+          file: test-container-product-version/version
       - task: add-container-image-to-marketplace
         image: mkpcli
         config:
           inputs:
             - name: nginx-image
-            - name: version
+            - name: test-container-product-version
           platform: linux
           params:
             CSP_API_TOKEN: ((marketplace_api_token))
@@ -311,7 +300,7 @@ jobs:
               - |
                 mkpcli container-image create \
                   --product ${SLUG} \
-                  --product-version $(cat version/version) \
+                  --product-version $(cat test-container-product-version/version) \
                   --image-repository bitnami/nginx \
                   --image-tag $(cat nginx-image/tag) \
                   --image-tag-type FIXED \
@@ -323,43 +312,31 @@ jobs:
           - get: nginx-chart
             params:
               skip_download: true
-          - get: version
-            resource: test-chart-product-version
+          - get: test-chart-product-version
             params: { bump: patch }
           - get: mkpcli
             trigger: true
-            passed:
-              - build
-          - get: mkpcli-version
-            resource: version
-            passed:
-              - build
+            passed: [build]
+          - get: source
+            passed: [build]
+          - get: version
+            passed: [build]
       - task: add-version-to-marketplace
         image: mkpcli
-        config:
-          inputs:
-            - name: version
-          platform: linux
-          params:
-            CSP_API_TOKEN: ((marketplace_api_token))
-            MARKETPLACE_ENV: staging
-            SLUG: test-chart-product-42
-          run:
-            path: bash
-            args:
-              - -exc
-              - |
-                mkpcli product-version create --product ${SLUG} --product-version $(cat version/version)
+        file: source/ci/tasks/add-version.yaml
+        input_mapping: {version: test-chart-product-version}
+        params:
+          SLUG: test-chart-product-42
       - put: test-chart-product-version
         inputs: detect
         params:
-          file: version/version
+          file: test-chart-product-version/version
       - task: add-chart-to-marketplace
         image: mkpcli
         config:
           inputs:
             - name: nginx-chart
-            - name: version
+            - name: test-chart-product-version
           platform: linux
           params:
             CSP_API_TOKEN: ((marketplace_api_token))
@@ -372,32 +349,27 @@ jobs:
               - |
                 mkpcli chart create \
                   --product ${SLUG} \
-                  --product-version $(cat version/version) \
+                  --product-version $(cat test-chart-product-version/version) \
                   --chart-name nginx \
                   --chart-version $(cat nginx-chart/version) \
                   --chart-url https://charts.bitnami.com/bitnami \
+                  --repository-name nginx \
+                  --repository-url https://charts.bitnami.com/bitnami
 
   - name: test-ova-product
     plan:
       - in_parallel:
-          - get: source
-            resource: test-ova-product-source
+          - get: test-ova-product-source
             trigger: true
-          - get: version
-            resource: test-ova-product-version
+          - get: test-ova-product-version
             params: { bump: patch }
           - get: mkpcli
             trigger: true
-            passed:
-              - build
-          - get: mkpcli-version
-            resource: version
-            passed:
-              - build
-      - put: test-ova-product-version
-        inputs: detect
-        params:
-          file: version/version
+            passed: [build]
+          - get: source
+            passed: [build]
+          - get: version
+            passed: [build]
       - task: download-ova
         config:
           platform: linux
@@ -409,35 +381,29 @@ jobs:
               username: ((harbor.username))
               password: ((harbor.token))
           inputs:
-            - name: source
+            - name: test-ova-product-source
           outputs:
-            - name: source
+            - name: test-ova-product-source
           run:
             path: make
-            dir: source/test-ova-product
+            dir: test-ova-product-source/test-ova-product
             args: [ check ]
       - task: add-version-to-marketplace
         image: mkpcli
-        config:
-          inputs:
-            - name: version
-          platform: linux
-          params:
-            CSP_API_TOKEN: ((marketplace_api_token))
-            MARKETPLACE_ENV: staging
-            SLUG: test-ova-product-11
-          run:
-            path: bash
-            args:
-              - -exc
-              - |
-                mkpcli product-version create --product ${SLUG} --product-version $(cat version/version)
+        file: source/ci/tasks/add-version.yaml
+        input_mapping: {version: test-ova-product-version}
+        params:
+          SLUG: test-ova-product-11
+      - put: test-ova-product-version
+        inputs: detect
+        params:
+          file: test-ova-product-version/version
       - task: add-ova-to-marketplace
         image: mkpcli
         config:
           inputs:
-            - name: source
-            - name: version
+            - name: test-ova-product-source
+            - name: test-ova-product-version
           platform: linux
           params:
             CSP_API_TOKEN: ((marketplace_api_token))
@@ -450,25 +416,87 @@ jobs:
               - |
                 mkpcli ova create \
                   --product ${SLUG} \
-                  --product-version $(cat version/version) \
-                  --ova-file source/test-ova-product/*.ova
+                  --product-version $(cat test-ova-product-version/version) \
+                  --ova-file test-ova-product-source/test-ova-product/*.ova
 
-  - name: publish
+  - name: release
+    serial_groups: [ version ]
     plan:
-      - get: mkpcli
-        trigger: true
-        passed:
-          - test-chart-product
-          - test-container-product
-          - test-ova-product
-        params:
-          format: oci
-      - get: version
-        passed:
-          - test-chart-product
-          - test-container-product
-          - test-ova-product
+      - in_parallel:
+        - get: source
+          passed:
+            - test-chart-product
+            - test-container-product
+            - test-ova-product
+        - get: version
+          passed:
+            - test-chart-product
+            - test-container-product
+            - test-ova-product
+          params:
+            bump: final
+      - in_parallel:
+        - do:
+          - task: build-cli
+            file: source/ci/tasks/build.yaml
+          - task: build-image
+            privileged: true
+            config:
+              platform: linux
+              image_resource:
+                type: registry-image
+                source:
+                  repository: harbor-repo.vmware.com/dockerhub-proxy-cache/concourse/oci-build-task
+                  username: ((harbor.username))
+                  password: ((harbor.token))
+              inputs:
+                - name: build
+                - name: source
+              outputs:
+                - name: image
+              params:
+                DOCKERFILE: source/Dockerfile
+              run:
+                path: build
+        - do:
+          - get: release
+          - task: make-release-notes
+            config:
+              platform: linux
+              image_resource:
+                type: registry-image
+                source:
+                  repository: harbor-repo.vmware.com/dockerhub-proxy-cache/library/golang
+                  tag: 1.17
+                  username: ((harbor.username))
+                  password: ((harbor.token))
+              inputs:
+                - name: release
+                - name: source
+              outputs:
+                - name: release-notes
+              run:
+                path: bash
+                dir: source
+                args:
+                  - -exc
+                  - |
+                    git log $(cat ../release/tag)..HEAD --oneline | grep -v "\[ci skip\] bump version" > ../release-notes/notes.txt
+
       - put: mkpcli-public
         params:
-          image: mkpcli/image.tar
+          image: image/image.tar
           additional_tags: version/version
+#      - put: release
+#        inputs: [ build, source, version, release-notes ]
+#        params:
+#          name: version/version
+#          tag: version/version
+#          tag_prefix: v
+#          commitish: source/.git/ref
+#          body: release-notes/notes.txt
+#          globs:
+#            - build/*
+#      - put: version
+#        params:
+#          bump: patch

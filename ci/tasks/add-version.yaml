@@ -1,0 +1,25 @@
+# Copyright 2021 VMware, Inc.
+# SPDX-License-Identifier: BSD-2-Clause
+
+---
+platform: linux
+
+params:
+  CSP_API_TOKEN: ((marketplace_api_token))
+  MARKETPLACE_ENV: staging
+  SLUG:
+
+inputs:
+  - name: version
+
+run:
+  path: bash
+  args:
+    - -exc
+    - |
+      export VERSION=$(cat version/version)
+
+      mkpcli product-version list --product "${SLUG}" --output json | grep "${VERSION}"
+      if [[ $? -ne 0 ]] ; then
+        mkpcli product-version create --product "${SLUG}" --product-version "${VERSION}"
+      fi
