@@ -94,9 +94,14 @@ var _ = Describe("ContainerImage", func() {
 
 			By("outputting the response", func() {
 				Expect(output.RenderContainerImagesCallCount()).To(Equal(1))
-				product, version := output.RenderContainerImagesArgsForCall(0)
-				Expect(product.Slug).To(Equal("my-super-product"))
-				Expect(version).To(Equal("1.2.3"))
+				images := output.RenderContainerImagesArgsForCall(0)
+				Expect(images.AppVersion).To(Equal("1.2.3"))
+				Expect(images.DockerURLs).To(HaveLen(1))
+				Expect(images.DockerURLs[0].ImageTags).To(HaveLen(2))
+				Expect(images.DockerURLs[0].ImageTags[0].Tag).To(Equal("0.0.1"))
+				Expect(images.DockerURLs[0].ImageTags[0].Type).To(Equal("FIXED"))
+				Expect(images.DockerURLs[0].ImageTags[1].Tag).To(Equal("latest"))
+				Expect(images.DockerURLs[0].ImageTags[1].Type).To(Equal("FLOATING"))
 			})
 		})
 
@@ -194,9 +199,7 @@ var _ = Describe("ContainerImage", func() {
 
 			By("outputting the response", func() {
 				Expect(output.RenderContainerImageCallCount()).To(Equal(1))
-				product, version, containerImage := output.RenderContainerImageArgsForCall(0)
-				Expect(product.Slug).To(Equal("my-super-product"))
-				Expect(version).To(Equal("1.2.3"))
+				containerImage := output.RenderContainerImageArgsForCall(0)
 				Expect(containerImage.Url).To(Equal("myId"))
 				Expect(containerImage.ImageTags).To(ContainElement(&models.DockerImageTag{
 					Tag:  "0.0.1",
@@ -347,11 +350,8 @@ var _ = Describe("ContainerImage", func() {
 
 			By("outputting the response", func() {
 				Expect(output.RenderContainerImagesCallCount()).To(Equal(1))
-				product, version := output.RenderContainerImagesArgsForCall(0)
-				Expect(product.Slug).To(Equal("my-super-product"))
-				containerImages := product.GetContainerImagesForVersion(version)
-				Expect(containerImages.DockerURLs).To(HaveLen(2))
-				Expect(version).To(Equal("1.2.3"))
+				images := output.RenderContainerImagesArgsForCall(0)
+				Expect(images.DockerURLs).To(HaveLen(2))
 			})
 		})
 
@@ -437,10 +437,12 @@ var _ = Describe("ContainerImage", func() {
 
 				By("outputting the response", func() {
 					Expect(output.RenderContainerImagesCallCount()).To(Equal(1))
-					product, version := output.RenderContainerImagesArgsForCall(0)
-					Expect(product.Slug).To(Equal("my-super-product"))
-					Expect(product.DockerLinkVersions[0].DockerURLs[0].ImageTags).To(HaveLen(2))
-					Expect(version).To(Equal("1.2.3"))
+					images := output.RenderContainerImagesArgsForCall(0)
+					Expect(images.DockerURLs[0].ImageTags).To(HaveLen(2))
+					Expect(images.DockerURLs[0].ImageTags[0].Tag).To(Equal("latest"))
+					Expect(images.DockerURLs[0].ImageTags[0].Type).To(Equal("FLOATING"))
+					Expect(images.DockerURLs[0].ImageTags[1].Tag).To(Equal("5.5.5"))
+					Expect(images.DockerURLs[0].ImageTags[1].Type).To(Equal("FIXED"))
 				})
 			})
 		})

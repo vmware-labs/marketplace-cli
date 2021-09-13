@@ -36,6 +36,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/sso v1.3.0 // indirect
 	github.com/aws/aws-sdk-go-v2/service/sts v1.5.0 // indirect
 	github.com/aws/smithy-go v1.5.0 // indirect
+	github.com/coreos/go-semver v0.3.0 // indirect
 	github.com/fsnotify/fsnotify v1.4.9 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
 	github.com/inconshreveable/mousetrap v1.0.0 // indirect

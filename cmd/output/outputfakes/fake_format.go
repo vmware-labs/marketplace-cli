@@ -9,12 +9,10 @@ import (
 )
 
 type FakeFormat struct {
-	RenderChartStub        func(*models.Product, string, *models.ChartVersion) error
+	RenderChartStub        func(*models.ChartVersion) error
 	renderChartMutex       sync.RWMutex
 	renderChartArgsForCall []struct {
-		arg1 *models.Product
-		arg2 string
-		arg3 *models.ChartVersion
+		arg1 *models.ChartVersion
 	}
 	renderChartReturns struct {
 		result1 error
@@ -22,11 +20,10 @@ type FakeFormat struct {
 	renderChartReturnsOnCall map[int]struct {
 		result1 error
 	}
-	RenderChartsStub        func(*models.Product, string) error
+	RenderChartsStub        func([]*models.ChartVersion) error
 	renderChartsMutex       sync.RWMutex
 	renderChartsArgsForCall []struct {
-		arg1 *models.Product
-		arg2 string
+		arg1 []*models.ChartVersion
 	}
 	renderChartsReturns struct {
 		result1 error
@@ -34,12 +31,10 @@ type FakeFormat struct {
 	renderChartsReturnsOnCall map[int]struct {
 		result1 error
 	}
-	RenderContainerImageStub        func(*models.Product, string, *models.DockerURLDetails) error
+	RenderContainerImageStub        func(*models.DockerURLDetails) error
 	renderContainerImageMutex       sync.RWMutex
 	renderContainerImageArgsForCall []struct {
-		arg1 *models.Product
-		arg2 string
-		arg3 *models.DockerURLDetails
+		arg1 *models.DockerURLDetails
 	}
 	renderContainerImageReturns struct {
 		result1 error
@@ -47,11 +42,10 @@ type FakeFormat struct {
 	renderContainerImageReturnsOnCall map[int]struct {
 		result1 error
 	}
-	RenderContainerImagesStub        func(*models.Product, string) error
+	RenderContainerImagesStub        func(*models.DockerVersionList) error
 	renderContainerImagesMutex       sync.RWMutex
 	renderContainerImagesArgsForCall []struct {
-		arg1 *models.Product
-		arg2 string
+		arg1 *models.DockerVersionList
 	}
 	renderContainerImagesReturns struct {
 		result1 error
@@ -59,12 +53,10 @@ type FakeFormat struct {
 	renderContainerImagesReturnsOnCall map[int]struct {
 		result1 error
 	}
-	RenderOVAStub        func(*models.Product, string, *models.ProductDeploymentFile) error
+	RenderOVAStub        func(*models.ProductDeploymentFile) error
 	renderOVAMutex       sync.RWMutex
 	renderOVAArgsForCall []struct {
-		arg1 *models.Product
-		arg2 string
-		arg3 *models.ProductDeploymentFile
+		arg1 *models.ProductDeploymentFile
 	}
 	renderOVAReturns struct {
 		result1 error
@@ -72,11 +64,10 @@ type FakeFormat struct {
 	renderOVAReturnsOnCall map[int]struct {
 		result1 error
 	}
-	RenderOVAsStub        func(*models.Product, string) error
+	RenderOVAsStub        func([]*models.ProductDeploymentFile) error
 	renderOVAsMutex       sync.RWMutex
 	renderOVAsArgsForCall []struct {
-		arg1 *models.Product
-		arg2 string
+		arg1 []*models.ProductDeploymentFile
 	}
 	renderOVAsReturns struct {
 		result1 error
@@ -133,18 +124,16 @@ type FakeFormat struct {
 	invocationsMutex sync.RWMutex
 }
 
-func (fake *FakeFormat) RenderChart(arg1 *models.Product, arg2 string, arg3 *models.ChartVersion) error {
+func (fake *FakeFormat) RenderChart(arg1 *models.ChartVersion) error {
 	fake.renderChartMutex.Lock()
 	ret, specificReturn := fake.renderChartReturnsOnCall[len(fake.renderChartArgsForCall)]
 	fake.renderChartArgsForCall = append(fake.renderChartArgsForCall, struct {
-		arg1 *models.Product
-		arg2 string
-		arg3 *models.ChartVersion
-	}{arg1, arg2, arg3})
-	fake.recordInvocation("RenderChart", []interface{}{arg1, arg2, arg3})
+		arg1 *models.ChartVersion
+	}{arg1})
+	fake.recordInvocation("RenderChart", []interface{}{arg1})
 	fake.renderChartMutex.Unlock()
 	if fake.RenderChartStub != nil {
-		return fake.RenderChartStub(arg1, arg2, arg3)
+		return fake.RenderChartStub(arg1)
 	}
 	if specificReturn {
 		return ret.result1
@@ -159,17 +148,17 @@ func (fake *FakeFormat) RenderChartCallCount() int {
 	return len(fake.renderChartArgsForCall)
 }
 
-func (fake *FakeFormat) RenderChartCalls(stub func(*models.Product, string, *models.ChartVersion) error) {
+func (fake *FakeFormat) RenderChartCalls(stub func(*models.ChartVersion) error) {
 	fake.renderChartMutex.Lock()
 	defer fake.renderChartMutex.Unlock()
 	fake.RenderChartStub = stub
 }
 
-func (fake *FakeFormat) RenderChartArgsForCall(i int) (*models.Product, string, *models.ChartVersion) {
+func (fake *FakeFormat) RenderChartArgsForCall(i int) *models.ChartVersion {
 	fake.renderChartMutex.RLock()
 	defer fake.renderChartMutex.RUnlock()
 	argsForCall := fake.renderChartArgsForCall[i]
-	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3
+	return argsForCall.arg1
 }
 
 func (fake *FakeFormat) RenderChartReturns(result1 error) {
@@ -195,17 +184,21 @@ func (fake *FakeFormat) RenderChartReturnsOnCall(i int, result1 error) {
 	}{result1}
 }
 
-func (fake *FakeFormat) RenderCharts(arg1 *models.Product, arg2 string) error {
+func (fake *FakeFormat) RenderCharts(arg1 []*models.ChartVersion) error {
+	var arg1Copy []*models.ChartVersion
+	if arg1 != nil {
+		arg1Copy = make([]*models.ChartVersion, len(arg1))
+		copy(arg1Copy, arg1)
+	}
 	fake.renderChartsMutex.Lock()
 	ret, specificReturn := fake.renderChartsReturnsOnCall[len(fake.renderChartsArgsForCall)]
 	fake.renderChartsArgsForCall = append(fake.renderChartsArgsForCall, struct {
-		arg1 *models.Product
-		arg2 string
-	}{arg1, arg2})
-	fake.recordInvocation("RenderCharts", []interface{}{arg1, arg2})
+		arg1 []*models.ChartVersion
+	}{arg1Copy})
+	fake.recordInvocation("RenderCharts", []interface{}{arg1Copy})
 	fake.renderChartsMutex.Unlock()
 	if fake.RenderChartsStub != nil {
-		return fake.RenderChartsStub(arg1, arg2)
+		return fake.RenderChartsStub(arg1)
 	}
 	if specificReturn {
 		return ret.result1
@@ -220,17 +213,17 @@ func (fake *FakeFormat) RenderChartsCallCount() int {
 	return len(fake.renderChartsArgsForCall)
 }
 
-func (fake *FakeFormat) RenderChartsCalls(stub func(*models.Product, string) error) {
+func (fake *FakeFormat) RenderChartsCalls(stub func([]*models.ChartVersion) error) {
 	fake.renderChartsMutex.Lock()
 	defer fake.renderChartsMutex.Unlock()
 	fake.RenderChartsStub = stub
 }
 
-func (fake *FakeFormat) RenderChartsArgsForCall(i int) (*models.Product, string) {
+func (fake *FakeFormat) RenderChartsArgsForCall(i int) []*models.ChartVersion {
 	fake.renderChartsMutex.RLock()
 	defer fake.renderChartsMutex.RUnlock()
 	argsForCall := fake.renderChartsArgsForCall[i]
-	return argsForCall.arg1, argsForCall.arg2
+	return argsForCall.arg1
 }
 
 func (fake *FakeFormat) RenderChartsReturns(result1 error) {
@@ -256,18 +249,16 @@ func (fake *FakeFormat) RenderChartsReturnsOnCall(i int, result1 error) {
 	}{result1}
 }
 
-func (fake *FakeFormat) RenderContainerImage(arg1 *models.Product, arg2 string, arg3 *models.DockerURLDetails) error {
+func (fake *FakeFormat) RenderContainerImage(arg1 *models.DockerURLDetails) error {
 	fake.renderContainerImageMutex.Lock()
 	ret, specificReturn := fake.renderContainerImageReturnsOnCall[len(fake.renderContainerImageArgsForCall)]
 	fake.renderContainerImageArgsForCall = append(fake.renderContainerImageArgsForCall, struct {
-		arg1 *models.Product
-		arg2 string
-		arg3 *models.DockerURLDetails
-	}{arg1, arg2, arg3})
-	fake.recordInvocation("RenderContainerImage", []interface{}{arg1, arg2, arg3})
+		arg1 *models.DockerURLDetails
+	}{arg1})
+	fake.recordInvocation("RenderContainerImage", []interface{}{arg1})
 	fake.renderContainerImageMutex.Unlock()
 	if fake.RenderContainerImageStub != nil {
-		return fake.RenderContainerImageStub(arg1, arg2, arg3)
+		return fake.RenderContainerImageStub(arg1)
 	}
 	if specificReturn {
 		return ret.result1
@@ -282,17 +273,17 @@ func (fake *FakeFormat) RenderContainerImageCallCount() int {
 	return len(fake.renderContainerImageArgsForCall)
 }
 
-func (fake *FakeFormat) RenderContainerImageCalls(stub func(*models.Product, string, *models.DockerURLDetails) error) {
+func (fake *FakeFormat) RenderContainerImageCalls(stub func(*models.DockerURLDetails) error) {
 	fake.renderContainerImageMutex.Lock()
 	defer fake.renderContainerImageMutex.Unlock()
 	fake.RenderContainerImageStub = stub
 }
 
-func (fake *FakeFormat) RenderContainerImageArgsForCall(i int) (*models.Product, string, *models.DockerURLDetails) {
+func (fake *FakeFormat) RenderContainerImageArgsForCall(i int) *models.DockerURLDetails {
 	fake.renderContainerImageMutex.RLock()
 	defer fake.renderContainerImageMutex.RUnlock()
 	argsForCall := fake.renderContainerImageArgsForCall[i]
-	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3
+	return argsForCall.arg1
 }
 
 func (fake *FakeFormat) RenderContainerImageReturns(result1 error) {
@@ -318,17 +309,16 @@ func (fake *FakeFormat) RenderContainerImageReturnsOnCall(i int, result1 error) 
 	}{result1}
 }
 
-func (fake *FakeFormat) RenderContainerImages(arg1 *models.Product, arg2 string) error {
+func (fake *FakeFormat) RenderContainerImages(arg1 *models.DockerVersionList) error {
 	fake.renderContainerImagesMutex.Lock()
 	ret, specificReturn := fake.renderContainerImagesReturnsOnCall[len(fake.renderContainerImagesArgsForCall)]
 	fake.renderContainerImagesArgsForCall = append(fake.renderContainerImagesArgsForCall, struct {
-		arg1 *models.Product
-		arg2 string
-	}{arg1, arg2})
-	fake.recordInvocation("RenderContainerImages", []interface{}{arg1, arg2})
+		arg1 *models.DockerVersionList
+	}{arg1})
+	fake.recordInvocation("RenderContainerImages", []interface{}{arg1})
 	fake.renderContainerImagesMutex.Unlock()
 	if fake.RenderContainerImagesStub != nil {
-		return fake.RenderContainerImagesStub(arg1, arg2)
+		return fake.RenderContainerImagesStub(arg1)
 	}
 	if specificReturn {
 		return ret.result1
@@ -343,17 +333,17 @@ func (fake *FakeFormat) RenderContainerImagesCallCount() int {
 	return len(fake.renderContainerImagesArgsForCall)
 }
 
-func (fake *FakeFormat) RenderContainerImagesCalls(stub func(*models.Product, string) error) {
+func (fake *FakeFormat) RenderContainerImagesCalls(stub func(*models.DockerVersionList) error) {
 	fake.renderContainerImagesMutex.Lock()
 	defer fake.renderContainerImagesMutex.Unlock()
 	fake.RenderContainerImagesStub = stub
 }
 
-func (fake *FakeFormat) RenderContainerImagesArgsForCall(i int) (*models.Product, string) {
+func (fake *FakeFormat) RenderContainerImagesArgsForCall(i int) *models.DockerVersionList {
 	fake.renderContainerImagesMutex.RLock()
 	defer fake.renderContainerImagesMutex.RUnlock()
 	argsForCall := fake.renderContainerImagesArgsForCall[i]
-	return argsForCall.arg1, argsForCall.arg2
+	return argsForCall.arg1
 }
 
 func (fake *FakeFormat) RenderContainerImagesReturns(result1 error) {
@@ -379,18 +369,16 @@ func (fake *FakeFormat) RenderContainerImagesReturnsOnCall(i int, result1 error)
 	}{result1}
 }
 
-func (fake *FakeFormat) RenderOVA(arg1 *models.Product, arg2 string, arg3 *models.ProductDeploymentFile) error {
+func (fake *FakeFormat) RenderOVA(arg1 *models.ProductDeploymentFile) error {
 	fake.renderOVAMutex.Lock()
 	ret, specificReturn := fake.renderOVAReturnsOnCall[len(fake.renderOVAArgsForCall)]
 	fake.renderOVAArgsForCall = append(fake.renderOVAArgsForCall, struct {
-		arg1 *models.Product
-		arg2 string
-		arg3 *models.ProductDeploymentFile
-	}{arg1, arg2, arg3})
-	fake.recordInvocation("RenderOVA", []interface{}{arg1, arg2, arg3})
+		arg1 *models.ProductDeploymentFile
+	}{arg1})
+	fake.recordInvocation("RenderOVA", []interface{}{arg1})
 	fake.renderOVAMutex.Unlock()
 	if fake.RenderOVAStub != nil {
-		return fake.RenderOVAStub(arg1, arg2, arg3)
+		return fake.RenderOVAStub(arg1)
 	}
 	if specificReturn {
 		return ret.result1
@@ -405,17 +393,17 @@ func (fake *FakeFormat) RenderOVACallCount() int {
 	return len(fake.renderOVAArgsForCall)
 }
 
-func (fake *FakeFormat) RenderOVACalls(stub func(*models.Product, string, *models.ProductDeploymentFile) error) {
+func (fake *FakeFormat) RenderOVACalls(stub func(*models.ProductDeploymentFile) error) {
 	fake.renderOVAMutex.Lock()
 	defer fake.renderOVAMutex.Unlock()
 	fake.RenderOVAStub = stub
 }
 
-func (fake *FakeFormat) RenderOVAArgsForCall(i int) (*models.Product, string, *models.ProductDeploymentFile) {
+func (fake *FakeFormat) RenderOVAArgsForCall(i int) *models.ProductDeploymentFile {
 	fake.renderOVAMutex.RLock()
 	defer fake.renderOVAMutex.RUnlock()
 	argsForCall := fake.renderOVAArgsForCall[i]
-	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3
+	return argsForCall.arg1
 }
 
 func (fake *FakeFormat) RenderOVAReturns(result1 error) {
@@ -441,17 +429,21 @@ func (fake *FakeFormat) RenderOVAReturnsOnCall(i int, result1 error) {
 	}{result1}
 }
 
-func (fake *FakeFormat) RenderOVAs(arg1 *models.Product, arg2 string) error {
+func (fake *FakeFormat) RenderOVAs(arg1 []*models.ProductDeploymentFile) error {
+	var arg1Copy []*models.ProductDeploymentFile
+	if arg1 != nil {
+		arg1Copy = make([]*models.ProductDeploymentFile, len(arg1))
+		copy(arg1Copy, arg1)
+	}
 	fake.renderOVAsMutex.Lock()
 	ret, specificReturn := fake.renderOVAsReturnsOnCall[len(fake.renderOVAsArgsForCall)]
 	fake.renderOVAsArgsForCall = append(fake.renderOVAsArgsForCall, struct {
-		arg1 *models.Product
-		arg2 string
-	}{arg1, arg2})
-	fake.recordInvocation("RenderOVAs", []interface{}{arg1, arg2})
+		arg1 []*models.ProductDeploymentFile
+	}{arg1Copy})
+	fake.recordInvocation("RenderOVAs", []interface{}{arg1Copy})
 	fake.renderOVAsMutex.Unlock()
 	if fake.RenderOVAsStub != nil {
-		return fake.RenderOVAsStub(arg1, arg2)
+		return fake.RenderOVAsStub(arg1)
 	}
 	if specificReturn {
 		return ret.result1
@@ -466,17 +458,17 @@ func (fake *FakeFormat) RenderOVAsCallCount() int {
 	return len(fake.renderOVAsArgsForCall)
 }
 
-func (fake *FakeFormat) RenderOVAsCalls(stub func(*models.Product, string) error) {
+func (fake *FakeFormat) RenderOVAsCalls(stub func([]*models.ProductDeploymentFile) error) {
 	fake.renderOVAsMutex.Lock()
 	defer fake.renderOVAsMutex.Unlock()
 	fake.RenderOVAsStub = stub
 }
 
-func (fake *FakeFormat) RenderOVAsArgsForCall(i int) (*models.Product, string) {
+func (fake *FakeFormat) RenderOVAsArgsForCall(i int) []*models.ProductDeploymentFile {
 	fake.renderOVAsMutex.RLock()
 	defer fake.renderOVAsMutex.RUnlock()
 	argsForCall := fake.renderOVAsArgsForCall[i]
-	return argsForCall.arg1, argsForCall.arg2
+	return argsForCall.arg1
 }
 
 func (fake *FakeFormat) RenderOVAsReturns(result1 error) {

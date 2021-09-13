@@ -1,0 +1,37 @@
+# Copyright 2021 VMware, Inc.
+# SPDX-License-Identifier: BSD-2-Clause
+
+---
+platform: linux
+
+params:
+  CSP_API_TOKEN: ((marketplace_api_token))
+  MARKETPLACE_ENV:
+  PRODUCT_SLUG:
+  TEST_IMAGE_REPO: bitnami/nginx
+  TEST_IMAGE_TAG: 1.21.1
+
+inputs:
+  - name: version
+
+run:
+  path: bash
+  args:
+    - -exc
+    - |
+      set -ex
+      VERSION=$(cat version/version)
+
+      # Get the list of container images
+      mkpcli container-image list --debug --debug-request-payloads \
+        --product "${PRODUCT_SLUG}" --product-version "${VERSION}"
+
+      # Upload a docker image
+      mkpcli container-image create --debug --debug-request-payloads \
+        --product "${PRODUCT_SLUG}" --product-version "${VERSION}" \
+        --image-repository "${TEST_IMAGE_REPO}" --tag "${TEST_IMAGE_TAG}" --tag-type FIXED \
+        --deployment-instructions "docker run ${TEST_IMAGE_REPO}:${TEST_IMAGE_TAG}"
+
+      # Get the list of container images
+      mkpcli container-image list --debug --debug-request-payloads \
+        --product "${PRODUCT_SLUG}" --product-version "${VERSION}" | grep "${TEST_IMAGE_REPO} *${TEST_IMAGE_TAG}"

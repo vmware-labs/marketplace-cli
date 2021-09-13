@@ -46,26 +46,26 @@ func (j *JSONOutput) RenderVersions(product *models.Product) error {
 	return j.PrintJSON(product.AllVersions)
 }
 
-func (j *JSONOutput) RenderChart(product *models.Product, version string, chart *models.ChartVersion) error {
+func (j *JSONOutput) RenderChart(chart *models.ChartVersion) error {
 	return j.PrintJSON(chart)
 }
 
-func (j *JSONOutput) RenderCharts(product *models.Product, version string) error {
-	return j.PrintJSON(product.GetChartsForVersion(version))
+func (j *JSONOutput) RenderCharts(charts []*models.ChartVersion) error {
+	return j.PrintJSON(charts)
 }
 
-func (j *JSONOutput) RenderContainerImage(product *models.Product, version string, image *models.DockerURLDetails) error {
+func (j *JSONOutput) RenderContainerImage(image *models.DockerURLDetails) error {
 	return j.PrintJSON(image)
 }
 
-func (j *JSONOutput) RenderContainerImages(product *models.Product, version string) error {
-	return j.PrintJSON(product.GetContainerImagesForVersion(version))
+func (j *JSONOutput) RenderContainerImages(images *models.DockerVersionList) error {
+	return j.PrintJSON(images)
 }
 
-func (j *JSONOutput) RenderOVA(product *models.Product, version string, file *models.ProductDeploymentFile) error {
+func (j *JSONOutput) RenderOVA(file *models.ProductDeploymentFile) error {
 	return j.PrintJSON(file)
 }
 
-func (j *JSONOutput) RenderOVAs(product *models.Product, version string) error {
-	return j.PrintJSON(product.GetFilesForVersion(version))
+func (j *JSONOutput) RenderOVAs(files []*models.ProductDeploymentFile) error {
+	return j.PrintJSON(files)
 }

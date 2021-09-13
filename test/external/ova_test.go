@@ -4,8 +4,6 @@
 package external_test
 
 import (
-	"fmt"
-
 	. "github.com/bunniesandbeatings/goerkin"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -16,29 +14,28 @@ import (
 var _ = Describe("OVA", func() {
 	steps := NewSteps()
 
-	var (
-		slug                = "test-ova-product-11"
-		knownProductVersion = "0.0.0"
-	)
-
 	Scenario("Listing OVAs", func() {
-		steps.When(fmt.Sprintf("running mkpcli ova list --product %s --product-version %s", slug, knownProductVersion))
+		steps.When("running mkpcli ova list --product nginxstack --product-version 1.21.0_1")
 		steps.Then("the command exits without error")
 		steps.And("the table of OVAs is printed")
 	})
 
 	steps.Define(func(define Definitions) {
-		DefineCommonSteps(define)
+		DefineCommonSteps(define, "production")
 
 		define.Then(`^the table of OVAs is printed$`, func() {
+			Eventually(CommandSession.Out).Should(Say("ID"))
 			Eventually(CommandSession.Out).Should(Say("NAME"))
+			Eventually(CommandSession.Out).Should(Say("STATUS"))
 			Eventually(CommandSession.Out).Should(Say("SIZE"))
 			Eventually(CommandSession.Out).Should(Say("TYPE"))
 			Eventually(CommandSession.Out).Should(Say("FILES"))
-			Eventually(CommandSession.Out).Should(Say("photon-hw13-uefi-4-1622584869708"))
-			Eventually(CommandSession.Out).Should(Say("234018527"))
+			Eventually(CommandSession.Out).Should(Say("68c1663c-4f1e-4a8e-a719-0aef7d6bae94"))
+			Eventually(CommandSession.Out).Should(Say("bitnami-nginx-1.21.0-1-linux-centos-7-x86_64-nami"))
+			Eventually(CommandSession.Out).Should(Say("ACTIVE"))
+			Eventually(CommandSession.Out).Should(Say("1.28 GB"))
 			Eventually(CommandSession.Out).Should(Say("vcsp.ovf"))
-			Eventually(CommandSession.Out).Should(Say("4"))
+			Eventually(CommandSession.Out).Should(Say("3"))
 		})
 	})
 })

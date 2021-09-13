@@ -1,0 +1,31 @@
+# Copyright 2021 VMware, Inc.
+# SPDX-License-Identifier: BSD-2-Clause
+
+---
+platform: linux
+
+params:
+  CSP_API_TOKEN: ((marketplace_api_token))
+  MARKETPLACE_ENV:
+  PRODUCT_SLUG:
+  PRODUCT_VERSION:
+
+run:
+  path: bash
+  args:
+    - -exc
+    - |
+      set -ex
+
+      # Get the ID for the first chart
+      CHART_ID=$(mkpcli chart list --debug --debug-request-payloads --product "${PRODUCT_SLUG}" --product-version "${PRODUCT_VERSION}" --output json | jq -r .[0].id)
+
+      # Download the chart
+      mkpcli chart download --debug --debug-request-payloads \
+        --product "${PRODUCT_SLUG}" --product-version "${PRODUCT_VERSION}" \
+        --chart-id "${CHART_ID}" \
+        --filename my-chart.tgz
+
+      # Downloaded file is a real Helm chart
+      test -f my-chart.tgz
+      tar tvf my-chart.tgz | grep Chart.yaml

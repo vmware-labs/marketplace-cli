@@ -4,8 +4,6 @@
 package external_test
 
 import (
-	"fmt"
-
 	. "github.com/bunniesandbeatings/goerkin"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -17,31 +15,35 @@ var _ = Describe("Product Version", func() {
 	steps := NewSteps()
 
 	Scenario("Listing product versions", func() {
-		steps.When(fmt.Sprintf("running mkpcli product-version list --product %s", ContainerProductSlug))
+		steps.When("running mkpcli product-version list --product nginx")
 		steps.Then("the command exits without error")
-		steps.And("the table of product versions is printed")
+		steps.And("the list of product versions is printed")
 	})
 
 	Scenario("Getting a single product version", func() {
-		steps.When(fmt.Sprintf("running mkpcli product-version get --product %s --product-version %s", ContainerProductSlug, ContainerProductVersion))
+		steps.When("running mkpcli product-version get --product nginx --product-version 1.21.1_0")
 		steps.Then("the command exits without error")
-		steps.And("the table of the product version is printed")
+		steps.And("the product version is printed")
 	})
 
 	steps.Define(func(define Definitions) {
-		DefineCommonSteps(define)
+		DefineCommonSteps(define, "production")
 
-		define.Then(`^the table of product versions is printed$`, func() {
+		define.Then(`^the list of product versions is printed$`, func() {
 			Eventually(CommandSession.Out).Should(Say("Versions:"))
 			Eventually(CommandSession.Out).Should(Say("NUMBER"))
 			Eventually(CommandSession.Out).Should(Say("STATUS"))
 
-			Eventually(CommandSession.Out).Should(Say(ContainerProductVersion))
-			Eventually(CommandSession.Out).Should(Say("PENDING"))
+			Eventually(CommandSession.Out).Should(Say("1.21.3_0"))
+			Eventually(CommandSession.Out).Should(Say("ACTIVE"))
+			Eventually(CommandSession.Out).Should(Say("1.21.2_0"))
+			Eventually(CommandSession.Out).Should(Say("ACTIVE"))
+			Eventually(CommandSession.Out).Should(Say("1.21.1_0"))
+			Eventually(CommandSession.Out).Should(Say("ACTIVE"))
 		})
 
-		define.Then(`^the table of the product version is printed$`, func() {
-			Eventually(CommandSession.Out).Should(Say(fmt.Sprintf("Version %s", ContainerProductVersion)))
+		define.Then(`^the product version is printed$`, func() {
+			Eventually(CommandSession.Out).Should(Say("Version 1.21.1_0"))
 		})
 	})
 })

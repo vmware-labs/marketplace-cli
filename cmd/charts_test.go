@@ -100,9 +100,14 @@ var _ = Describe("Charts", func() {
 
 			By("outputting the response", func() {
 				Expect(output.RenderChartsCallCount()).To(Equal(1))
-				product, version := output.RenderChartsArgsForCall(0)
-				Expect(product.Slug).To(Equal("my-super-product"))
-				Expect(version).To(Equal("1.2.3"))
+				charts := output.RenderChartsArgsForCall(0)
+				Expect(charts).To(HaveLen(1))
+				Expect(charts[0].Version).To(Equal("5.0.0"))
+				Expect(charts[0].AppVersion).To(Equal("1.2.3"))
+				Expect(charts[0].Repo.Name).To(Equal("Bitnami charts repo @ Github"))
+				Expect(charts[0].Repo.Url).To(Equal("https://github.com/bitnami/charts/tree/master/bitnami/kube-prometheus"))
+				Expect(charts[0].HelmTarUrl).To(Equal("https://charts.bitnami.com/bitnami/kube-prometheus-5.0.0.tgz"))
+				Expect(charts[0].TarUrl).To(Equal("https://charts.bitnami.com/bitnami/kube-prometheus-5.0.0.tgz"))
 			})
 		})
 
@@ -282,10 +287,8 @@ var _ = Describe("Charts", func() {
 
 			By("outputting the response", func() {
 				Expect(output.RenderChartsCallCount()).To(Equal(1))
-				product, version := output.RenderChartsArgsForCall(0)
-				Expect(product.Slug).To(Equal("my-super-product"))
-				Expect(product.ChartVersions).To(HaveLen(2))
-				Expect(version).To(Equal("1.2.3"))
+				charts := output.RenderChartsArgsForCall(0)
+				Expect(charts).To(HaveLen(2))
 			})
 		})
 

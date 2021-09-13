@@ -19,11 +19,9 @@ func init() {
 	ProductVersionCmd.PersistentFlags().StringVarP(&ProductSlug, "product", "p", "", "Product slug")
 	_ = ProductVersionCmd.MarkPersistentFlagRequired("product")
 
-	GetProductVersionCmd.Flags().StringVarP(&ProductVersion, "product-version", "v", "", "Product version")
-	_ = GetProductVersionCmd.MarkFlagRequired("product-version")
+	GetProductVersionCmd.Flags().StringVarP(&ProductVersion, "product-version", "v", "latest", "Product version")
 
-	CreateProductVersionCmd.Flags().StringVarP(&ProductVersion, "product-version", "v", "", "Product version")
-	_ = CreateProductVersionCmd.MarkFlagRequired("product-version")
+	CreateProductVersionCmd.Flags().StringVarP(&ProductVersion, "product-version", "v", "latest", "Product version")
 }
 
 var ProductVersionCmd = &cobra.Command{
@@ -64,7 +62,7 @@ var GetProductVersionCmd = &cobra.Command{
 			return fmt.Errorf("product \"%s\" does not have a version %s", ProductSlug, ProductVersion)
 		}
 
-		return Output.RenderVersion(product, ProductVersion)
+		return Output.RenderVersion(product, version.Number)
 	},
 }
 

@@ -3,6 +3,13 @@
 
 package models
 
+import (
+	"sort"
+	"strings"
+
+	"github.com/coreos/go-semver/semver"
+)
+
 type Repo struct {
 	Name string `json:"name,omitempty"`
 	Url  string `json:"url,omitempty"`
@@ -275,9 +282,9 @@ type DockerVersionList struct {
 	//ImageTags             []*DockerImageTag   `json:"imagetags"` // DEPRECATED
 }
 
-func (l *DockerVersionList) GetImage(imageName string) *DockerURLDetails {
+func (l *DockerVersionList) GetImage(imageURL string) *DockerURLDetails {
 	for _, image := range l.DockerURLs {
-		if image.Url == imageName {
+		if image.Url == imageURL {
 			return image
 		}
 	}
@@ -382,8 +389,8 @@ type Product struct {
 }
 
 func (product *Product) GetVersion(version string) *Version {
-	if version == "latest" && len(product.AllVersions) > 0 {
-		return product.AllVersions[0]
+	if version == "latest" {
+		return product.GetLatestVersion()
 	}
 
 	for _, v := range product.AllVersions {
@@ -394,17 +401,85 @@ func (product *Product) GetVersion(version string) *Version {
 	return nil
 }
 
+func (product *Product) GetLatestVersion() *Version {
+	if len(product.AllVersions) == 0 {
+		return &Version{Number: "N/A"}
+	}
+
+	version, err := product.getLatestVersionSemver()
+	if err != nil {
+		version = product.getLatestVersionAlphanumeric()
+	}
+
+	return version
+}
+
+func (product *Product) getLatestVersionSemver() (*Version, error) {
+	latestVersion := product.AllVersions[0]
+	version, err := semver.NewVersion(latestVersion.Number)
+	if err != nil {
+		return nil, err
+	}
+	for _, v := range product.AllVersions {
+		otherVersion, err := semver.NewVersion(v.Number)
+		if err != nil {
+			return nil, err
+		}
+		if version.LessThan(*otherVersion) {
+			latestVersion = v
+			version = otherVersion
+		}
+	}
+
+	return latestVersion, nil
+}
+
+func (product *Product) getLatestVersionAlphanumeric() *Version {
+	latestVersion := product.AllVersions[0]
+	for _, v := range product.AllVersions {
+		if strings.Compare(latestVersion.Number, v.Number) < 0 {
+			latestVersion = v
+		}
+	}
+	return latestVersion
+}
+
+type Versions []*Version
+
+func (v Versions) Len() int {
+	return len(v)
+}
+
+func (v Versions) Swap(i, j int) {
+	v[i], v[j] = v[j], v[i]
+}
+
+func (v Versions) Less(i, j int) bool {
+	return v[i].LessThan(*v[j])
+}
+
+func (a Version) LessThan(b Version) bool {
+	semverA, errA := semver.NewVersion(a.Number)
+	semverB, errB := semver.NewVersion(b.Number)
+
+	if errA != nil || errB != nil {
+		return strings.Compare(a.Number, b.Number) < 0
+	}
+
+	return semverA.LessThan(*semverB)
+}
+
+func Sort(versions []*Version) {
+	sort.Sort(sort.Reverse(Versions(versions)))
+}
+
 func (product *Product) HasVersion(version string) bool {
 	return product.GetVersion(version) != nil
 }
 
 func (product *Product) GetContainerImagesForVersion(version string) *DockerVersionList {
-	if version == "latest" && len(product.AllVersions) > 0 {
-		version = product.AllVersions[0].Number
-	}
-
 	for _, dockerVersionLink := range product.DockerLinkVersions {
-		if dockerVersionLink.AppVersion == version {
+		if dockerVersionLink.AppVersion == product.GetVersion(version).Number {
 			return dockerVersionLink
 		}
 	}
@@ -412,13 +487,9 @@ func (product *Product) GetContainerImagesForVersion(version string) *DockerVers
 }
 
 func (product *Product) GetChartsForVersion(version string) []*ChartVersion {
-	if version == "latest" && len(product.AllVersions) > 0 {
-		version = product.AllVersions[0].Number
-	}
-
 	var charts []*ChartVersion
 	for _, chart := range product.ChartVersions {
-		if chart.AppVersion == version {
+		if chart.AppVersion == product.GetVersion(version).Number {
 			charts = append(charts, chart)
 		}
 	}
@@ -439,13 +510,9 @@ func (product *Product) AddChart(chart *ChartVersion) {
 }
 
 func (product *Product) GetFilesForVersion(version string) []*ProductDeploymentFile {
-	if version == "latest" && len(product.AllVersions) > 0 {
-		version = product.AllVersions[0].Number
-	}
-
 	var files []*ProductDeploymentFile
 	for _, file := range product.ProductDeploymentFiles {
-		if file.AppVersion == version {
+		if file.AppVersion == product.GetVersion(version).Number {
 			files = append(files, file)
 		}
 	}

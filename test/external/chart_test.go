@@ -4,8 +4,6 @@
 package external_test
 
 import (
-	"fmt"
-
 	. "github.com/bunniesandbeatings/goerkin"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -17,13 +15,13 @@ var _ = Describe("Chart", func() {
 	steps := NewSteps()
 
 	Scenario("Listing charts", func() {
-		steps.When(fmt.Sprintf("running mkpcli chart list --product %s --product-version %s", ChartProductSlug, ChartProductVersion))
+		steps.When("running mkpcli chart list --product nginx --product-version 1.21.1_0")
 		steps.Then("the command exits without error")
 		steps.And("the table of charts is printed")
 	})
 
 	steps.Define(func(define Definitions) {
-		DefineCommonSteps(define)
+		DefineCommonSteps(define, "production")
 
 		define.Then(`^the table of charts is printed$`, func() {
 			Eventually(CommandSession.Out).Should(Say("ID"))
@@ -31,9 +29,10 @@ var _ = Describe("Chart", func() {
 			Eventually(CommandSession.Out).Should(Say("URL"))
 			Eventually(CommandSession.Out).Should(Say("REPOSITORY"))
 
-			Eventually(CommandSession.Out).Should(Say(ChartProductVersion))
-			Eventually(CommandSession.Out).Should(Say(fmt.Sprintf("https://harbor-repo.vmware.com/chartrepo/tanzu_isv_engineering/charts/test-chart-product-%s.tgz", ChartProductVersion)))
-			Eventually(CommandSession.Out).Should(Say("https://harbor-repo.vmware.com/chartrepo/tanzu_isv_engineering tanzu_isv_engineering"))
+			Eventually(CommandSession.Out).Should(Say("9b5a4eb0-d42e-4c14-bbba-2a94ac1fe1f9"))
+			Eventually(CommandSession.Out).Should(Say("9.3.6"))
+			Eventually(CommandSession.Out).Should(Say("https://charts.bitnami.com/bitnami/nginx-9.3.6.tgz"))
+			Eventually(CommandSession.Out).Should(Say("Bitnami charts repo @ Github https://github.com/bitnami/charts/tree/master/bitnami/nginx"))
 		})
 	})
 })

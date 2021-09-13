@@ -12,14 +12,10 @@ import (
 	"github.com/spf13/viper"
 )
 
-//go:generate counterfeiter . HTTPClient
-type HTTPClient interface {
-	Do(req *http.Request) (*http.Response, error)
-}
-
 type Marketplace struct {
 	Host          string
 	APIHost       string
+	UIHost        string
 	StorageBucket string
 	StorageRegion string
 	Client        HTTPClient
@@ -31,19 +27,23 @@ var (
 )
 
 func init() {
+	client := NewClient()
+
 	ProductionConfig = &Marketplace{
 		Host:          "gtw.marketplace.cloud.vmware.com",
 		APIHost:       "api.marketplace.cloud.vmware.com",
+		UIHost:        "marketplace.cloud.vmware.com",
 		StorageBucket: "cspmarketplaceprd",
 		StorageRegion: "us-west-2",
-		Client:        http.DefaultClient,
+		Client:        client,
 	}
 	StagingConfig = &Marketplace{
 		Host:          "gtwstg.market.csp.vmware.com",
 		APIHost:       "apistg.market.csp.vmware.com",
+		UIHost:        "stg.market.csp.vmware.com",
 		StorageBucket: "cspmarketplacestage",
 		StorageRegion: "us-east-2",
-		Client:        http.DefaultClient,
+		Client:        client,
 	}
 }
 

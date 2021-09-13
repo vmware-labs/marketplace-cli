@@ -85,9 +85,9 @@ var _ = Describe("OVA", func() {
 
 			By("outputting the response", func() {
 				Expect(output.RenderOVAsCallCount()).To(Equal(1))
-				product, version := output.RenderOVAsArgsForCall(0)
-				Expect(product.Slug).To(Equal("my-super-product"))
-				Expect(version).To(Equal("1.2.3"))
+				files := output.RenderOVAsArgsForCall(0)
+				Expect(files).To(HaveLen(1))
+				Expect(files[0].AppVersion).To(Equal("1.2.3"))
 			})
 		})
 

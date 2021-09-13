@@ -26,11 +26,18 @@ func RunSerially(funcs ...func(cmd *cobra.Command, args []string) error) func(cm
 	}
 }
 
+func EnableDebugging(command *cobra.Command, _ []string) error {
+	if debug {
+		Marketplace.Client = pkg.EnableDebugging(debugRequestPayloads, Marketplace.Client, command.ErrOrStderr())
+	}
+	return nil
+}
+
 func ValidateOutputFormatFlag(command *cobra.Command, _ []string) error {
 	if OutputFormat == output.FormatJSON {
 		Output = output.NewJSONOutput(command.OutOrStdout())
 	} else if OutputFormat == output.FormatTable {
-		Output = output.NewTableOutput(command.OutOrStdout())
+		Output = output.NewTableOutput(command.OutOrStdout(), Marketplace.UIHost)
 	} else {
 		return fmt.Errorf("output format not supported: %s", OutputFormat)
 	}
@@ -42,10 +49,16 @@ var rootCmd = &cobra.Command{
 	Short: fmt.Sprintf("%s is a CLI interface for the VMware Marketplace", AppName),
 	Long: fmt.Sprintf(`%s is a CLI interface for the VMware Marketplace,
 enabling users to view, get, and manage their Marketplace entries.`, AppName),
-	PersistentPreRunE: RunSerially(ValidateOutputFormatFlag, GetRefreshToken),
+	PersistentPreRunE: RunSerially(EnableDebugging, ValidateOutputFormatFlag, GetRefreshToken),
 }
 
 func init() {
+	rootCmd.PersistentFlags().BoolVar(&debug, "debug", false, "Enable debug output")
+	_ = rootCmd.PersistentFlags().MarkHidden("debug")
+
+	rootCmd.PersistentFlags().BoolVar(&debugRequestPayloads, "debug-request-payloads", false, "Also print request payloads")
+	_ = rootCmd.PersistentFlags().MarkHidden("debug-request-payloads")
+
 	_ = viper.BindEnv("csp.api-token", "CSP_API_TOKEN")
 	rootCmd.PersistentFlags().String(
 		"csp-api-token",

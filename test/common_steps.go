@@ -4,6 +4,8 @@
 package test
 
 import (
+	"fmt"
+	"os"
 	"os/exec"
 	"strings"
 	"time"
@@ -33,9 +35,13 @@ var _ = AfterSuite(func() {
 	gexec.CleanupBuildArtifacts()
 })
 
-func DefineCommonSteps(define Definitions) {
+func DefineCommonSteps(define Definitions, marketplaceEnvironment string) {
 	define.When(`^running mkpcli (.*)$`, func(argString string) {
 		command := exec.Command(mkpcliPath, strings.Split(argString, " ")...)
+		command.Env = append(os.Environ(),
+			fmt.Sprintf("MARKETPLACE_ENV=%s", marketplaceEnvironment),
+		)
+
 		var err error
 		CommandSession, err = gexec.Start(command, GinkgoWriter, GinkgoWriter)
 		Expect(err).ToNot(HaveOccurred())

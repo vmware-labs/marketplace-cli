@@ -20,10 +20,10 @@ type Format interface {
 	RenderProducts(products []*models.Product) error
 	RenderVersion(product *models.Product, version string) error
 	RenderVersions(product *models.Product) error
-	RenderChart(product *models.Product, version string, chart *models.ChartVersion) error
-	RenderCharts(product *models.Product, version string) error
-	RenderContainerImage(product *models.Product, version string, image *models.DockerURLDetails) error
-	RenderContainerImages(product *models.Product, version string) error
-	RenderOVA(product *models.Product, version string, file *models.ProductDeploymentFile) error
-	RenderOVAs(product *models.Product, version string) error
+	RenderChart(chart *models.ChartVersion) error
+	RenderCharts(charts []*models.ChartVersion) error
+	RenderContainerImage(image *models.DockerURLDetails) error
+	RenderContainerImages(*models.DockerVersionList) error
+	RenderOVA(file *models.ProductDeploymentFile) error
+	RenderOVAs(files []*models.ProductDeploymentFile) error
 }

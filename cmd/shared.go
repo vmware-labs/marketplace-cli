@@ -13,10 +13,12 @@ import (
 var (
 	Marketplace *pkg.Marketplace
 
-	OutputFormat   string
-	Output         output.Format
-	ProductSlug    string
-	ProductVersion string
+	debug                bool
+	debugRequestPayloads bool
+	OutputFormat         string
+	Output               output.Format
+	ProductSlug          string
+	ProductVersion       string
 
 	UploadCredentials = aws.Credentials{}
 

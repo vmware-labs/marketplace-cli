@@ -32,7 +32,7 @@ jobs:
       platform: linux
       params:
         CSP_API_TOKEN: ((marketplace_api_token))
-        SLUG: test-container-product2
+        PRODUCT_SLUG: test-container-product2
       run:
         path: bash
         args:
