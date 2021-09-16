@@ -49,16 +49,16 @@ func init() {
 var ContainerImageCmd = &cobra.Command{
 	Use:       "container-image",
 	Aliases:   []string{"container-images"},
-	Short:     "Container image related commands",
-	Long:      "Interact with container images attached to a Marketplace product",
+	Short:     "List and manage container images attached to a product",
+	Long:      "List and manage container images attached to a product in the VMware Marketplace",
 	Args:      cobra.OnlyValidArgs,
 	ValidArgs: []string{"list", "get", "download", "create"},
 }
 
 var ListContainerImageCmd = &cobra.Command{
 	Use:   "list",
-	Short: "List container images",
-	Long:  "List the container images attached to a product",
+	Short: "List product container images",
+	Long:  "Prints the list of container images attached to a product in the VMware Marketplace",
 	Args:  cobra.NoArgs,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		cmd.SilenceUsage = true
@@ -79,8 +79,8 @@ var ListContainerImageCmd = &cobra.Command{
 
 var GetContainerImageCmd = &cobra.Command{
 	Use:   "get",
-	Short: "Get container image details",
-	Long:  "Get details for a container image attached to a product",
+	Short: "Get details for a container image",
+	Long:  "Prints detailed information about a container image attached to a product in the VMware Marketplace",
 	Args:  cobra.NoArgs,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		cmd.SilenceUsage = true
@@ -117,7 +117,7 @@ var GetContainerImageCmd = &cobra.Command{
 var DownloadContainerImageCmd = &cobra.Command{
 	Use:   "download",
 	Short: "Download a container image",
-	Long:  "Download a container image attached to a product",
+	Long:  "Downloads a container image attached to a product in the VMware Marketplace",
 	Args:  cobra.NoArgs,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		cmd.SilenceUsage = true
@@ -181,7 +181,7 @@ var DownloadContainerImageCmd = &cobra.Command{
 var CreateContainerImageCmd = &cobra.Command{
 	Use:   "create",
 	Short: "Attach a container image",
-	Long:  "Attach a container image to a product",
+	Long:  "Attaches a container image to a product in the VMware Marketplace",
 	Args:  cobra.NoArgs,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		ImageTagType = strings.ToUpper(ImageTagType)

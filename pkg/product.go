@@ -12,6 +12,7 @@ import (
 	"net/url"
 	"strconv"
 
+	"github.com/google/uuid"
 	"github.com/vmware-labs/marketplace-cli/v2/internal"
 	"github.com/vmware-labs/marketplace-cli/v2/internal/models"
 )
@@ -83,11 +84,17 @@ type GetProductResponsePayload struct {
 }
 
 func (m *Marketplace) GetProduct(slug string) (*models.Product, error) {
+	isSlug := true
+	_, err := uuid.Parse(slug)
+	if err == nil {
+		isSlug = false
+	}
+
 	requestURL := m.MakeURL(
 		fmt.Sprintf("/api/v1/products/%s", slug),
 		url.Values{
 			"increaseViewCount": []string{"false"},
-			"isSlug":            []string{"true"},
+			"isSlug":            []string{strconv.FormatBool(isSlug)},
 		},
 	)
 

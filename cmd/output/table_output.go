@@ -14,30 +14,38 @@ import (
 	"github.com/vmware-labs/marketplace-cli/v2/internal/models"
 )
 
-type TableOutput struct {
+type HumanOutput struct {
 	writer          io.Writer
 	marketplaceHost string
 }
 
-func NewTableOutput(writer io.Writer, marketplaceHost string) *TableOutput {
-	return &TableOutput{
+func (o *HumanOutput) Printf(format string, a ...interface{}) {
+	_, _ = fmt.Fprintf(o.writer, format, a...)
+}
+func (o *HumanOutput) Println(a ...interface{}) {
+	_, _ = fmt.Fprintln(o.writer, a...)
+}
+
+func NewHumanOutput(writer io.Writer, marketplaceHost string) *HumanOutput {
+	return &HumanOutput{
 		writer:          writer,
 		marketplaceHost: marketplaceHost,
 	}
 }
 
-func (t *TableOutput) NewTable(headers ...string) *tablewriter.Table {
-	table := tablewriter.NewWriter(t.writer)
+func (o *HumanOutput) NewTable(headers ...string) *tablewriter.Table {
+	table := tablewriter.NewWriter(o.writer)
+	table.SetAlignment(tablewriter.ALIGN_LEFT)
+	table.SetAutoWrapText(true)
 	table.SetBorder(false)
 	table.SetCenterSeparator("")
 	table.SetColumnSeparator("")
-	table.SetRowSeparator("")
-	table.SetHeaderAlignment(tablewriter.ALIGN_LEFT)
-	table.SetAlignment(tablewriter.ALIGN_LEFT)
-	table.SetHeaderLine(false)
-	table.SetColWidth(300)
-	table.SetTablePadding("\t\t")
+	table.SetColWidth(100)
 	table.SetHeader(headers)
+	table.SetHeaderAlignment(tablewriter.ALIGN_LEFT)
+	table.SetHeaderLine(false)
+	table.SetRowSeparator("")
+	table.SetTablePadding("\t\t")
 	//if outputSupportsColor {
 	//	var colors []tablewriter.Colors
 	//	for range headers {
@@ -48,36 +56,41 @@ func (t *TableOutput) NewTable(headers ...string) *tablewriter.Table {
 	return table
 }
 
-func (t *TableOutput) RenderProduct(product *models.Product) error {
-	_, _ = fmt.Fprintln(t.writer, product.DisplayName)
-	_, _ = fmt.Fprintln(t.writer, product.Description.Summary)
-	_, _ = fmt.Fprintf(t.writer, "https://%s/services/details/%s?slug=true\n", t.marketplaceHost, product.Slug)
-	_, _ = fmt.Fprintln(t.writer, "\nProduct Details:")
-	table := t.NewTable("Slug", "Type", "Latest Version")
-	table.Append([]string{product.Slug, product.SolutionType, product.GetLatestVersion().Number})
+func (o *HumanOutput) RenderProduct(product *models.Product) error {
+	o.Printf("Name:      %s\n", product.DisplayName)
+	o.Printf("Publisher: %s\n", product.PublisherDetails.OrgDisplayName)
+	o.Println()
+	o.Println(product.Description.Summary)
+	o.Printf("https://%s/services/details/%s?slug=true\n", o.marketplaceHost, product.Slug)
+	o.Println()
+	o.Println("Product Details:")
+	table := o.NewTable("Product ID", "Slug", "Type", "Latest Version")
+	table.Append([]string{product.ProductId, product.Slug, product.SolutionType, product.GetLatestVersion().Number})
 	table.Render()
-	_, _ = fmt.Fprintf(t.writer, "\nDescription:\n%s\n", product.Description.Description)
+	o.Println()
+	o.Println("Description:")
+	o.Println(product.Description.Description)
 	return nil
 }
 
-func (t *TableOutput) RenderProducts(products []*models.Product) error {
-	table := t.NewTable("Slug", "Name", "Type", "Latest Version")
+func (o *HumanOutput) RenderProducts(products []*models.Product) error {
+	table := o.NewTable("Slug", "Name", "Publisher", "Type", "Latest Version")
 	for _, product := range products {
-		table.Append([]string{product.Slug, product.DisplayName, product.SolutionType, product.GetLatestVersion().Number})
+		table.Append([]string{product.Slug, product.DisplayName, product.PublisherDetails.OrgDisplayName, product.SolutionType, product.GetLatestVersion().Number})
 	}
-	table.SetFooter([]string{"", "", "", fmt.Sprintf("Total count: %d", len(products))})
 	table.Render()
+	o.Printf("Total count: %d\n", len(products))
 	return nil
 }
 
-func (t *TableOutput) RenderVersion(product *models.Product, version string) error {
-	_, _ = fmt.Fprintf(t.writer, "Version %s\n", version)
+func (o *HumanOutput) RenderVersion(product *models.Product, version string) error {
+	o.Printf("Version %s\n", version)
 	return nil
 }
 
-func (t *TableOutput) RenderVersions(product *models.Product) error {
-	_, _ = fmt.Fprintln(t.writer, "Versions:")
-	table := t.NewTable("Number", "Status")
+func (o *HumanOutput) RenderVersions(product *models.Product) error {
+	o.Println("Versions:")
+	table := o.NewTable("Number", "Status")
 
 	models.Sort(product.AllVersions)
 	for _, version := range product.AllVersions {
@@ -87,8 +100,8 @@ func (t *TableOutput) RenderVersions(product *models.Product) error {
 	return nil
 }
 
-func (t *TableOutput) RenderChart(chart *models.ChartVersion) error {
-	table := t.NewTable("ID", "Version", "URL", "Repository")
+func (o *HumanOutput) RenderChart(chart *models.ChartVersion) error {
+	table := o.NewTable("ID", "Version", "URL", "Repository")
 	table.Append([]string{
 		chart.Id,
 		chart.Version,
@@ -99,8 +112,8 @@ func (t *TableOutput) RenderChart(chart *models.ChartVersion) error {
 	return nil
 }
 
-func (t *TableOutput) RenderCharts(charts []*models.ChartVersion) error {
-	table := t.NewTable("ID", "Version", "URL", "Repository")
+func (o *HumanOutput) RenderCharts(charts []*models.ChartVersion) error {
+	table := o.NewTable("ID", "Version", "URL", "Repository")
 	for _, chart := range charts {
 		table.Append([]string{
 			chart.Id,
@@ -113,12 +126,12 @@ func (t *TableOutput) RenderCharts(charts []*models.ChartVersion) error {
 	return nil
 }
 
-func (t *TableOutput) RenderContainerImage(image *models.DockerURLDetails) error {
-	_, _ = fmt.Fprintf(t.writer, "%s\n", image.Url)
-	_, _ = fmt.Fprintln(t.writer, "Tags:")
+func (o *HumanOutput) RenderContainerImage(image *models.DockerURLDetails) error {
+	o.Printf("%s\n", image.Url)
+	o.Println("Tags:")
 
 	footnotes := ""
-	table := t.NewTable("Tag", "Type", "Downloads")
+	table := o.NewTable("Tag", "Type", "Downloads")
 	for _, tag := range image.ImageTags {
 		downloads := "N/A*"
 		if tag.IsUpdatedInMarketplaceRegistry {
@@ -130,17 +143,17 @@ func (t *TableOutput) RenderContainerImage(image *models.DockerURLDetails) error
 	}
 	table.Render()
 	if footnotes != "" {
-		_, _ = fmt.Fprintln(t.writer, footnotes)
+		o.Println(footnotes)
 	}
 
-	_, _ = fmt.Fprintln(t.writer, "\nDeployment instructions:")
-	_, _ = fmt.Fprintln(t.writer, image.DeploymentInstruction)
+	o.Println("\nDeployment instructions:")
+	o.Println(image.DeploymentInstruction)
 
 	return nil
 }
 
-func (t *TableOutput) RenderContainerImages(images *models.DockerVersionList) error {
-	table := t.NewTable("Image", "Tags", "Downloads")
+func (o *HumanOutput) RenderContainerImages(images *models.DockerVersionList) error {
+	table := o.NewTable("Image", "Tags", "Downloads")
 	for _, docker := range images.DockerURLs {
 		var tagList []string
 		var downloads int64 = 0
@@ -161,14 +174,14 @@ func (t *TableOutput) RenderContainerImages(images *models.DockerVersionList) er
 	}
 	table.Render()
 	if images.DeploymentInstruction != "" {
-		_, _ = fmt.Fprintln(t.writer, "Deployment instructions:")
-		_, _ = fmt.Fprintln(t.writer, images.DeploymentInstruction)
+		o.Println("Deployment instructions:")
+		o.Println(images.DeploymentInstruction)
 	}
 	return nil
 }
 
-func (t *TableOutput) RenderOVA(file *models.ProductDeploymentFile) error {
-	table := t.NewTable("ID", "Name", "Status", "Size", "Type", "Files")
+func (o *HumanOutput) RenderOVA(file *models.ProductDeploymentFile) error {
+	table := o.NewTable("ID", "Name", "Status", "Size", "Type", "Files")
 	if file.ItemJson != "" {
 		details := &models.ProductItemDetails{}
 		err := json.Unmarshal([]byte(file.ItemJson), details)
@@ -189,8 +202,8 @@ func (t *TableOutput) RenderOVA(file *models.ProductDeploymentFile) error {
 	return nil
 }
 
-func (t *TableOutput) RenderOVAs(ovas []*models.ProductDeploymentFile) error {
-	table := t.NewTable("ID", "Name", "Status", "Size", "Type", "Files")
+func (o *HumanOutput) RenderOVAs(ovas []*models.ProductDeploymentFile) error {
+	table := o.NewTable("ID", "Name", "Status", "Size", "Type", "Files")
 	for _, ova := range ovas {
 
 		if ova.ItemJson != "" {

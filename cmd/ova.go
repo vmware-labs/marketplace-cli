@@ -39,16 +39,16 @@ func init() {
 var OVACmd = &cobra.Command{
 	Use:       "ova",
 	Aliases:   []string{"ovas"},
-	Short:     "OVA related commands",
-	Long:      "Interact with OVAs attached to a Marketplace product",
+	Short:     "List and manage OVAs attached to a product",
+	Long:      "List and manage OVAs attached to a product in the VMware Marketplace",
 	Args:      cobra.OnlyValidArgs,
 	ValidArgs: []string{"list", "get", "download", "create"},
 }
 
 var ListOVACmd = &cobra.Command{
 	Use:   "list",
-	Short: "List OVAs",
-	Long:  "List the OVAs attached to a product",
+	Short: "List product OVAs",
+	Long:  "Prints the list of OVAs attached to a product in the VMware Marketplace",
 	Args:  cobra.NoArgs,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		cmd.SilenceUsage = true
@@ -70,8 +70,8 @@ var ListOVACmd = &cobra.Command{
 
 var GetOVACmd = &cobra.Command{
 	Use:   "get",
-	Short: "Get OVA details",
-	Long:  "Get details for an OVA file attached to a product",
+	Short: "Get details for an OVA",
+	Long:  "Prints detailed information about an OVA file attached to a product in the VMware Marketplace",
 	Args:  cobra.NoArgs,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		cmd.SilenceUsage = true
@@ -105,7 +105,7 @@ var GetOVACmd = &cobra.Command{
 var DownloadOVACmd = &cobra.Command{
 	Use:   "download",
 	Short: "Download an OVA",
-	Long:  "Download an OVA attached to a product",
+	Long:  "Downloads an OVA attached to a product in the VMware Marketplace",
 	Args:  cobra.NoArgs,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		cmd.SilenceUsage = true
@@ -146,8 +146,8 @@ var DownloadOVACmd = &cobra.Command{
 
 var CreateOVACmd = &cobra.Command{
 	Use:     "create",
-	Short:   "Upload an attach an OVA",
-	Long:    "Upload an attach an OVA to a product",
+	Short:   "Upload and attach an OVA",
+	Long:    "Uploads and attaches an OVA to a product in the VMware Marketplace",
 	Args:    cobra.NoArgs,
 	PreRunE: GetUploadCredentials,
 	RunE: func(cmd *cobra.Command, args []string) error {
