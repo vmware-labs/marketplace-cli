@@ -22,7 +22,7 @@ func init() {
 	rootCmd.AddCommand(curlCmd)
 	curlCmd.SetOut(curlCmd.OutOrStdout())
 	curlCmd.Flags().StringVarP(&method, "method", "X", method, "HTTP verb to use")
-	curlCmd.Flags().StringVar(&payload, "payload", method, "JSON file containing the payload to send as a request body")
+	curlCmd.Flags().StringVar(&payload, "payload", "", "JSON file containing the payload to send as a request body")
 }
 
 var curlCmd = &cobra.Command{
