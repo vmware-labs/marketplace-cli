@@ -13,13 +13,13 @@ import (
 func init() {
 	rootCmd.AddCommand(ProductVersionCmd)
 	ProductVersionCmd.AddCommand(ListProductVersionsCmd)
-	ProductVersionCmd.AddCommand(CreateProductVersionCmd)
+	ProductVersionCmd.AddCommand(AddProductVersionCmd)
 
 	ProductVersionCmd.PersistentFlags().StringVarP(&ProductSlug, "product", "p", "", "Product slug")
 	_ = ProductVersionCmd.MarkPersistentFlagRequired("product")
 
-	CreateProductVersionCmd.Flags().StringVarP(&ProductVersion, "product-version", "v", "", "Product version")
-	_ = ProductVersionCmd.MarkPersistentFlagRequired("product-version")
+	AddProductVersionCmd.Flags().StringVarP(&ProductVersion, "product-version", "v", "", "Product version")
+	_ = AddProductVersionCmd.MarkFlagRequired("product-version")
 }
 
 var ProductVersionCmd = &cobra.Command{
@@ -47,7 +47,7 @@ var ListProductVersionsCmd = &cobra.Command{
 	},
 }
 
-var CreateProductVersionCmd = &cobra.Command{
+var AddProductVersionCmd = &cobra.Command{
 	Use:   "add",
 	Short: "Add a new version",
 	Long:  "Adds a new version to the given product",

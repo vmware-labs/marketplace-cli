@@ -22,6 +22,6 @@ run:
       mkpcli product-version list --debug --debug-request-payloads --product "${PRODUCT_SLUG}" | grep "${VERSION}"
       if [[ $? -ne 0 ]] ; then
         set -e
-        mkpcli product-version create --debug --debug-request-payloads --product "${PRODUCT_SLUG}" --product-version "${VERSION}"
+        mkpcli product-version add --debug --debug-request-payloads --product "${PRODUCT_SLUG}" --product-version "${VERSION}"
         mkpcli product-version list --debug --debug-request-payloads --product "${PRODUCT_SLUG}" | grep "${VERSION}"
       fi

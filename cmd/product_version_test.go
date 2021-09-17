@@ -151,7 +151,7 @@ var _ = Describe("ProductVersions", func() {
 		})
 	})
 
-	Describe("CreateProductVersionCmd", func() {
+	Describe("AddProductVersionCmd", func() {
 		var productID string
 		BeforeEach(func() {
 			productID = uuid.New().String()
@@ -200,14 +200,14 @@ var _ = Describe("ProductVersions", func() {
 				Body:       ioutil.NopCloser(bytes.NewReader(responseBytes)),
 			}, nil)
 
-			cmd.CreateProductVersionCmd.SetOut(stdout)
-			cmd.CreateProductVersionCmd.SetErr(stderr)
+			cmd.AddProductVersionCmd.SetOut(stdout)
+			cmd.AddProductVersionCmd.SetErr(stderr)
 		})
 
 		It("sends the right requests", func() {
 			cmd.ProductSlug = "my-super-product"
 			cmd.ProductVersion = "9.9.9"
-			err := cmd.CreateProductVersionCmd.RunE(cmd.CreateProductVersionCmd, []string{""})
+			err := cmd.AddProductVersionCmd.RunE(cmd.AddProductVersionCmd, []string{""})
 			Expect(err).ToNot(HaveOccurred())
 
 			Expect(httpClient.DoCallCount()).To(Equal(2))
@@ -244,7 +244,7 @@ var _ = Describe("ProductVersions", func() {
 			It("says that the product was not found", func() {
 				cmd.ProductSlug = "my-super-product"
 				cmd.ProductVersion = "9.9.9"
-				err := cmd.CreateProductVersionCmd.RunE(cmd.CreateProductVersionCmd, []string{""})
+				err := cmd.AddProductVersionCmd.RunE(cmd.AddProductVersionCmd, []string{""})
 				Expect(err).To(HaveOccurred())
 				Expect(err.Error()).To(Equal("product \"my-super-product\" not found"))
 			})
@@ -254,7 +254,7 @@ var _ = Describe("ProductVersions", func() {
 			It("says that the version already exists", func() {
 				cmd.ProductSlug = "my-super-product"
 				cmd.ProductVersion = "1.2.3"
-				err := cmd.CreateProductVersionCmd.RunE(cmd.CreateProductVersionCmd, []string{""})
+				err := cmd.AddProductVersionCmd.RunE(cmd.AddProductVersionCmd, []string{""})
 				Expect(err).To(HaveOccurred())
 				Expect(err.Error()).To(Equal("product \"my-super-product\" already has version 1.2.3"))
 			})
@@ -268,7 +268,7 @@ var _ = Describe("ProductVersions", func() {
 			It("prints the error", func() {
 				cmd.ProductSlug = "my-super-product"
 				cmd.ProductVersion = "9.9.9"
-				err := cmd.CreateProductVersionCmd.RunE(cmd.CreateProductVersionCmd, []string{""})
+				err := cmd.AddProductVersionCmd.RunE(cmd.AddProductVersionCmd, []string{""})
 				Expect(err).To(HaveOccurred())
 				Expect(err.Error()).To(Equal("sending the request for product \"my-super-product\" failed: marketplace request failed: request failed"))
 			})
@@ -286,7 +286,7 @@ var _ = Describe("ProductVersions", func() {
 			It("prints the error", func() {
 				cmd.ProductSlug = "my-super-product"
 				cmd.ProductVersion = "9.9.9"
-				err := cmd.CreateProductVersionCmd.RunE(cmd.CreateProductVersionCmd, []string{""})
+				err := cmd.AddProductVersionCmd.RunE(cmd.AddProductVersionCmd, []string{""})
 				Expect(err).To(HaveOccurred())
 				Expect(err.Error()).To(Equal("getting product \"my-super-product\" failed: (418)"))
 			})
@@ -304,7 +304,7 @@ var _ = Describe("ProductVersions", func() {
 			It("prints the error", func() {
 				cmd.ProductSlug = "my-super-product"
 				cmd.ProductVersion = "9.9.9"
-				err := cmd.CreateProductVersionCmd.RunE(cmd.CreateProductVersionCmd, []string{""})
+				err := cmd.AddProductVersionCmd.RunE(cmd.AddProductVersionCmd, []string{""})
 				Expect(err).To(HaveOccurred())
 				Expect(err.Error()).To(Equal("failed to parse the response for product \"my-super-product\": invalid character 'T' looking for beginning of value"))
 			})
@@ -322,7 +322,7 @@ var _ = Describe("ProductVersions", func() {
 			It("prints the error", func() {
 				cmd.ProductSlug = "my-super-product"
 				cmd.ProductVersion = "9.9.9"
-				err := cmd.CreateProductVersionCmd.RunE(cmd.CreateProductVersionCmd, []string{""})
+				err := cmd.AddProductVersionCmd.RunE(cmd.AddProductVersionCmd, []string{""})
 				Expect(err).To(HaveOccurred())
 				Expect(err.Error()).To(Equal("updating product \"my-super-product\" failed: (418)\nTeapots all the way down"))
 			})
