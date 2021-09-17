@@ -232,7 +232,6 @@ var _ = Describe("Charts", func() {
 		It("sends the right requests", func() {
 			cmd.ProductSlug = "my-super-product"
 			cmd.ProductVersion = "1.2.3"
-			cmd.ChartName = "mydatabase"
 			cmd.ChartURL = "https://charts.nitbami.com/nitbami/charts/mydatabase-2.0.0.tgz"
 			cmd.ChartVersion = "2.0.0"
 			cmd.ChartRepositoryName = "Bitnami charts repo @ Github"
@@ -303,7 +302,6 @@ var _ = Describe("Charts", func() {
 			It("says that the product was not found", func() {
 				cmd.ProductSlug = "my-super-product"
 				cmd.ProductVersion = "1.2.3"
-				cmd.ChartName = "mydatabase"
 				cmd.ChartURL = "https://charts.nitbami.com/nitbami/charts/mydatabase-2.0.0.tgz"
 				cmd.ChartVersion = "2.0.0"
 				cmd.ChartRepositoryName = "Bitnami charts repo @ Github"
@@ -318,7 +316,6 @@ var _ = Describe("Charts", func() {
 			It("says there are no versions", func() {
 				cmd.ProductSlug = "my-super-product"
 				cmd.ProductVersion = "0.0.0"
-				cmd.ChartName = "mydatabase"
 				cmd.ChartURL = "https://charts.nitbami.com/nitbami/charts/mydatabase-2.0.0.tgz"
 				cmd.ChartVersion = "2.0.0"
 				cmd.ChartRepositoryName = "Bitnami charts repo @ Github"
@@ -340,7 +337,6 @@ var _ = Describe("Charts", func() {
 			It("prints the error", func() {
 				cmd.ProductSlug = "my-super-product"
 				cmd.ProductVersion = "1.2.3"
-				cmd.ChartName = "mydatabase"
 				cmd.ChartURL = "https://charts.nitbami.com/nitbami/charts/mydatabase-2.0.0.tgz"
 				cmd.ChartVersion = "2.0.0"
 				cmd.ChartRepositoryName = "Bitnami charts repo @ Github"

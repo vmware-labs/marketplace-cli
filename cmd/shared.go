@@ -22,11 +22,12 @@ var (
 	ImageTag        string
 	ImageTagType    string
 
-	ChartName           string
 	ChartVersion        string
 	ChartRepositoryName string
 	ChartRepositoryURL  string
 	ChartURL            string
 
 	DeploymentInstructions string
+
+	SubscriptionID string
 )

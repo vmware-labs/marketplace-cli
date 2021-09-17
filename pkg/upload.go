@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
-	"net/url"
 	"time"
 )
 
@@ -20,7 +19,7 @@ type CredentialsResponse struct {
 }
 
 func (m *Marketplace) GetUploadCredentials() (*CredentialsResponse, error) {
-	requestURL := m.MakeURL("/aws/credentials/generate", url.Values{})
+	requestURL := m.MakeURL("/aws/credentials/generate", nil)
 	requestURL.Host = m.APIHost
 	response, err := m.Get(requestURL)
 	if err != nil {
