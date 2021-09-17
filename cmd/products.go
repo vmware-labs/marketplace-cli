@@ -27,8 +27,8 @@ func init() {
 var ProductCmd = &cobra.Command{
 	Use:       "product",
 	Aliases:   []string{"products"},
-	Short:     "Commands related to products in general",
-	Long:      "Interact with products in the Marketplace",
+	Short:     "Get information about products",
+	Long:      "Get information about products in the VMware Marketplace",
 	Args:      cobra.OnlyValidArgs,
 	ValidArgs: []string{"get", "list"},
 }
@@ -36,7 +36,7 @@ var ProductCmd = &cobra.Command{
 var ListProductsCmd = &cobra.Command{
 	Use:   "list",
 	Short: "List products",
-	Long:  "Lists products in the Marketplace",
+	Long:  "List and search for products in the VMware Marketplace",
 	Args:  cobra.NoArgs,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		cmd.SilenceUsage = true
@@ -51,8 +51,8 @@ var ListProductsCmd = &cobra.Command{
 
 var GetProductCmd = &cobra.Command{
 	Use:   "get",
-	Short: "Get a product",
-	Long:  "Gets details for a single product in the Marketplace",
+	Short: "Show details about a product",
+	Long:  "Show details about a product in the VMware Marketplace",
 	Args:  cobra.NoArgs,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		cmd.SilenceUsage = true

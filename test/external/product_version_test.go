@@ -20,12 +20,6 @@ var _ = Describe("Product Version", func() {
 		steps.And("the list of product versions is printed")
 	})
 
-	Scenario("Getting a single product version", func() {
-		steps.When("running mkpcli product-version get --product nginx --product-version 1.21.1_0")
-		steps.Then("the command exits without error")
-		steps.And("the product version is printed")
-	})
-
 	steps.Define(func(define Definitions) {
 		DefineCommonSteps(define, "production")
 
@@ -40,10 +34,6 @@ var _ = Describe("Product Version", func() {
 			Eventually(CommandSession.Out).Should(Say("ACTIVE"))
 			Eventually(CommandSession.Out).Should(Say("1.21.1_0"))
 			Eventually(CommandSession.Out).Should(Say("ACTIVE"))
-		})
-
-		define.Then(`^the product version is printed$`, func() {
-			Eventually(CommandSession.Out).Should(Say("Version 1.21.1_0"))
 		})
 	})
 })

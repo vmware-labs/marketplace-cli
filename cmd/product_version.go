@@ -13,29 +13,29 @@ import (
 func init() {
 	rootCmd.AddCommand(ProductVersionCmd)
 	ProductVersionCmd.AddCommand(ListProductVersionsCmd)
-	ProductVersionCmd.AddCommand(GetProductVersionCmd)
 	ProductVersionCmd.AddCommand(CreateProductVersionCmd)
 
 	ProductVersionCmd.PersistentFlags().StringVarP(&ProductSlug, "product", "p", "", "Product slug")
 	_ = ProductVersionCmd.MarkPersistentFlagRequired("product")
 
-	GetProductVersionCmd.Flags().StringVarP(&ProductVersion, "product-version", "v", "latest", "Product version")
-
-	CreateProductVersionCmd.Flags().StringVarP(&ProductVersion, "product-version", "v", "latest", "Product version")
+	CreateProductVersionCmd.Flags().StringVarP(&ProductVersion, "product-version", "v", "", "Product version")
+	_ = ProductVersionCmd.MarkPersistentFlagRequired("product-version")
 }
 
 var ProductVersionCmd = &cobra.Command{
 	Use:       "product-version",
 	Aliases:   []string{"product-versions"},
-	Short:     "product versions",
-	Long:      "",
+	Short:     "List and manage versions of a product",
+	Long:      "List and manage versions of a product in the VMware Marketplace",
 	Args:      cobra.OnlyValidArgs,
-	ValidArgs: []string{"get", "list", "create"},
+	ValidArgs: []string{"list", "add"},
 }
 
 var ListProductVersionsCmd = &cobra.Command{
-	Use:  "list",
-	Args: cobra.NoArgs,
+	Use:   "list",
+	Short: "List product versions",
+	Long:  "Prints the list of versions for the given product",
+	Args:  cobra.NoArgs,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		cmd.SilenceUsage = true
 		product, err := Marketplace.GetProduct(ProductSlug)
@@ -47,28 +47,11 @@ var ListProductVersionsCmd = &cobra.Command{
 	},
 }
 
-var GetProductVersionCmd = &cobra.Command{
-	Use:  "get",
-	Args: cobra.NoArgs,
-	RunE: func(cmd *cobra.Command, args []string) error {
-		cmd.SilenceUsage = true
-		product, err := Marketplace.GetProduct(ProductSlug)
-		if err != nil {
-			return err
-		}
-
-		version := product.GetVersion(ProductVersion)
-		if version == nil {
-			return fmt.Errorf("product \"%s\" does not have a version %s", ProductSlug, ProductVersion)
-		}
-
-		return Output.RenderVersion(product, version.Number)
-	},
-}
-
 var CreateProductVersionCmd = &cobra.Command{
-	Use:  "create",
-	Args: cobra.NoArgs,
+	Use:   "add",
+	Short: "Add a new version",
+	Long:  "Adds a new version to the given product",
+	Args:  cobra.NoArgs,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		cmd.SilenceUsage = true
 

@@ -8,11 +8,12 @@ import (
 )
 
 const (
+	FormatHuman = "human"
 	FormatJSON  = "json"
-	FormatTable = "table"
+	FormatYAML  = "yaml"
 )
 
-var SupportedOutputs = []string{FormatJSON, FormatTable}
+var SupportedOutputs = []string{FormatHuman, FormatJSON, FormatYAML}
 
 //go:generate counterfeiter . Format
 type Format interface {

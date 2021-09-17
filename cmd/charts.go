@@ -47,16 +47,16 @@ func init() {
 var ChartCmd = &cobra.Command{
 	Use:       "chart",
 	Aliases:   []string{"charts"},
-	Short:     "Chart related commands",
-	Long:      "Interact with Helm charts attached to a Marketplace product",
+	Short:     "List and manage Helm charts attached to a product",
+	Long:      "List and manage Helm charts attached to a product in the VMware Marketplace",
 	Args:      cobra.OnlyValidArgs,
 	ValidArgs: []string{"list", "get", "download", "create"},
 }
 
 var ListChartsCmd = &cobra.Command{
 	Use:   "list",
-	Short: "List charts",
-	Long:  "List the Helm charts attached to a product",
+	Short: "List product charts",
+	Long:  "Prints the list of Helm charts attached to a product in the VMware Marketplace",
 	Args:  cobra.NoArgs,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		cmd.SilenceUsage = true
@@ -77,8 +77,8 @@ var ListChartsCmd = &cobra.Command{
 
 var GetChartCmd = &cobra.Command{
 	Use:   "get",
-	Short: "Get chart details",
-	Long:  "Get details for a Helm chart attached to a product",
+	Short: "Get details for a chart",
+	Long:  "Prints detailed information about a Helm chart attached to a product in the VMware Marketplace",
 	Args:  cobra.NoArgs,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		cmd.SilenceUsage = true
@@ -111,7 +111,7 @@ var GetChartCmd = &cobra.Command{
 var DownloadChartCmd = &cobra.Command{
 	Use:   "download",
 	Short: "Download a chart",
-	Long:  "Download a chart attached to a product",
+	Long:  "Downloads a Helm chart attached to a product in the VMware Marketplace",
 	Args:  cobra.NoArgs,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		cmd.SilenceUsage = true
@@ -153,7 +153,7 @@ var DownloadChartCmd = &cobra.Command{
 var CreateChartCmd = &cobra.Command{
 	Use:   "create",
 	Short: "Attach a chart",
-	Long:  "Attach a chart to a product",
+	Long:  "Attaches a Helm Chart to a product in the VMware Marketplace",
 	Args:  cobra.NoArgs,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		cmd.SilenceUsage = true

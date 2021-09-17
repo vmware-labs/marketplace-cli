@@ -34,10 +34,12 @@ func EnableDebugging(command *cobra.Command, _ []string) error {
 }
 
 func ValidateOutputFormatFlag(command *cobra.Command, _ []string) error {
-	if OutputFormat == output.FormatJSON {
+	if OutputFormat == output.FormatHuman {
+		Output = output.NewHumanOutput(command.OutOrStdout(), Marketplace.UIHost)
+	} else if OutputFormat == output.FormatJSON {
 		Output = output.NewJSONOutput(command.OutOrStdout())
-	} else if OutputFormat == output.FormatTable {
-		Output = output.NewTableOutput(command.OutOrStdout(), Marketplace.UIHost)
+	} else if OutputFormat == output.FormatYAML {
+		Output = output.NewYAMLOutput(command.OutOrStdout())
 	} else {
 		return fmt.Errorf("output format not supported: %s", OutputFormat)
 	}
@@ -63,7 +65,7 @@ func init() {
 	rootCmd.PersistentFlags().String(
 		"csp-api-token",
 		"",
-		"VMware Cloud Service Platform API token, used for authentication to Marketplace",
+		"VMware Cloud Service Platform API Token, used for authentication to the VMware Marketplace",
 	)
 	_ = viper.BindPFlag("csp.api-token", rootCmd.PersistentFlags().Lookup("csp-api-token"))
 
@@ -81,7 +83,7 @@ func init() {
 		Marketplace = pkg.StagingConfig
 	}
 
-	rootCmd.PersistentFlags().StringVarP(&OutputFormat, "output", "o", output.FormatTable, fmt.Sprintf("Output format. One of %s", strings.Join(output.SupportedOutputs, "|")))
+	rootCmd.PersistentFlags().StringVarP(&OutputFormat, "output", "o", output.FormatHuman, fmt.Sprintf("Output format. One of %s", strings.Join(output.SupportedOutputs, "|")))
 }
 
 func Execute() {
