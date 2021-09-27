@@ -44,7 +44,18 @@ var _ = Describe("Marketplace", func() {
 			)
 			Expect(marketplaceURL.Scheme).To(Equal("https"))
 			Expect(marketplaceURL.Host).To(Equal("marketplace.vmware.example"))
+			Expect(marketplaceURL.Path).To(Equal("/path/to/products/"))
 			Expect(marketplaceURL.RawQuery).To(Equal("color=red&color=blue"))
+		})
+
+		Context("nil values", func() {
+			It("still works", func() {
+				marketplaceURL := marketplace.MakeURL("/there/are/no/options", nil)
+				Expect(marketplaceURL.Scheme).To(Equal("https"))
+				Expect(marketplaceURL.Host).To(Equal("marketplace.vmware.example"))
+				Expect(marketplaceURL.Path).To(Equal("/there/are/no/options"))
+				Expect(marketplaceURL.RawQuery).To(Equal(""))
+			})
 		})
 	})
 

@@ -28,7 +28,7 @@ var ProductVersionCmd = &cobra.Command{
 	Short:     "List and manage versions of a product",
 	Long:      "List and manage versions of a product in the VMware Marketplace",
 	Args:      cobra.OnlyValidArgs,
-	ValidArgs: []string{"list", "add"},
+	ValidArgs: []string{ListProductVersionsCmd.Use, AddProductVersionCmd.Use},
 }
 
 var ListProductVersionsCmd = &cobra.Command{

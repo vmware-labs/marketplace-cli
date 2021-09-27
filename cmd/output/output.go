@@ -27,4 +27,6 @@ type Format interface {
 	RenderContainerImages(*models.DockerVersionList) error
 	RenderOVA(file *models.ProductDeploymentFile) error
 	RenderOVAs(files []*models.ProductDeploymentFile) error
+
+	RenderSubscriptions(subscriptions []*models.Subscription) error
 }

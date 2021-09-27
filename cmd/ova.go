@@ -42,7 +42,7 @@ var OVACmd = &cobra.Command{
 	Short:     "List and manage OVAs attached to a product",
 	Long:      "List and manage OVAs attached to a product in the VMware Marketplace",
 	Args:      cobra.OnlyValidArgs,
-	ValidArgs: []string{"list", "get", "download", "create"},
+	ValidArgs: []string{ListOVACmd.Use, GetOVACmd.Use, DownloadOVACmd.Use, CreateOVACmd.Use},
 }
 
 var ListOVACmd = &cobra.Command{

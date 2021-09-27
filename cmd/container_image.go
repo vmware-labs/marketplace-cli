@@ -52,7 +52,7 @@ var ContainerImageCmd = &cobra.Command{
 	Short:     "List and manage container images attached to a product",
 	Long:      "List and manage container images attached to a product in the VMware Marketplace",
 	Args:      cobra.OnlyValidArgs,
-	ValidArgs: []string{"list", "get", "download", "create"},
+	ValidArgs: []string{ListContainerImageCmd.Use, GetContainerImageCmd.Use, DownloadContainerImageCmd.Use, CreateContainerImageCmd.Use},
 }
 
 var ListContainerImageCmd = &cobra.Command{

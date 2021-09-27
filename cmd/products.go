@@ -30,7 +30,7 @@ var ProductCmd = &cobra.Command{
 	Short:     "Get information about products",
 	Long:      "Get information about products in the VMware Marketplace",
 	Args:      cobra.OnlyValidArgs,
-	ValidArgs: []string{"get", "list"},
+	ValidArgs: []string{ListProductsCmd.Use, GetProductCmd.Use},
 }
 
 var ListProductsCmd = &cobra.Command{

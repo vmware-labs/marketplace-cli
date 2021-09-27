@@ -50,7 +50,7 @@ var ChartCmd = &cobra.Command{
 	Short:     "List and manage Helm charts attached to a product",
 	Long:      "List and manage Helm charts attached to a product in the VMware Marketplace",
 	Args:      cobra.OnlyValidArgs,
-	ValidArgs: []string{"list", "get", "download", "create"},
+	ValidArgs: []string{ListChartsCmd.Use, GetChartCmd.Use, DownloadChartCmd.Use, CreateChartCmd.Use},
 }
 
 var ListChartsCmd = &cobra.Command{

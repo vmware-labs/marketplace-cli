@@ -81,3 +81,7 @@ func (o *EncodedOutput) RenderOVA(file *models.ProductDeploymentFile) error {
 func (o *EncodedOutput) RenderOVAs(files []*models.ProductDeploymentFile) error {
 	return o.Print(files)
 }
+
+func (o *EncodedOutput) RenderSubscriptions(subscriptions []*models.Subscription) error {
+	return o.Print(subscriptions)
+}
