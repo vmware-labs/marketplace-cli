@@ -27,21 +27,22 @@ func RunSerially(funcs ...func(cmd *cobra.Command, args []string) error) func(cm
 }
 
 func EnableDebugging(command *cobra.Command, _ []string) error {
-	if debug {
-		Marketplace.Client = pkg.EnableDebugging(debugRequestPayloads, Marketplace.Client, command.ErrOrStderr())
+	if viper.GetBool("debug") {
+		Marketplace.Client = pkg.EnableDebugging(viper.GetBool("debug-request-payloads"), Marketplace.Client, command.ErrOrStderr())
 	}
 	return nil
 }
 
 func ValidateOutputFormatFlag(command *cobra.Command, _ []string) error {
-	if OutputFormat == output.FormatHuman {
+	outputFormat := viper.GetString("output_format")
+	if outputFormat == output.FormatHuman {
 		Output = output.NewHumanOutput(command.OutOrStdout(), Marketplace.UIHost)
-	} else if OutputFormat == output.FormatJSON {
+	} else if outputFormat == output.FormatJSON {
 		Output = output.NewJSONOutput(command.OutOrStdout())
-	} else if OutputFormat == output.FormatYAML {
+	} else if outputFormat == output.FormatYAML {
 		Output = output.NewYAMLOutput(command.OutOrStdout())
 	} else {
-		return fmt.Errorf("output format not supported: %s", OutputFormat)
+		return fmt.Errorf("output format not supported: %s", outputFormat)
 	}
 	return nil
 }
@@ -55,35 +56,36 @@ enabling users to view, get, and manage their Marketplace entries.`, AppName),
 }
 
 func init() {
-	rootCmd.PersistentFlags().BoolVar(&debug, "debug", false, "Enable debug output")
+	// debug
+	_ = viper.BindEnv("debug", "MKPCLI_DEBUG")
+	rootCmd.PersistentFlags().Bool("debug", false, "Enable debug output [$MKPCLI_DEBUG}")
 	_ = rootCmd.PersistentFlags().MarkHidden("debug")
+	_ = viper.BindPFlag("debug", rootCmd.PersistentFlags().Lookup("debug"))
 
-	rootCmd.PersistentFlags().BoolVar(&debugRequestPayloads, "debug-request-payloads", false, "Also print request payloads")
+	// debug-request-payloads
+	_ = viper.BindEnv("debug", "MKPCLI_DEBUG_REQUEST_PAYLOADS")
+	rootCmd.PersistentFlags().Bool("debug-request-payloads", false, "Also print request payloads [$MKPCLI_DEBUG_REQUEST_PAYLOADS]")
 	_ = rootCmd.PersistentFlags().MarkHidden("debug-request-payloads")
+	_ = viper.BindPFlag("debug-request-payloads", rootCmd.PersistentFlags().Lookup("debug-request-payloads"))
 
+	// csp-api-token
 	_ = viper.BindEnv("csp.api-token", "CSP_API_TOKEN")
-	rootCmd.PersistentFlags().String(
-		"csp-api-token",
-		"",
-		"VMware Cloud Service Platform API Token, used for authentication to the VMware Marketplace",
-	)
+	rootCmd.PersistentFlags().String("csp-api-token", "", "VMware Cloud Service Platform API Token, used for authenticating to the VMware Marketplace [$CSP_API_TOKEN]")
 	_ = viper.BindPFlag("csp.api-token", rootCmd.PersistentFlags().Lookup("csp-api-token"))
 
-	rootCmd.PersistentFlags().String(
-		"csp-host",
-		"console.cloud.vmware.com",
-		"Host for CSP",
-	)
+	_ = viper.BindEnv("csp.host", "CSP_HOST")
+	rootCmd.PersistentFlags().String("csp-host", "console.cloud.vmware.com", "Host for VMware Cloud Service Platform")
 	_ = rootCmd.PersistentFlags().MarkHidden("csp-host")
 	_ = viper.BindPFlag("csp.host", rootCmd.PersistentFlags().Lookup("csp-host"))
-	viper.SetDefault("csp.host", "console.cloud.vmware.com")
 
 	Marketplace = pkg.ProductionConfig
 	if os.Getenv("MARKETPLACE_ENV") == "staging" {
 		Marketplace = pkg.StagingConfig
 	}
 
-	rootCmd.PersistentFlags().StringVarP(&OutputFormat, "output", "o", output.FormatHuman, fmt.Sprintf("Output format. One of %s", strings.Join(output.SupportedOutputs, "|")))
+	_ = viper.BindEnv("output_format", "MKPCLI_OUTPUT")
+	rootCmd.PersistentFlags().StringP("output", "o", output.FormatHuman, fmt.Sprintf("Output format. One of %s. [$MKPCLI_OUTPUT]", strings.Join(output.SupportedOutputs, "|")))
+	_ = viper.BindPFlag("output_format", rootCmd.PersistentFlags().Lookup("output"))
 }
 
 func Execute() {

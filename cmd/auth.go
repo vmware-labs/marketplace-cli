@@ -25,7 +25,7 @@ var InitializeTokenServices TokenServicesInitializer = func(cspHost string) (Tok
 
 func GetRefreshToken(cmd *cobra.Command, args []string) error {
 	tokenServices, err := InitializeTokenServices(
-		fmt.Sprintf("https://%s/", viper.GetString("csp.host")),
+		fmt.Sprintf("https://%s", viper.GetString("csp.host")),
 	)
 	if err != nil {
 		return fmt.Errorf("failed to initialize token services: %w", err)

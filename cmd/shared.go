@@ -11,16 +11,12 @@ import (
 
 // Variables set from CLI flags
 var (
-	Marketplace *pkg.Marketplace
-
-	debug                bool
-	debugRequestPayloads bool
-	OutputFormat         string
-	Output               output.Format
-	ProductSlug          string
-	ProductVersion       string
-
+	Marketplace       *pkg.Marketplace
+	Output            output.Format
 	UploadCredentials = aws.Credentials{}
+
+	ProductSlug    string
+	ProductVersion string
 
 	ImageRepository string
 	ImageTag        string

@@ -17,6 +17,8 @@ Features:
 
 `mkpcli` requires an API Token from [VMware Cloud Services](https://console.cloud.vmware.com/csp/gateway/portal/#/user/tokens). See [this doc](./docs/Authentication.md) for more information.
 
+The token can be set via CLI flag (i.e. `--csp-api-token`) or environment variable (i.e. `CSP_API_TOKEN`).
+
 ## Example
 <a href="https://asciinema.org/a/68HbJWxv13rmrOwukYhO72ndD" target="_blank">
   <img src="https://asciinema.org/a/68HbJWxv13rmrOwukYhO72ndD.svg" alt="Demo of mkpcli" />
@@ -40,6 +42,12 @@ enabling users to view, get, and manage their Marketplace entries.
 
 ## Developing
 
+If you would like to build and contribute to this project, please fork and make pull requests.
+
+If you are internal to VMware, and you would like to run commands against the [Marketplace staging service](https://stg.market.csp.vmware.com/), set this environment variable:
+```
+export MARKETPLACE_ENV=staging
+```
+
 Please see our [Code of Conduct](CODE-OF-CONDUCT.md) and [Contributors guide](CONTRIBUTING.md).
 
-If you would like to build and contribute to this project, please fork and make pull requests. 
