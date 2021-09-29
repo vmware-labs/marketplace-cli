@@ -14,8 +14,8 @@ import (
 )
 
 var (
-	method  = "GET"
-	payload string
+	method     = "GET"
+	payload    string
 	useAPIHost = false
 )
 
@@ -24,7 +24,7 @@ func init() {
 	curlCmd.SetOut(curlCmd.OutOrStdout())
 	curlCmd.Flags().StringVarP(&method, "method", "X", method, "HTTP verb to use")
 	curlCmd.Flags().StringVar(&payload, "payload", "", "JSON file containing the payload to send as a request body")
-	curlCmd.Flags().BoolVar(&useAPIHost, "use-api-host", false,"Send request to the API host, rather than the gateway host")
+	curlCmd.Flags().BoolVar(&useAPIHost, "use-api-host", false, "Send request to the API host, rather than the gateway host")
 }
 
 var curlCmd = &cobra.Command{
