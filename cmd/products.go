@@ -17,7 +17,7 @@ func init() {
 	ProductCmd.AddCommand(ListProductsCmd)
 	ProductCmd.AddCommand(GetProductCmd)
 
-	ListProductsCmd.Flags().StringVar(&searchTerm, "search-text", "", "Filter by text")
+	ListProductsCmd.Flags().StringVar(&searchTerm, "search-text", "", "Filter product list by text")
 	ListProductsCmd.Flags().BoolVarP(&allOrgs, "all-orgs", "a", false, "Show products from all organizations")
 
 	GetProductCmd.Flags().StringVarP(&ProductSlug, "product", "p", "", "Product slug")

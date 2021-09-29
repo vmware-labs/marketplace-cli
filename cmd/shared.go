@@ -28,6 +28,4 @@ var (
 	ChartURL            string
 
 	DeploymentInstructions string
-
-	SubscriptionID string
 )
