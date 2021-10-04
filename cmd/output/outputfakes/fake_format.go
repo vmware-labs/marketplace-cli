@@ -108,18 +108,6 @@ type FakeFormat struct {
 	renderSubscriptionsReturnsOnCall map[int]struct {
 		result1 error
 	}
-	RenderVersionStub        func(*models.Product, string) error
-	renderVersionMutex       sync.RWMutex
-	renderVersionArgsForCall []struct {
-		arg1 *models.Product
-		arg2 string
-	}
-	renderVersionReturns struct {
-		result1 error
-	}
-	renderVersionReturnsOnCall map[int]struct {
-		result1 error
-	}
 	RenderVersionsStub        func(*models.Product) error
 	renderVersionsMutex       sync.RWMutex
 	renderVersionsArgsForCall []struct {
@@ -695,67 +683,6 @@ func (fake *FakeFormat) RenderSubscriptionsReturnsOnCall(i int, result1 error) {
 	}{result1}
 }
 
-func (fake *FakeFormat) RenderVersion(arg1 *models.Product, arg2 string) error {
-	fake.renderVersionMutex.Lock()
-	ret, specificReturn := fake.renderVersionReturnsOnCall[len(fake.renderVersionArgsForCall)]
-	fake.renderVersionArgsForCall = append(fake.renderVersionArgsForCall, struct {
-		arg1 *models.Product
-		arg2 string
-	}{arg1, arg2})
-	fake.recordInvocation("RenderVersion", []interface{}{arg1, arg2})
-	fake.renderVersionMutex.Unlock()
-	if fake.RenderVersionStub != nil {
-		return fake.RenderVersionStub(arg1, arg2)
-	}
-	if specificReturn {
-		return ret.result1
-	}
-	fakeReturns := fake.renderVersionReturns
-	return fakeReturns.result1
-}
-
-func (fake *FakeFormat) RenderVersionCallCount() int {
-	fake.renderVersionMutex.RLock()
-	defer fake.renderVersionMutex.RUnlock()
-	return len(fake.renderVersionArgsForCall)
-}
-
-func (fake *FakeFormat) RenderVersionCalls(stub func(*models.Product, string) error) {
-	fake.renderVersionMutex.Lock()
-	defer fake.renderVersionMutex.Unlock()
-	fake.RenderVersionStub = stub
-}
-
-func (fake *FakeFormat) RenderVersionArgsForCall(i int) (*models.Product, string) {
-	fake.renderVersionMutex.RLock()
-	defer fake.renderVersionMutex.RUnlock()
-	argsForCall := fake.renderVersionArgsForCall[i]
-	return argsForCall.arg1, argsForCall.arg2
-}
-
-func (fake *FakeFormat) RenderVersionReturns(result1 error) {
-	fake.renderVersionMutex.Lock()
-	defer fake.renderVersionMutex.Unlock()
-	fake.RenderVersionStub = nil
-	fake.renderVersionReturns = struct {
-		result1 error
-	}{result1}
-}
-
-func (fake *FakeFormat) RenderVersionReturnsOnCall(i int, result1 error) {
-	fake.renderVersionMutex.Lock()
-	defer fake.renderVersionMutex.Unlock()
-	fake.RenderVersionStub = nil
-	if fake.renderVersionReturnsOnCall == nil {
-		fake.renderVersionReturnsOnCall = make(map[int]struct {
-			result1 error
-		})
-	}
-	fake.renderVersionReturnsOnCall[i] = struct {
-		result1 error
-	}{result1}
-}
-
 func (fake *FakeFormat) RenderVersions(arg1 *models.Product) error {
 	fake.renderVersionsMutex.Lock()
 	ret, specificReturn := fake.renderVersionsReturnsOnCall[len(fake.renderVersionsArgsForCall)]
@@ -837,8 +764,6 @@ func (fake *FakeFormat) Invocations() map[string][][]interface{} {
 	defer fake.renderProductsMutex.RUnlock()
 	fake.renderSubscriptionsMutex.RLock()
 	defer fake.renderSubscriptionsMutex.RUnlock()
-	fake.renderVersionMutex.RLock()
-	defer fake.renderVersionMutex.RUnlock()
 	fake.renderVersionsMutex.RLock()
 	defer fake.renderVersionsMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}

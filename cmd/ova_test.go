@@ -69,8 +69,8 @@ var _ = Describe("OVA", func() {
 		})
 
 		It("outputs the ovas", func() {
-			cmd.ProductSlug = "my-super-product"
-			cmd.ProductVersion = "1.2.3"
+			cmd.OVAProductSlug = "my-super-product"
+			cmd.OVAProductVersion = "1.2.3"
 			err := cmd.ListOVACmd.RunE(cmd.ListOVACmd, []string{""})
 			Expect(err).ToNot(HaveOccurred())
 
@@ -99,8 +99,8 @@ var _ = Describe("OVA", func() {
 			})
 
 			It("says there are no products", func() {
-				cmd.ProductSlug = "my-super-product"
-				cmd.ProductVersion = "1.2.3"
+				cmd.OVAProductSlug = "my-super-product"
+				cmd.OVAProductVersion = "1.2.3"
 				err := cmd.ListOVACmd.RunE(cmd.ListOVACmd, []string{""})
 				Expect(err).To(HaveOccurred())
 				Expect(err.Error()).To(Equal("product \"my-super-product\" not found"))
@@ -113,8 +113,8 @@ var _ = Describe("OVA", func() {
 			})
 
 			It("prints the error", func() {
-				cmd.ProductSlug = "my-super-product"
-				cmd.ProductVersion = "1.2.3"
+				cmd.OVAProductSlug = "my-super-product"
+				cmd.OVAProductVersion = "1.2.3"
 				err := cmd.ListOVACmd.RunE(cmd.ListOVACmd, []string{""})
 				Expect(err).To(HaveOccurred())
 				Expect(err.Error()).To(Equal("sending the request for product \"my-super-product\" failed: marketplace request failed: request failed"))
@@ -123,8 +123,8 @@ var _ = Describe("OVA", func() {
 
 		Context("No product version found", func() {
 			It("says that the version does not exist", func() {
-				cmd.ProductSlug = "my-super-product"
-				cmd.ProductVersion = "9.9.9"
+				cmd.OVAProductSlug = "my-super-product"
+				cmd.OVAProductVersion = "9.9.9"
 				err := cmd.ListOVACmd.RunE(cmd.ListOVACmd, []string{""})
 				Expect(err).To(HaveOccurred())
 				Expect(err.Error()).To(Equal("product \"my-super-product\" does not have a version 9.9.9"))

@@ -17,7 +17,15 @@ const (
 	ImageTagTypeFloating = "FLOATING"
 )
 
-var downloadedContainerImageFilename string
+var (
+	ContainerImageProductSlug            string
+	ContainerImageProductVersion         string
+	ContainerImageDeploymentInstructions string
+	downloadedContainerImageFilename     string
+	ImageRepository                      string
+	ImageTag                             string
+	ImageTagType                         string
+)
 
 func init() {
 	rootCmd.AddCommand(ContainerImageCmd)
@@ -26,9 +34,9 @@ func init() {
 	ContainerImageCmd.AddCommand(DownloadContainerImageCmd)
 	ContainerImageCmd.AddCommand(CreateContainerImageCmd)
 
-	ContainerImageCmd.PersistentFlags().StringVarP(&ProductSlug, "product", "p", "", "Product slug")
+	ContainerImageCmd.PersistentFlags().StringVarP(&ContainerImageProductSlug, "product", "p", "", "Product slug")
 	_ = ContainerImageCmd.MarkPersistentFlagRequired("product")
-	ContainerImageCmd.PersistentFlags().StringVarP(&ProductVersion, "product-version", "v", "latest", "Product version")
+	ContainerImageCmd.PersistentFlags().StringVarP(&ContainerImageProductVersion, "product-version", "v", "latest", "Product version")
 
 	GetContainerImageCmd.Flags().StringVarP(&ImageRepository, "image-repository", "r", "", "container repository")
 
@@ -42,7 +50,7 @@ func init() {
 	_ = CreateContainerImageCmd.MarkFlagRequired("tag")
 	CreateContainerImageCmd.Flags().StringVar(&ImageTagType, "tag-type", "", "container repository tag type (fixed or floating)")
 	_ = CreateContainerImageCmd.MarkFlagRequired("tag-type")
-	CreateContainerImageCmd.Flags().StringVarP(&DeploymentInstructions, "deployment-instructions", "i", "", "deployment instructions")
+	CreateContainerImageCmd.Flags().StringVarP(&ContainerImageDeploymentInstructions, "deployment-instructions", "i", "", "deployment instructions")
 	_ = CreateContainerImageCmd.MarkFlagRequired("deployment-instructions")
 }
 
@@ -62,7 +70,7 @@ var ListContainerImageCmd = &cobra.Command{
 	Args:  cobra.NoArgs,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		cmd.SilenceUsage = true
-		product, version, err := Marketplace.GetProductWithVersion(ProductSlug, ProductVersion)
+		product, version, err := Marketplace.GetProductWithVersion(ContainerImageProductSlug, ContainerImageProductVersion)
 		if err != nil {
 			return err
 		}
@@ -84,7 +92,7 @@ var GetContainerImageCmd = &cobra.Command{
 	Args:  cobra.NoArgs,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		cmd.SilenceUsage = true
-		product, version, err := Marketplace.GetProductWithVersion(ProductSlug, ProductVersion)
+		product, version, err := Marketplace.GetProductWithVersion(ContainerImageProductSlug, ContainerImageProductVersion)
 		if err != nil {
 			return err
 		}
@@ -98,7 +106,7 @@ var GetContainerImageCmd = &cobra.Command{
 		if ImageRepository != "" {
 			containerImage = containerImages.GetImage(ImageRepository)
 			if containerImage == nil {
-				return fmt.Errorf("%s %s does not have the container image \"%s\"", ProductSlug, version.Number, ImageRepository)
+				return fmt.Errorf("%s %s does not have the container image \"%s\"", ContainerImageProductSlug, version.Number, ImageRepository)
 			}
 		} else {
 			if len(containerImages.DockerURLs) == 0 {
@@ -106,7 +114,7 @@ var GetContainerImageCmd = &cobra.Command{
 			} else if len(containerImages.DockerURLs) == 1 {
 				containerImage = containerImages.DockerURLs[0]
 			} else {
-				return fmt.Errorf("multiple container images found for %s %s, please use the --image-repository parameter", ProductSlug, version.Number)
+				return fmt.Errorf("multiple container images found for %s %s, please use the --image-repository parameter", ContainerImageProductSlug, version.Number)
 			}
 		}
 
@@ -121,7 +129,7 @@ var DownloadContainerImageCmd = &cobra.Command{
 	Args:  cobra.NoArgs,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		cmd.SilenceUsage = true
-		product, version, err := Marketplace.GetProductWithVersion(ProductSlug, ProductVersion)
+		product, version, err := Marketplace.GetProductWithVersion(ContainerImageProductSlug, ContainerImageProductVersion)
 		if err != nil {
 			return err
 		}
@@ -135,15 +143,15 @@ var DownloadContainerImageCmd = &cobra.Command{
 		if ImageRepository != "" {
 			containerImage = containerImages.GetImage(ImageRepository)
 			if containerImage == nil {
-				return fmt.Errorf("%s %s does not have the container image \"%s\"", ProductSlug, version.Number, ImageRepository)
+				return fmt.Errorf("%s %s does not have the container image \"%s\"", ContainerImageProductSlug, version.Number, ImageRepository)
 			}
 		} else {
 			if len(containerImages.DockerURLs) == 0 {
-				return fmt.Errorf("no container images found for %s %s", ProductSlug, version.Number)
+				return fmt.Errorf("no container images found for %s %s", ContainerImageProductSlug, version.Number)
 			} else if len(containerImages.DockerURLs) == 1 {
 				containerImage = containerImages.DockerURLs[0]
 			} else {
-				return fmt.Errorf("multiple container images found for %s %s, please use the --image-repository parameter", ProductSlug, version.Number)
+				return fmt.Errorf("multiple container images found for %s %s, please use the --image-repository parameter", ContainerImageProductSlug, version.Number)
 			}
 		}
 
@@ -151,20 +159,20 @@ var DownloadContainerImageCmd = &cobra.Command{
 		if ImageTag != "" {
 			imageTag = containerImage.GetTag(ImageTag)
 			if imageTag == nil {
-				return fmt.Errorf("%s %s does not have the an image tag \"%s\" for %s", ProductSlug, version.Number, ImageTag, containerImage.Url)
+				return fmt.Errorf("%s %s does not have the an image tag \"%s\" for %s", ContainerImageProductSlug, version.Number, ImageTag, containerImage.Url)
 			}
 		} else {
 			if len(containerImage.ImageTags) == 0 {
-				return fmt.Errorf("no tags images found for %s in %s %s", containerImage.Url, ProductSlug, version.Number)
+				return fmt.Errorf("no tags images found for %s in %s %s", containerImage.Url, ContainerImageProductSlug, version.Number)
 			} else if len(containerImages.DockerURLs) == 1 {
 				imageTag = containerImage.ImageTags[0]
 			} else {
-				return fmt.Errorf("multiple tags found for %s in %s %s, please use the --tag parameter", containerImage.Url, ProductSlug, version.Number)
+				return fmt.Errorf("multiple tags found for %s in %s %s, please use the --tag parameter", containerImage.Url, ContainerImageProductSlug, version.Number)
 			}
 		}
 
 		if !imageTag.IsUpdatedInMarketplaceRegistry {
-			return fmt.Errorf("%s with tag %s in %s %s is not downloadable: %s", containerImage.Url, imageTag.Tag, ProductSlug, version.Number, imageTag.ProcessingError)
+			return fmt.Errorf("%s with tag %s in %s %s is not downloadable: %s", containerImage.Url, imageTag.Tag, ContainerImageProductSlug, version.Number, imageTag.ProcessingError)
 		}
 
 		cmd.Printf("Downloading image to %s...\n", downloadedContainerImageFilename)
@@ -190,7 +198,7 @@ var CreateContainerImageCmd = &cobra.Command{
 		}
 
 		cmd.SilenceUsage = true
-		product, version, err := Marketplace.GetProductWithVersion(ProductSlug, ProductVersion)
+		product, version, err := Marketplace.GetProductWithVersion(ContainerImageProductSlug, ContainerImageProductVersion)
 		if err != nil {
 			return err
 		}
@@ -199,7 +207,7 @@ var CreateContainerImageCmd = &cobra.Command{
 
 		containerImages := product.GetContainerImagesForVersion(version.Number)
 		if containerImages == nil {
-			if DeploymentInstructions == "" {
+			if ContainerImageDeploymentInstructions == "" {
 				cmd.SilenceUsage = false
 				return fmt.Errorf("must specify the deployment instructions for the first container image. Please run again with --deployment-instructions <string>")
 			}
@@ -215,13 +223,13 @@ var CreateContainerImageCmd = &cobra.Command{
 			containerImage = &models.DockerURLDetails{
 				Url:                   ImageRepository,
 				ImageTags:             []*models.DockerImageTag{},
-				DeploymentInstruction: DeploymentInstructions,
+				DeploymentInstruction: ContainerImageDeploymentInstructions,
 			}
 			containerImages.DockerURLs = append(containerImages.DockerURLs, containerImage)
 		}
 
 		if containerImage.HasTag(ImageTag) {
-			return fmt.Errorf("%s %s already has the tag %s:%s", ProductSlug, version.Number, ImageRepository, ImageTag)
+			return fmt.Errorf("%s %s already has the tag %s:%s", ContainerImageProductSlug, version.Number, ImageRepository, ImageTag)
 		}
 		containerImage.ImageTags = append(containerImage.ImageTags, &models.DockerImageTag{
 			Tag:  ImageTag,

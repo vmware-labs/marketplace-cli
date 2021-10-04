@@ -78,8 +78,8 @@ var _ = Describe("ContainerImage", func() {
 		})
 
 		It("outputs the container images", func() {
-			cmd.ProductSlug = "my-super-product"
-			cmd.ProductVersion = "1.2.3"
+			cmd.ContainerImageProductSlug = "my-super-product"
+			cmd.ContainerImageProductVersion = "1.2.3"
 			err := cmd.ListContainerImageCmd.RunE(cmd.ListContainerImageCmd, []string{""})
 			Expect(err).ToNot(HaveOccurred())
 
@@ -113,8 +113,8 @@ var _ = Describe("ContainerImage", func() {
 			})
 
 			It("says there are no products", func() {
-				cmd.ProductSlug = "my-super-product"
-				cmd.ProductVersion = "1.2.3"
+				cmd.ContainerImageProductSlug = "my-super-product"
+				cmd.ContainerImageProductVersion = "1.2.3"
 				err := cmd.ListContainerImageCmd.RunE(cmd.ListContainerImageCmd, []string{""})
 				Expect(err).To(HaveOccurred())
 				Expect(err.Error()).To(Equal("product \"my-super-product\" not found"))
@@ -127,8 +127,8 @@ var _ = Describe("ContainerImage", func() {
 			})
 
 			It("prints the error", func() {
-				cmd.ProductSlug = "my-super-product"
-				cmd.ProductVersion = "1.2.3"
+				cmd.ContainerImageProductSlug = "my-super-product"
+				cmd.ContainerImageProductVersion = "1.2.3"
 				err := cmd.ListContainerImageCmd.RunE(cmd.ListContainerImageCmd, []string{""})
 				Expect(err).To(HaveOccurred())
 				Expect(err.Error()).To(Equal("sending the request for product \"my-super-product\" failed: marketplace request failed: request failed"))
@@ -137,8 +137,8 @@ var _ = Describe("ContainerImage", func() {
 
 		Context("No product version found", func() {
 			It("says that the version does not exist", func() {
-				cmd.ProductSlug = "my-super-product"
-				cmd.ProductVersion = "9.9.9"
+				cmd.ContainerImageProductSlug = "my-super-product"
+				cmd.ContainerImageProductVersion = "9.9.9"
 				err := cmd.ListContainerImageCmd.RunE(cmd.ListContainerImageCmd, []string{""})
 				Expect(err).To(HaveOccurred())
 				Expect(err.Error()).To(Equal("product \"my-super-product\" does not have a version 9.9.9"))
@@ -182,8 +182,8 @@ var _ = Describe("ContainerImage", func() {
 		})
 
 		It("sends the right request", func() {
-			cmd.ProductSlug = "my-super-product"
-			cmd.ProductVersion = "1.2.3"
+			cmd.ContainerImageProductSlug = "my-super-product"
+			cmd.ContainerImageProductVersion = "1.2.3"
 			cmd.ImageRepository = "myId"
 			err := cmd.GetContainerImageCmd.RunE(cmd.GetContainerImageCmd, []string{""})
 			Expect(err).ToNot(HaveOccurred())
@@ -220,8 +220,8 @@ var _ = Describe("ContainerImage", func() {
 			})
 
 			It("says that the product was not found", func() {
-				cmd.ProductSlug = "my-super-product"
-				cmd.ProductVersion = "1.2.3"
+				cmd.ContainerImageProductSlug = "my-super-product"
+				cmd.ContainerImageProductVersion = "1.2.3"
 				cmd.ImageRepository = "myId"
 				err := cmd.GetContainerImageCmd.RunE(cmd.GetContainerImageCmd, []string{""})
 				Expect(err).To(HaveOccurred())
@@ -231,8 +231,8 @@ var _ = Describe("ContainerImage", func() {
 
 		Context("No version found", func() {
 			It("says that the version does not exist", func() {
-				cmd.ProductSlug = "my-super-product"
-				cmd.ProductVersion = "9.9.9"
+				cmd.ContainerImageProductSlug = "my-super-product"
+				cmd.ContainerImageProductVersion = "9.9.9"
 				cmd.ImageRepository = "myId"
 				err := cmd.GetContainerImageCmd.RunE(cmd.GetContainerImageCmd, []string{""})
 				Expect(err).To(HaveOccurred())
@@ -242,8 +242,8 @@ var _ = Describe("ContainerImage", func() {
 
 		Context("No container images for version", func() {
 			It("says that the version does not exist", func() {
-				cmd.ProductSlug = "my-super-product"
-				cmd.ProductVersion = "1.2.3"
+				cmd.ContainerImageProductSlug = "my-super-product"
+				cmd.ContainerImageProductVersion = "1.2.3"
 				cmd.ImageRepository = "thisImageDoesNotExist"
 				err := cmd.GetContainerImageCmd.RunE(cmd.GetContainerImageCmd, []string{""})
 				Expect(err).To(HaveOccurred())
@@ -257,8 +257,8 @@ var _ = Describe("ContainerImage", func() {
 			})
 
 			It("prints the error", func() {
-				cmd.ProductSlug = "my-super-product"
-				cmd.ProductVersion = "1.2.3"
+				cmd.ContainerImageProductSlug = "my-super-product"
+				cmd.ContainerImageProductVersion = "1.2.3"
 				cmd.ImageRepository = "myId"
 				err := cmd.GetContainerImageCmd.RunE(cmd.GetContainerImageCmd, []string{""})
 				Expect(err).To(HaveOccurred())
@@ -325,8 +325,8 @@ var _ = Describe("ContainerImage", func() {
 		})
 
 		It("sends the right requests", func() {
-			cmd.ProductSlug = "my-super-product"
-			cmd.ProductVersion = "1.2.3"
+			cmd.ContainerImageProductSlug = "my-super-product"
+			cmd.ContainerImageProductVersion = "1.2.3"
 			cmd.ImageRepository = "python"
 			cmd.ImageTag = "1.2.3"
 			cmd.ImageTagType = cmd.ImageTagTypeFixed
@@ -412,8 +412,8 @@ var _ = Describe("ContainerImage", func() {
 			})
 
 			It("sends the right requests", func() {
-				cmd.ProductSlug = "my-super-product"
-				cmd.ProductVersion = "1.2.3"
+				cmd.ContainerImageProductSlug = "my-super-product"
+				cmd.ContainerImageProductVersion = "1.2.3"
 				cmd.ImageRepository = "nginx"
 				cmd.ImageTag = "5.5.5"
 				cmd.ImageTagType = cmd.ImageTagTypeFixed
@@ -456,8 +456,8 @@ var _ = Describe("ContainerImage", func() {
 			})
 
 			It("says that the product was not found", func() {
-				cmd.ProductSlug = "my-super-product"
-				cmd.ProductVersion = "1.2.3"
+				cmd.ContainerImageProductSlug = "my-super-product"
+				cmd.ContainerImageProductVersion = "1.2.3"
 				cmd.ImageRepository = "nginx"
 				cmd.ImageTag = "5.5.5"
 				cmd.ImageTagType = cmd.ImageTagTypeFixed
@@ -469,8 +469,8 @@ var _ = Describe("ContainerImage", func() {
 
 		Context("No product version found", func() {
 			It("says there are no versions", func() {
-				cmd.ProductSlug = "my-super-product"
-				cmd.ProductVersion = "0.0.0"
+				cmd.ContainerImageProductSlug = "my-super-product"
+				cmd.ContainerImageProductVersion = "0.0.0"
 				cmd.ImageRepository = "nginx"
 				cmd.ImageTag = "5.5.5"
 				cmd.ImageTagType = cmd.ImageTagTypeFixed
@@ -482,8 +482,8 @@ var _ = Describe("ContainerImage", func() {
 
 		Context("Container image already exists", func() {
 			It("says the image already exists", func() {
-				cmd.ProductSlug = "my-super-product"
-				cmd.ProductVersion = "1.2.3"
+				cmd.ContainerImageProductSlug = "my-super-product"
+				cmd.ContainerImageProductVersion = "1.2.3"
 				cmd.ImageRepository = "nginx"
 				cmd.ImageTag = "latest"
 				cmd.ImageTagType = cmd.ImageTagTypeFloating
@@ -495,8 +495,8 @@ var _ = Describe("ContainerImage", func() {
 
 		Context("invalid tag type", func() {
 			It("prints the error", func() {
-				cmd.ProductSlug = "my-super-product"
-				cmd.ProductVersion = "1.2.3"
+				cmd.ContainerImageProductSlug = "my-super-product"
+				cmd.ContainerImageProductVersion = "1.2.3"
 				cmd.ImageRepository = "nginx"
 				cmd.ImageTag = "5.5.5"
 				cmd.ImageTagType = "fancy"
@@ -515,8 +515,8 @@ var _ = Describe("ContainerImage", func() {
 					}, nil)
 			})
 			It("prints the error", func() {
-				cmd.ProductSlug = "my-super-product"
-				cmd.ProductVersion = "1.2.3"
+				cmd.ContainerImageProductSlug = "my-super-product"
+				cmd.ContainerImageProductVersion = "1.2.3"
 				cmd.ImageRepository = "nginx"
 				cmd.ImageTag = "5.5.5"
 				cmd.ImageTagType = cmd.ImageTagTypeFixed

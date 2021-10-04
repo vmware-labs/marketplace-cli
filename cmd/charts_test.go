@@ -84,8 +84,8 @@ var _ = Describe("Charts", func() {
 		})
 
 		It("outputs the charts", func() {
-			cmd.ProductSlug = "my-super-product"
-			cmd.ProductVersion = "1.2.3"
+			cmd.ChartProductSlug = "my-super-product"
+			cmd.ChartProductVersion = "1.2.3"
 			err := cmd.ListChartsCmd.RunE(cmd.ListChartsCmd, []string{""})
 			Expect(err).ToNot(HaveOccurred())
 
@@ -119,8 +119,8 @@ var _ = Describe("Charts", func() {
 			})
 
 			It("says there are no products", func() {
-				cmd.ProductSlug = "my-super-product"
-				cmd.ProductVersion = "1.2.3"
+				cmd.ChartProductSlug = "my-super-product"
+				cmd.ChartProductVersion = "1.2.3"
 				err := cmd.ListChartsCmd.RunE(cmd.ListChartsCmd, []string{""})
 				Expect(err).To(HaveOccurred())
 				Expect(err.Error()).To(Equal("product \"my-super-product\" not found"))
@@ -133,8 +133,8 @@ var _ = Describe("Charts", func() {
 			})
 
 			It("prints the error", func() {
-				cmd.ProductSlug = "my-super-product"
-				cmd.ProductVersion = "1.2.3"
+				cmd.ChartProductSlug = "my-super-product"
+				cmd.ChartProductVersion = "1.2.3"
 				err := cmd.ListChartsCmd.RunE(cmd.ListChartsCmd, []string{""})
 				Expect(err).To(HaveOccurred())
 				Expect(err.Error()).To(Equal("sending the request for product \"my-super-product\" failed: marketplace request failed: request failed"))
@@ -143,8 +143,8 @@ var _ = Describe("Charts", func() {
 
 		Context("No product version found", func() {
 			It("says that the version does not exist", func() {
-				cmd.ProductSlug = "my-super-product"
-				cmd.ProductVersion = "9.9.9"
+				cmd.ChartProductSlug = "my-super-product"
+				cmd.ChartProductVersion = "9.9.9"
 				err := cmd.ListChartsCmd.RunE(cmd.ListChartsCmd, []string{""})
 				Expect(err).To(HaveOccurred())
 				Expect(err.Error()).To(Equal("product \"my-super-product\" does not have a version 9.9.9"))
@@ -230,8 +230,8 @@ var _ = Describe("Charts", func() {
 		})
 
 		It("sends the right requests", func() {
-			cmd.ProductSlug = "my-super-product"
-			cmd.ProductVersion = "1.2.3"
+			cmd.ChartProductSlug = "my-super-product"
+			cmd.ChartProductVersion = "1.2.3"
 			cmd.ChartURL = "https://charts.nitbami.com/nitbami/charts/mydatabase-2.0.0.tgz"
 			cmd.ChartVersion = "2.0.0"
 			cmd.ChartRepositoryName = "Bitnami charts repo @ Github"
@@ -300,8 +300,8 @@ var _ = Describe("Charts", func() {
 			})
 
 			It("says that the product was not found", func() {
-				cmd.ProductSlug = "my-super-product"
-				cmd.ProductVersion = "1.2.3"
+				cmd.ChartProductSlug = "my-super-product"
+				cmd.ChartProductVersion = "1.2.3"
 				cmd.ChartURL = "https://charts.nitbami.com/nitbami/charts/mydatabase-2.0.0.tgz"
 				cmd.ChartVersion = "2.0.0"
 				cmd.ChartRepositoryName = "Bitnami charts repo @ Github"
@@ -314,8 +314,8 @@ var _ = Describe("Charts", func() {
 
 		Context("No product version found", func() {
 			It("says there are no versions", func() {
-				cmd.ProductSlug = "my-super-product"
-				cmd.ProductVersion = "0.0.0"
+				cmd.ChartProductSlug = "my-super-product"
+				cmd.ChartProductVersion = "0.0.0"
 				cmd.ChartURL = "https://charts.nitbami.com/nitbami/charts/mydatabase-2.0.0.tgz"
 				cmd.ChartVersion = "2.0.0"
 				cmd.ChartRepositoryName = "Bitnami charts repo @ Github"
@@ -335,8 +335,8 @@ var _ = Describe("Charts", func() {
 					}, nil)
 			})
 			It("prints the error", func() {
-				cmd.ProductSlug = "my-super-product"
-				cmd.ProductVersion = "1.2.3"
+				cmd.ChartProductSlug = "my-super-product"
+				cmd.ChartProductVersion = "1.2.3"
 				cmd.ChartURL = "https://charts.nitbami.com/nitbami/charts/mydatabase-2.0.0.tgz"
 				cmd.ChartVersion = "2.0.0"
 				cmd.ChartRepositoryName = "Bitnami charts repo @ Github"

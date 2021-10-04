@@ -83,11 +83,6 @@ func (o *HumanOutput) RenderProducts(products []*models.Product) error {
 	return nil
 }
 
-func (o *HumanOutput) RenderVersion(product *models.Product, version string) error {
-	o.Printf("Version %s\n", version)
-	return nil
-}
-
 func (o *HumanOutput) RenderVersions(product *models.Product) error {
 	o.Println("Versions:")
 	table := o.NewTable("Number", "Status")
