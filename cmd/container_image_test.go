@@ -506,6 +506,26 @@ var _ = Describe("ContainerImage", func() {
 			})
 		})
 
+		Context("No permission to update product", func() {
+			BeforeEach(func() {
+				httpClient.DoReturnsOnCall(1,
+					&http.Response{
+						StatusCode: http.StatusForbidden,
+						Body:       ioutil.NopCloser(strings.NewReader("{\"response\":{\"message\":\"User is not authorized to perform this action\"}}\n")),
+					}, nil)
+			})
+			It("prints the error", func() {
+				cmd.ContainerImageProductSlug = "my-super-product"
+				cmd.ContainerImageProductVersion = "1.2.3"
+				cmd.ImageRepository = "nginx"
+				cmd.ImageTag = "5.5.5"
+				cmd.ImageTagType = cmd.ImageTagTypeFixed
+				err := cmd.CreateContainerImageCmd.RunE(cmd.CreateContainerImageCmd, []string{""})
+				Expect(err).To(HaveOccurred())
+				Expect(err.Error()).To(Equal("you do not have permission to modify the product \"my-super-product\""))
+			})
+		})
+
 		Context("Error putting product", func() {
 			BeforeEach(func() {
 				httpClient.DoReturnsOnCall(1,

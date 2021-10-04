@@ -17,6 +17,7 @@ import (
 	. "github.com/onsi/gomega/gbytes"
 	"github.com/vmware-labs/marketplace-cli/v2/cmd"
 	"github.com/vmware-labs/marketplace-cli/v2/cmd/output/outputfakes"
+	"github.com/vmware-labs/marketplace-cli/v2/internal/models"
 	"github.com/vmware-labs/marketplace-cli/v2/pkg"
 	"github.com/vmware-labs/marketplace-cli/v2/pkg/pkgfakes"
 	"github.com/vmware-labs/marketplace-cli/v2/test"
@@ -39,6 +40,183 @@ var _ = Describe("Products", func() {
 		}
 		stdout = NewBuffer()
 		stderr = NewBuffer()
+	})
+	Describe("ListProductsCmd", func() {
+		BeforeEach(func() {
+			products := []*models.Product{
+				test.CreateFakeProduct(
+					"",
+					"My Super Product",
+					"my-super-product",
+					"PENDING"),
+				test.CreateFakeProduct(
+					"",
+					"My Other Product",
+					"my-other-product",
+					"PENDING"),
+			}
+			response := &pkg.ListProductResponse{
+				Response: &pkg.ListProductResponsePayload{
+					Products:   products,
+					StatusCode: http.StatusOK,
+					Message:    "testing",
+				},
+			}
+
+			responseBytes, err := json.Marshal(response)
+			Expect(err).ToNot(HaveOccurred())
+
+			httpClient.DoReturns(&http.Response{
+				StatusCode: http.StatusOK,
+				Body:       ioutil.NopCloser(bytes.NewReader(responseBytes)),
+			}, nil)
+
+			cmd.ListProductsCmd.SetOut(stdout)
+			cmd.ListProductsCmd.SetErr(stderr)
+		})
+
+		It("sends the right request", func() {
+			err := cmd.ListProductsCmd.RunE(cmd.ListProductsCmd, []string{})
+			Expect(err).ToNot(HaveOccurred())
+
+			By("sending the correct request", func() {
+				Expect(httpClient.DoCallCount()).To(Equal(1))
+				request := httpClient.DoArgsForCall(0)
+				Expect(request.Method).To(Equal("GET"))
+				Expect(request.URL.Path).To(Equal("/api/v1/products"))
+				Expect(request.URL.Query().Get("pagination")).To(Equal("{\"page\":1,\"pageSize\":20}"))
+			})
+
+			By("outputting the response", func() {
+				Expect(output.RenderProductsCallCount()).To(Equal(1))
+				products := output.RenderProductsArgsForCall(0)
+				Expect(products).To(HaveLen(2))
+				Expect(products[0].Slug).To(Equal("my-super-product"))
+				Expect(products[1].Slug).To(Equal("my-other-product"))
+			})
+		})
+
+		Context("Error fetching products", func() {
+			BeforeEach(func() {
+				httpClient.DoReturns(nil, fmt.Errorf("request failed"))
+			})
+
+			It("prints the error", func() {
+				err := cmd.ListProductsCmd.RunE(cmd.ListProductsCmd, []string{})
+				Expect(err).To(HaveOccurred())
+				Expect(err.Error()).To(Equal("sending the request for the list of products failed: marketplace request failed: request failed"))
+			})
+		})
+
+		Context("Unexpected status code", func() {
+			BeforeEach(func() {
+				httpClient.DoReturns(&http.Response{
+					StatusCode: http.StatusTeapot,
+					Status:     http.StatusText(http.StatusTeapot),
+				}, nil)
+			})
+
+			It("prints the error", func() {
+				err := cmd.ListProductsCmd.RunE(cmd.ListProductsCmd, []string{})
+				Expect(err).To(HaveOccurred())
+				Expect(err.Error()).To(Equal("getting the list of products failed: (418) I'm a teapot"))
+			})
+		})
+
+		Context("Un-parsable response", func() {
+			BeforeEach(func() {
+				httpClient.DoReturns(&http.Response{
+					StatusCode: http.StatusOK,
+					Body:       ioutil.NopCloser(strings.NewReader("This totally isn't a valid response")),
+				}, nil)
+			})
+
+			It("prints the error", func() {
+				err := cmd.ListProductsCmd.RunE(cmd.ListProductsCmd, []string{})
+				Expect(err).To(HaveOccurred())
+				Expect(err.Error()).To(Equal("failed to parse the list of products: invalid character 'T' looking for beginning of value"))
+			})
+		})
+	})
+
+	Describe("GetProductCmd", func() {
+		BeforeEach(func() {
+			product := test.CreateFakeProduct(
+				"",
+				"My Super Product",
+				"my-super-product",
+				"PENDING")
+			test.AddVerions(product, "1.2.3", "2.3.4")
+
+			response := &pkg.GetProductResponse{
+				Response: &pkg.GetProductResponsePayload{
+					Data:       product,
+					StatusCode: http.StatusOK,
+					Message:    "testing",
+				},
+			}
+
+			responseBytes, err := json.Marshal(response)
+			Expect(err).ToNot(HaveOccurred())
+
+			httpClient.DoReturns(&http.Response{
+				StatusCode: http.StatusOK,
+				Body:       ioutil.NopCloser(bytes.NewReader(responseBytes)),
+			}, nil)
+
+			cmd.GetProductCmd.SetOut(stdout)
+			cmd.GetProductCmd.SetErr(stderr)
+		})
+
+		It("sends the right request", func() {
+			cmd.ProductSlug = "my-super-product"
+			err := cmd.GetProductCmd.RunE(cmd.GetProductCmd, []string{""})
+			Expect(err).ToNot(HaveOccurred())
+
+			By("sending the correct request", func() {
+				Expect(httpClient.DoCallCount()).To(Equal(1))
+				request := httpClient.DoArgsForCall(0)
+				Expect(request.Method).To(Equal("GET"))
+				Expect(request.URL.Path).To(Equal("/api/v1/products/my-super-product"))
+				Expect(request.URL.Query().Get("increaseViewCount")).To(Equal("false"))
+				Expect(request.URL.Query().Get("isSlug")).To(Equal("true"))
+			})
+
+			By("outputting the response", func() {
+				Expect(output.RenderProductCallCount()).To(Equal(1))
+				product := output.RenderProductArgsForCall(0)
+				Expect(product.Slug).To(Equal("my-super-product"))
+				Expect(product.DisplayName).To(Equal("My Super Product"))
+			})
+		})
+
+		Context("No product found", func() {
+			BeforeEach(func() {
+				httpClient.DoReturns(&http.Response{
+					StatusCode: http.StatusNotFound,
+				}, nil)
+			})
+
+			It("says that the product was not found", func() {
+				cmd.ProductSlug = "my-super-product"
+				err := cmd.GetProductCmd.RunE(cmd.GetProductCmd, []string{""})
+				Expect(err).To(HaveOccurred())
+				Expect(err.Error()).To(Equal("product \"my-super-product\" not found"))
+			})
+		})
+
+		Context("Error fetching product", func() {
+			BeforeEach(func() {
+				httpClient.DoReturns(nil, fmt.Errorf("request failed"))
+			})
+
+			It("prints the error", func() {
+				cmd.ProductSlug = "my-super-product"
+				err := cmd.GetProductCmd.RunE(cmd.GetProductCmd, []string{""})
+				Expect(err).To(HaveOccurred())
+				Expect(err.Error()).To(Equal("sending the request for product \"my-super-product\" failed: marketplace request failed: request failed"))
+			})
+		})
 	})
 
 	Describe("AddProductVersionCmd", func() {
@@ -197,6 +375,24 @@ var _ = Describe("Products", func() {
 				err := cmd.AddProductVersionCmd.RunE(cmd.AddProductVersionCmd, []string{""})
 				Expect(err).To(HaveOccurred())
 				Expect(err.Error()).To(Equal("failed to parse the response for product \"my-super-product\": invalid character 'T' looking for beginning of value"))
+			})
+		})
+
+		Context("No permission to update product", func() {
+			BeforeEach(func() {
+				httpClient.DoReturnsOnCall(1,
+					&http.Response{
+						StatusCode: http.StatusForbidden,
+						Body:       ioutil.NopCloser(strings.NewReader("{\"response\":{\"message\":\"User is not authorized to perform this action\"}}\n")),
+					}, nil)
+			})
+
+			It("prints the error", func() {
+				cmd.ProductSlug = "my-super-product"
+				cmd.ProductVersion = "9.9.9"
+				err := cmd.AddProductVersionCmd.RunE(cmd.AddProductVersionCmd, []string{""})
+				Expect(err).To(HaveOccurred())
+				Expect(err.Error()).To(Equal("you do not have permission to modify the product \"my-super-product\""))
 			})
 		})
 

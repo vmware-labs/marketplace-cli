@@ -161,6 +161,9 @@ func (m *Marketplace) PutProduct(product *models.Product, versionUpdate bool) (*
 		return nil, fmt.Errorf("failed to read the update response for product \"%s\": %w", product.Slug, err)
 	}
 
+	if resp.StatusCode == http.StatusForbidden {
+		return nil, fmt.Errorf("you do not have permission to modify the product \"%s\"", product.Slug)
+	}
 	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("updating product \"%s\" failed: (%d)\n%s", product.Slug, resp.StatusCode, body)
 	}
