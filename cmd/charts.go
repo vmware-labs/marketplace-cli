@@ -12,7 +12,7 @@ import (
 )
 
 var (
-	chartID                     string
+	ChartID                     string
 	ChartDeploymentInstructions string
 	ChartProductSlug            string
 	ChartProductVersion         string
@@ -34,9 +34,9 @@ func init() {
 	_ = ChartCmd.MarkPersistentFlagRequired("product")
 	ChartCmd.PersistentFlags().StringVarP(&ChartProductVersion, "product-version", "v", "latest", "Product version")
 
-	GetChartCmd.Flags().StringVar(&chartID, "chart-id", "", "chart ID")
+	GetChartCmd.Flags().StringVar(&ChartID, "chart-id", "", "chart ID")
 
-	DownloadChartCmd.Flags().StringVar(&chartID, "chart-id", "", "chart ID")
+	DownloadChartCmd.Flags().StringVar(&ChartID, "chart-id", "", "chart ID")
 	DownloadChartCmd.Flags().StringVarP(&downloadedChartFilename, "filename", "f", "chart.tgz", "output file name")
 
 	CreateChartCmd.Flags().StringVarP(&ChartVersion, "chart-version", "e", "", "chart version")
@@ -95,19 +95,19 @@ var GetChartCmd = &cobra.Command{
 		}
 
 		var chart *models.ChartVersion
-		if chartID != "" {
-			chart = product.GetChart(chartID)
+		if ChartID != "" {
+			chart = product.GetChart(ChartID)
 			if chart == nil {
-				return fmt.Errorf("product \"%s\" %s does not have the chart \"%s\"", ChartProductSlug, version.Number, chartID)
+				return fmt.Errorf("%s %s does not have the chart \"%s\"", ChartProductSlug, version.Number, ChartID)
 			}
 		} else {
 			charts := product.GetChartsForVersion(version.Number)
 			if len(charts) == 0 {
-				return fmt.Errorf("product \"%s\" does not have any charts for version %s", ChartProductSlug, version.Number)
+				return fmt.Errorf("%s %s does not have any charts", ChartProductSlug, version.Number)
 			} else if len(charts) == 1 {
 				chart = charts[0]
 			} else {
-				return fmt.Errorf("multiple container images found for %s for version %s, please use the --image-repository parameter", ChartProductSlug, version.Number)
+				return fmt.Errorf("multiple charts found for %s for version %s, please use the --chard-id parameter", ChartProductSlug, version.Number)
 			}
 		}
 
@@ -128,10 +128,10 @@ var DownloadChartCmd = &cobra.Command{
 		}
 
 		var chart *models.ChartVersion
-		if chartID != "" {
-			chart = product.GetChart(chartID)
+		if ChartID != "" {
+			chart = product.GetChart(ChartID)
 			if chart == nil {
-				return fmt.Errorf("product \"%s\" %s does not have the chart \"%s\"", ChartProductSlug, version.Number, chartID)
+				return fmt.Errorf("product \"%s\" %s does not have the chart \"%s\"", ChartProductSlug, version.Number, ChartID)
 			}
 		} else {
 			charts := product.GetChartsForVersion(version.Number)

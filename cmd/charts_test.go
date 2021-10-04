@@ -152,6 +152,133 @@ var _ = Describe("Charts", func() {
 		})
 	})
 
+	Describe("GetChartCmd", func() {
+		var chartId string
+		BeforeEach(func() {
+			product := test.CreateFakeProduct(
+				"",
+				"My Super Product",
+				"my-super-product",
+				"PENDING")
+			test.AddVerions(product, "1.2.3", "2.3.4")
+			chartId = uuid.New().String()
+			product.ChartVersions = []*models.ChartVersion{
+				{
+					Id:         chartId,
+					Version:    "5.0.0",
+					AppVersion: "1.2.3",
+					Repo: &models.Repo{
+						Name: "Bitnami charts repo @ Github",
+						Url:  "https://github.com/bitnami/charts/tree/master/bitnami/kube-prometheus",
+					},
+					HelmTarUrl: "https://charts.bitnami.com/bitnami/kube-prometheus-5.0.0.tgz",
+					TarUrl:     "https://charts.bitnami.com/bitnami/kube-prometheus-5.0.0.tgz",
+				},
+			}
+			response := &pkg.GetProductResponse{
+				Response: &pkg.GetProductResponsePayload{
+					Data:       product,
+					StatusCode: http.StatusOK,
+					Message:    "testing",
+				},
+			}
+
+			responseBytes, err := json.Marshal(response)
+			Expect(err).ToNot(HaveOccurred())
+
+			httpClient.DoReturns(&http.Response{
+				StatusCode: http.StatusOK,
+				Body:       ioutil.NopCloser(bytes.NewReader(responseBytes)),
+			}, nil)
+
+			cmd.GetChartCmd.SetOut(stdout)
+			cmd.GetChartCmd.SetErr(stderr)
+		})
+
+		It("sends the right request", func() {
+			cmd.ChartProductSlug = "my-super-product"
+			cmd.ChartProductVersion = "1.2.3"
+			cmd.ChartID = chartId
+			err := cmd.GetChartCmd.RunE(cmd.GetChartCmd, []string{""})
+			Expect(err).ToNot(HaveOccurred())
+
+			By("sending the correct request", func() {
+				Expect(httpClient.DoCallCount()).To(Equal(1))
+				request := httpClient.DoArgsForCall(0)
+				Expect(request.Method).To(Equal("GET"))
+				Expect(request.URL.Path).To(Equal("/api/v1/products/my-super-product"))
+				Expect(request.URL.Query().Get("increaseViewCount")).To(Equal("false"))
+				Expect(request.URL.Query().Get("isSlug")).To(Equal("true"))
+			})
+
+			By("outputting the response", func() {
+				Expect(output.RenderChartCallCount()).To(Equal(1))
+				chart := output.RenderChartArgsForCall(0)
+				Expect(chart.Id).To(Equal(chartId))
+				Expect(chart.AppVersion).To(Equal("1.2.3"))
+				Expect(chart.Version).To(Equal("5.0.0"))
+				Expect(chart.Repo.Name).To(Equal("Bitnami charts repo @ Github"))
+				Expect(chart.Repo.Url).To(Equal("https://github.com/bitnami/charts/tree/master/bitnami/kube-prometheus"))
+				Expect(chart.HelmTarUrl).To(Equal("https://charts.bitnami.com/bitnami/kube-prometheus-5.0.0.tgz"))
+				Expect(chart.TarUrl).To(Equal("https://charts.bitnami.com/bitnami/kube-prometheus-5.0.0.tgz"))
+			})
+		})
+
+		Context("No product found", func() {
+			BeforeEach(func() {
+				httpClient.DoReturns(&http.Response{
+					StatusCode: http.StatusNotFound,
+				}, nil)
+			})
+
+			It("says that the product was not found", func() {
+				cmd.ChartProductSlug = "my-super-product"
+				cmd.ChartProductVersion = "1.2.3"
+				cmd.ChartID = chartId
+				err := cmd.GetChartCmd.RunE(cmd.GetChartCmd, []string{""})
+				Expect(err).To(HaveOccurred())
+				Expect(err.Error()).To(Equal("product \"my-super-product\" not found"))
+			})
+		})
+
+		Context("No version found", func() {
+			It("says that the version does not exist", func() {
+				cmd.ChartProductSlug = "my-super-product"
+				cmd.ChartProductVersion = "9.9.9"
+				cmd.ChartID = chartId
+				err := cmd.GetChartCmd.RunE(cmd.GetChartCmd, []string{""})
+				Expect(err).To(HaveOccurred())
+				Expect(err.Error()).To(Equal("product \"my-super-product\" does not have a version 9.9.9"))
+			})
+		})
+
+		Context("No matching chart found", func() {
+			It("says that the version does not exist", func() {
+				cmd.ChartProductSlug = "my-super-product"
+				cmd.ChartProductVersion = "1.2.3"
+				cmd.ChartID = "this-chart-id-does-not-exist"
+				err := cmd.GetChartCmd.RunE(cmd.GetChartCmd, []string{""})
+				Expect(err).To(HaveOccurred())
+				Expect(err.Error()).To(Equal("my-super-product 1.2.3 does not have the chart \"this-chart-id-does-not-exist\""))
+			})
+		})
+
+		Context("Error fetching product", func() {
+			BeforeEach(func() {
+				httpClient.DoReturns(nil, fmt.Errorf("request failed"))
+			})
+
+			It("prints the error", func() {
+				cmd.ChartProductSlug = "my-super-product"
+				cmd.ChartProductVersion = "1.2.3"
+				cmd.ChartID = chartId
+				err := cmd.GetChartCmd.RunE(cmd.GetChartCmd, []string{""})
+				Expect(err).To(HaveOccurred())
+				Expect(err.Error()).To(Equal("sending the request for product \"my-super-product\" failed: marketplace request failed: request failed"))
+			})
+		})
+	})
+
 	Describe("CreateChartCmd", func() {
 		var productID string
 		BeforeEach(func() {
@@ -344,6 +471,27 @@ var _ = Describe("Charts", func() {
 				err := cmd.CreateChartCmd.RunE(cmd.CreateChartCmd, []string{""})
 				Expect(err).To(HaveOccurred())
 				Expect(err.Error()).To(Equal("updating product \"my-super-product\" failed: (418)\nTeapots all the way down"))
+			})
+		})
+
+		Context("No permission to update product", func() {
+			BeforeEach(func() {
+				httpClient.DoReturnsOnCall(1,
+					&http.Response{
+						StatusCode: http.StatusForbidden,
+						Body:       ioutil.NopCloser(strings.NewReader("{\"response\":{\"message\":\"User is not authorized to perform this action\"}}\n")),
+					}, nil)
+			})
+			It("prints the error", func() {
+				cmd.ChartProductSlug = "my-super-product"
+				cmd.ChartProductVersion = "1.2.3"
+				cmd.ChartURL = "https://charts.nitbami.com/nitbami/charts/mydatabase-2.0.0.tgz"
+				cmd.ChartVersion = "2.0.0"
+				cmd.ChartRepositoryName = "Bitnami charts repo @ Github"
+				cmd.ChartRepositoryURL = "https://github.com/bitnami/charts/tree/master/bitnami/mydatabse"
+				err := cmd.CreateChartCmd.RunE(cmd.CreateChartCmd, []string{""})
+				Expect(err).To(HaveOccurred())
+				Expect(err.Error()).To(Equal("you do not have permission to modify the product \"my-super-product\""))
 			})
 		})
 	})
