@@ -12,8 +12,15 @@ import (
 )
 
 var (
-	chartID                 string
-	downloadedChartFilename string
+	chartID                     string
+	ChartDeploymentInstructions string
+	ChartProductSlug            string
+	ChartProductVersion         string
+	ChartVersion                string
+	ChartRepositoryName         string
+	ChartRepositoryURL          string
+	ChartURL                    string
+	downloadedChartFilename     string
 )
 
 func init() {
@@ -23,9 +30,9 @@ func init() {
 	ChartCmd.AddCommand(DownloadChartCmd)
 	ChartCmd.AddCommand(CreateChartCmd)
 
-	ChartCmd.PersistentFlags().StringVarP(&ProductSlug, "product", "p", "", "Product slug")
+	ChartCmd.PersistentFlags().StringVarP(&ChartProductSlug, "product", "p", "", "Product slug")
 	_ = ChartCmd.MarkPersistentFlagRequired("product")
-	ChartCmd.PersistentFlags().StringVarP(&ProductVersion, "product-version", "v", "latest", "Product version")
+	ChartCmd.PersistentFlags().StringVarP(&ChartProductVersion, "product-version", "v", "latest", "Product version")
 
 	GetChartCmd.Flags().StringVar(&chartID, "chart-id", "", "chart ID")
 
@@ -40,7 +47,7 @@ func init() {
 	_ = CreateChartCmd.MarkFlagRequired("repository-url")
 	CreateChartCmd.Flags().StringVar(&ChartRepositoryName, "repository-name", "", "chart public repository name")
 	_ = CreateChartCmd.MarkFlagRequired("repository-name")
-	CreateChartCmd.Flags().StringVar(&DeploymentInstructions, "readme", "", "readme information")
+	CreateChartCmd.Flags().StringVar(&ChartDeploymentInstructions, "readme", "", "readme information")
 	_ = CreateChartCmd.MarkFlagRequired("readme")
 }
 
@@ -60,7 +67,7 @@ var ListChartsCmd = &cobra.Command{
 	Args:  cobra.NoArgs,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		cmd.SilenceUsage = true
-		product, version, err := Marketplace.GetProductWithVersion(ProductSlug, ProductVersion)
+		product, version, err := Marketplace.GetProductWithVersion(ChartProductSlug, ChartProductVersion)
 		if err != nil {
 			return err
 		}
@@ -82,7 +89,7 @@ var GetChartCmd = &cobra.Command{
 	Args:  cobra.NoArgs,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		cmd.SilenceUsage = true
-		product, version, err := Marketplace.GetProductWithVersion(ProductSlug, ProductVersion)
+		product, version, err := Marketplace.GetProductWithVersion(ChartProductSlug, ChartProductVersion)
 		if err != nil {
 			return err
 		}
@@ -91,16 +98,16 @@ var GetChartCmd = &cobra.Command{
 		if chartID != "" {
 			chart = product.GetChart(chartID)
 			if chart == nil {
-				return fmt.Errorf("product \"%s\" %s does not have the container image \"%s\"", ProductSlug, version.Number, ImageRepository)
+				return fmt.Errorf("product \"%s\" %s does not have the chart \"%s\"", ChartProductSlug, version.Number, chartID)
 			}
 		} else {
 			charts := product.GetChartsForVersion(version.Number)
 			if len(charts) == 0 {
-				return fmt.Errorf("product \"%s\" does not have any charts for version %s", ProductSlug, version.Number)
+				return fmt.Errorf("product \"%s\" does not have any charts for version %s", ChartProductSlug, version.Number)
 			} else if len(charts) == 1 {
 				chart = charts[0]
 			} else {
-				return fmt.Errorf("multiple container images found for %s for version %s, please use the --image-repository parameter", ProductSlug, version.Number)
+				return fmt.Errorf("multiple container images found for %s for version %s, please use the --image-repository parameter", ChartProductSlug, version.Number)
 			}
 		}
 
@@ -115,7 +122,7 @@ var DownloadChartCmd = &cobra.Command{
 	Args:  cobra.NoArgs,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		cmd.SilenceUsage = true
-		product, version, err := Marketplace.GetProductWithVersion(ProductSlug, ProductVersion)
+		product, version, err := Marketplace.GetProductWithVersion(ChartProductSlug, ChartProductVersion)
 		if err != nil {
 			return err
 		}
@@ -124,21 +131,21 @@ var DownloadChartCmd = &cobra.Command{
 		if chartID != "" {
 			chart = product.GetChart(chartID)
 			if chart == nil {
-				return fmt.Errorf("product \"%s\" %s does not have the container image \"%s\"", ProductSlug, version.Number, ImageRepository)
+				return fmt.Errorf("product \"%s\" %s does not have the chart \"%s\"", ChartProductSlug, version.Number, chartID)
 			}
 		} else {
 			charts := product.GetChartsForVersion(version.Number)
 			if len(charts) == 0 {
-				return fmt.Errorf("product \"%s\" does not have any charts for version %s", ProductSlug, version.Number)
+				return fmt.Errorf("product \"%s\" does not have any charts for version %s", ChartProductSlug, version.Number)
 			} else if len(charts) == 1 {
 				chart = charts[0]
 			} else {
-				return fmt.Errorf("multiple container images found for %s for version %s, please use the --image-repository parameter", ProductSlug, version.Number)
+				return fmt.Errorf("multiple container images found for %s for version %s, please use the --image-repository parameter", ChartProductSlug, version.Number)
 			}
 		}
 
 		if !chart.IsUpdatedInMarketplaceRegistry {
-			return fmt.Errorf("%s %s in %s %s is not downloadable: %s", chart.TarUrl, chart.Version, ProductSlug, version.Number, chart.ValidationStatus)
+			return fmt.Errorf("%s %s in %s %s is not downloadable: %s", chart.TarUrl, chart.Version, ChartProductSlug, version.Number, chart.ValidationStatus)
 		}
 
 		cmd.Printf("Downloading chart to %s...\n", downloadedChartFilename)
@@ -157,7 +164,7 @@ var CreateChartCmd = &cobra.Command{
 	Args:  cobra.NoArgs,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		cmd.SilenceUsage = true
-		product, version, err := Marketplace.GetProductWithVersion(ProductSlug, ProductVersion)
+		product, version, err := Marketplace.GetProductWithVersion(ChartProductSlug, ChartProductVersion)
 		if err != nil {
 			return err
 		}
@@ -168,7 +175,7 @@ var CreateChartCmd = &cobra.Command{
 			TarUrl:     ChartURL,
 			Version:    ChartVersion,
 			AppVersion: version.Number,
-			Readme:     DeploymentInstructions,
+			Readme:     ChartDeploymentInstructions,
 			Repo: &models.Repo{
 				Name: ChartRepositoryName,
 				Url:  ChartRepositoryURL,

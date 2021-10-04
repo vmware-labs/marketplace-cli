@@ -19,7 +19,6 @@ var SupportedOutputs = []string{FormatHuman, FormatJSON, FormatYAML}
 type Format interface {
 	RenderProduct(product *models.Product) error
 	RenderProducts(products []*models.Product) error
-	RenderVersion(product *models.Product, version string) error
 	RenderVersions(product *models.Product) error
 	RenderChart(chart *models.ChartVersion) error
 	RenderCharts(charts []*models.ChartVersion) error

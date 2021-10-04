@@ -22,7 +22,7 @@ import (
 	"github.com/vmware-labs/marketplace-cli/v2/test"
 )
 
-var _ = Describe("ProductVersions", func() {
+var _ = Describe("Products", func() {
 	var (
 		stdout     *Buffer
 		stderr     *Buffer
@@ -39,116 +39,6 @@ var _ = Describe("ProductVersions", func() {
 		}
 		stdout = NewBuffer()
 		stderr = NewBuffer()
-	})
-
-	Describe("ListProductVersionsCmd", func() {
-		BeforeEach(func() {
-			product := test.CreateFakeProduct(
-				"",
-				"My Super Product",
-				"my-super-product",
-				"PENDING")
-			test.AddVerions(product, "0.1.2", "1.2.3")
-			response := &pkg.GetProductResponse{
-				Response: &pkg.GetProductResponsePayload{
-					Data:       product,
-					StatusCode: http.StatusOK,
-					Message:    "testing",
-				},
-			}
-
-			responseBytes, err := json.Marshal(response)
-			Expect(err).ToNot(HaveOccurred())
-
-			httpClient.DoReturns(&http.Response{
-				StatusCode: http.StatusOK,
-				Body:       ioutil.NopCloser(bytes.NewReader(responseBytes)),
-			}, nil)
-
-			cmd.ListProductVersionsCmd.SetOut(stdout)
-			cmd.ListProductVersionsCmd.SetErr(stderr)
-		})
-
-		It("sends the right request", func() {
-			cmd.ProductSlug = "my-super-product"
-			err := cmd.ListProductVersionsCmd.RunE(cmd.ListProductVersionsCmd, []string{})
-			Expect(err).ToNot(HaveOccurred())
-
-			By("sending the correct request", func() {
-				Expect(httpClient.DoCallCount()).To(Equal(1))
-				request := httpClient.DoArgsForCall(0)
-				Expect(request.Method).To(Equal("GET"))
-				Expect(request.URL.Path).To(Equal("/api/v1/products/my-super-product"))
-				Expect(request.URL.Query().Get("increaseViewCount")).To(Equal("false"))
-				Expect(request.URL.Query().Get("isSlug")).To(Equal("true"))
-			})
-
-			By("outputting the response", func() {
-				Expect(output.RenderVersionsCallCount()).To(Equal(1))
-				product := output.RenderVersionsArgsForCall(0)
-				Expect(product.Slug).To(Equal("my-super-product"))
-			})
-		})
-
-		Context("No product found", func() {
-			BeforeEach(func() {
-				httpClient.DoReturns(&http.Response{
-					StatusCode: http.StatusNotFound,
-				}, nil)
-			})
-
-			It("says there are no products", func() {
-				cmd.ProductSlug = "my-super-product"
-				err := cmd.ListProductVersionsCmd.RunE(cmd.ListProductVersionsCmd, []string{})
-				Expect(err).To(HaveOccurred())
-				Expect(err.Error()).To(Equal("product \"my-super-product\" not found"))
-			})
-		})
-
-		Context("Error fetching product", func() {
-			BeforeEach(func() {
-				httpClient.DoReturns(nil, fmt.Errorf("request failed"))
-			})
-
-			It("prints the error", func() {
-				cmd.ProductSlug = "my-super-product"
-				err := cmd.ListProductVersionsCmd.RunE(cmd.ListProductVersionsCmd, []string{})
-				Expect(err).To(HaveOccurred())
-				Expect(err.Error()).To(Equal("sending the request for product \"my-super-product\" failed: marketplace request failed: request failed"))
-			})
-		})
-
-		Context("Unexpected status code", func() {
-			BeforeEach(func() {
-				httpClient.DoReturns(&http.Response{
-					StatusCode: http.StatusTeapot,
-					Status:     http.StatusText(http.StatusTeapot),
-				}, nil)
-			})
-
-			It("prints the error", func() {
-				cmd.ProductSlug = "my-super-product"
-				err := cmd.ListProductVersionsCmd.RunE(cmd.ListProductVersionsCmd, []string{})
-				Expect(err).To(HaveOccurred())
-				Expect(err.Error()).To(Equal("getting product \"my-super-product\" failed: (418)"))
-			})
-		})
-
-		Context("Un-parsable response", func() {
-			BeforeEach(func() {
-				httpClient.DoReturns(&http.Response{
-					StatusCode: http.StatusOK,
-					Body:       ioutil.NopCloser(strings.NewReader("This totally isn't a valid response")),
-				}, nil)
-			})
-
-			It("prints the error", func() {
-				cmd.ProductSlug = "my-super-product"
-				err := cmd.ListProductVersionsCmd.RunE(cmd.ListProductVersionsCmd, []string{})
-				Expect(err).To(HaveOccurred())
-				Expect(err.Error()).To(Equal("failed to parse the response for product \"my-super-product\": invalid character 'T' looking for beginning of value"))
-			})
-		})
 	})
 
 	Describe("AddProductVersionCmd", func() {
@@ -325,6 +215,116 @@ var _ = Describe("ProductVersions", func() {
 				err := cmd.AddProductVersionCmd.RunE(cmd.AddProductVersionCmd, []string{""})
 				Expect(err).To(HaveOccurred())
 				Expect(err.Error()).To(Equal("updating product \"my-super-product\" failed: (418)\nTeapots all the way down"))
+			})
+		})
+	})
+
+	Describe("ListProductVersionsCmd", func() {
+		BeforeEach(func() {
+			product := test.CreateFakeProduct(
+				"",
+				"My Super Product",
+				"my-super-product",
+				"PENDING")
+			test.AddVerions(product, "0.1.2", "1.2.3")
+			response := &pkg.GetProductResponse{
+				Response: &pkg.GetProductResponsePayload{
+					Data:       product,
+					StatusCode: http.StatusOK,
+					Message:    "testing",
+				},
+			}
+
+			responseBytes, err := json.Marshal(response)
+			Expect(err).ToNot(HaveOccurred())
+
+			httpClient.DoReturns(&http.Response{
+				StatusCode: http.StatusOK,
+				Body:       ioutil.NopCloser(bytes.NewReader(responseBytes)),
+			}, nil)
+
+			cmd.ListProductVersionsCmd.SetOut(stdout)
+			cmd.ListProductVersionsCmd.SetErr(stderr)
+		})
+
+		It("sends the right request", func() {
+			cmd.ProductSlug = "my-super-product"
+			err := cmd.ListProductVersionsCmd.RunE(cmd.ListProductVersionsCmd, []string{})
+			Expect(err).ToNot(HaveOccurred())
+
+			By("sending the correct request", func() {
+				Expect(httpClient.DoCallCount()).To(Equal(1))
+				request := httpClient.DoArgsForCall(0)
+				Expect(request.Method).To(Equal("GET"))
+				Expect(request.URL.Path).To(Equal("/api/v1/products/my-super-product"))
+				Expect(request.URL.Query().Get("increaseViewCount")).To(Equal("false"))
+				Expect(request.URL.Query().Get("isSlug")).To(Equal("true"))
+			})
+
+			By("outputting the response", func() {
+				Expect(output.RenderVersionsCallCount()).To(Equal(1))
+				product := output.RenderVersionsArgsForCall(0)
+				Expect(product.Slug).To(Equal("my-super-product"))
+			})
+		})
+
+		Context("No product found", func() {
+			BeforeEach(func() {
+				httpClient.DoReturns(&http.Response{
+					StatusCode: http.StatusNotFound,
+				}, nil)
+			})
+
+			It("says there are no products", func() {
+				cmd.ProductSlug = "my-super-product"
+				err := cmd.ListProductVersionsCmd.RunE(cmd.ListProductVersionsCmd, []string{})
+				Expect(err).To(HaveOccurred())
+				Expect(err.Error()).To(Equal("product \"my-super-product\" not found"))
+			})
+		})
+
+		Context("Error fetching product", func() {
+			BeforeEach(func() {
+				httpClient.DoReturns(nil, fmt.Errorf("request failed"))
+			})
+
+			It("prints the error", func() {
+				cmd.ProductSlug = "my-super-product"
+				err := cmd.ListProductVersionsCmd.RunE(cmd.ListProductVersionsCmd, []string{})
+				Expect(err).To(HaveOccurred())
+				Expect(err.Error()).To(Equal("sending the request for product \"my-super-product\" failed: marketplace request failed: request failed"))
+			})
+		})
+
+		Context("Unexpected status code", func() {
+			BeforeEach(func() {
+				httpClient.DoReturns(&http.Response{
+					StatusCode: http.StatusTeapot,
+					Status:     http.StatusText(http.StatusTeapot),
+				}, nil)
+			})
+
+			It("prints the error", func() {
+				cmd.ProductSlug = "my-super-product"
+				err := cmd.ListProductVersionsCmd.RunE(cmd.ListProductVersionsCmd, []string{})
+				Expect(err).To(HaveOccurred())
+				Expect(err.Error()).To(Equal("getting product \"my-super-product\" failed: (418)"))
+			})
+		})
+
+		Context("Un-parsable response", func() {
+			BeforeEach(func() {
+				httpClient.DoReturns(&http.Response{
+					StatusCode: http.StatusOK,
+					Body:       ioutil.NopCloser(strings.NewReader("This totally isn't a valid response")),
+				}, nil)
+			})
+
+			It("prints the error", func() {
+				cmd.ProductSlug = "my-super-product"
+				err := cmd.ListProductVersionsCmd.RunE(cmd.ListProductVersionsCmd, []string{})
+				Expect(err).To(HaveOccurred())
+				Expect(err.Error()).To(Equal("failed to parse the response for product \"my-super-product\": invalid character 'T' looking for beginning of value"))
 			})
 		})
 	})

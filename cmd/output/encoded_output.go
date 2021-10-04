@@ -50,10 +50,6 @@ func (o *EncodedOutput) RenderProducts(products []*models.Product) error {
 	return o.Print(products)
 }
 
-func (o *EncodedOutput) RenderVersion(product *models.Product, version string) error {
-	return o.Print(product.GetVersion(version))
-}
-
 func (o *EncodedOutput) RenderVersions(product *models.Product) error {
 	return o.Print(product.AllVersions)
 }

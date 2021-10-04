@@ -14,6 +14,8 @@ import (
 
 var (
 	ovaFile               string
+	OVAProductSlug        string
+	OVAProductVersion     string
 	downloadedOVAFilename string
 )
 
@@ -24,9 +26,9 @@ func init() {
 	OVACmd.AddCommand(DownloadOVACmd)
 	OVACmd.AddCommand(CreateOVACmd)
 
-	OVACmd.PersistentFlags().StringVarP(&ProductSlug, "product", "p", "", "Product slug")
+	OVACmd.PersistentFlags().StringVarP(&OVAProductSlug, "product", "p", "", "Product slug")
 	_ = OVACmd.MarkPersistentFlagRequired("product")
-	OVACmd.PersistentFlags().StringVarP(&ProductVersion, "product-version", "v", "latest", "Product version")
+	OVACmd.PersistentFlags().StringVarP(&OVAProductVersion, "product-version", "v", "latest", "Product version")
 
 	GetOVACmd.Flags().StringVar(&ovaFile, "file-id", "", "The file ID of the file to get")
 
@@ -53,7 +55,7 @@ var ListOVACmd = &cobra.Command{
 	RunE: func(cmd *cobra.Command, args []string) error {
 		cmd.SilenceUsage = true
 
-		product, version, err := Marketplace.GetProductWithVersion(ProductSlug, ProductVersion)
+		product, version, err := Marketplace.GetProductWithVersion(OVAProductSlug, OVAProductVersion)
 		if err != nil {
 			return err
 		}
@@ -76,7 +78,7 @@ var GetOVACmd = &cobra.Command{
 	RunE: func(cmd *cobra.Command, args []string) error {
 		cmd.SilenceUsage = true
 
-		product, version, err := Marketplace.GetProductWithVersion(ProductSlug, ProductVersion)
+		product, version, err := Marketplace.GetProductWithVersion(OVAProductSlug, OVAProductVersion)
 		if err != nil {
 			return err
 		}
@@ -90,11 +92,11 @@ var GetOVACmd = &cobra.Command{
 		} else {
 			files := product.GetFilesForVersion(version.Number)
 			if len(files) == 0 {
-				return fmt.Errorf("no files found for %s for version %s", ProductSlug, version.Number)
+				return fmt.Errorf("no files found for %s for version %s", OVAProductSlug, version.Number)
 			} else if len(files) == 1 {
 				file = files[0]
 			} else {
-				return fmt.Errorf("multiple files found for %s for version %s, please use the --file-id parameter", ProductSlug, version.Number)
+				return fmt.Errorf("multiple files found for %s for version %s, please use the --file-id parameter", OVAProductSlug, version.Number)
 			}
 		}
 
@@ -110,7 +112,7 @@ var DownloadOVACmd = &cobra.Command{
 	RunE: func(cmd *cobra.Command, args []string) error {
 		cmd.SilenceUsage = true
 
-		product, version, err := Marketplace.GetProductWithVersion(ProductSlug, ProductVersion)
+		product, version, err := Marketplace.GetProductWithVersion(OVAProductSlug, OVAProductVersion)
 		if err != nil {
 			return err
 		}
@@ -124,11 +126,11 @@ var DownloadOVACmd = &cobra.Command{
 		} else {
 			files := product.GetFilesForVersion(version.Number)
 			if len(files) == 0 {
-				return fmt.Errorf("no files found for %s for version %s", ProductSlug, version.Number)
+				return fmt.Errorf("no files found for %s for version %s", OVAProductSlug, version.Number)
 			} else if len(files) == 1 {
 				file = files[0]
 			} else {
-				return fmt.Errorf("multiple files found for %s for version %s, please use the --file-id parameter", ProductSlug, version.Number)
+				return fmt.Errorf("multiple files found for %s for version %s, please use the --file-id parameter", OVAProductSlug, version.Number)
 			}
 		}
 
@@ -153,7 +155,7 @@ var CreateOVACmd = &cobra.Command{
 	RunE: func(cmd *cobra.Command, args []string) error {
 		cmd.SilenceUsage = true
 
-		product, version, err := Marketplace.GetProductWithVersion(ProductSlug, ProductVersion)
+		product, version, err := Marketplace.GetProductWithVersion(OVAProductSlug, OVAProductVersion)
 		if err != nil {
 			return err
 		}

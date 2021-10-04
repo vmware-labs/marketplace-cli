@@ -9,23 +9,8 @@ import (
 	"github.com/vmware-labs/marketplace-cli/v2/pkg"
 )
 
-// Variables set from CLI flags
 var (
 	Marketplace       *pkg.Marketplace
 	Output            output.Format
 	UploadCredentials = aws.Credentials{}
-
-	ProductSlug    string
-	ProductVersion string
-
-	ImageRepository string
-	ImageTag        string
-	ImageTagType    string
-
-	ChartVersion        string
-	ChartRepositoryName string
-	ChartRepositoryURL  string
-	ChartURL            string
-
-	DeploymentInstructions string
 )
