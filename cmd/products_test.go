@@ -32,14 +32,16 @@ var _ = Describe("Products", func() {
 	)
 
 	BeforeEach(func() {
+		stdout = NewBuffer()
+		stderr = NewBuffer()
+
 		httpClient = &pkgfakes.FakeHTTPClient{}
 		output = &outputfakes.FakeFormat{}
 		cmd.Output = output
 		cmd.Marketplace = &pkg.Marketplace{
 			Client: httpClient,
+			Output: stderr,
 		}
-		stdout = NewBuffer()
-		stderr = NewBuffer()
 	})
 	Describe("ListProductsCmd", func() {
 		BeforeEach(func() {

@@ -191,7 +191,7 @@ var DownloadContainerImageCmd = &cobra.Command{
 			ImageTagId:          containerImage.ImageTags[0].ID,
 			AppVersion:          containerImages.AppVersion,
 			EulaAccepted:        true,
-		}, cmd.ErrOrStderr())
+		})
 	},
 }
 

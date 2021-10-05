@@ -8,6 +8,7 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"os"
 
 	"github.com/spf13/viper"
 )
@@ -19,6 +20,7 @@ type Marketplace struct {
 	StorageBucket string
 	StorageRegion string
 	Client        HTTPClient
+	Output        io.Writer
 }
 
 var (
@@ -36,6 +38,7 @@ func init() {
 		StorageBucket: "cspmarketplaceprd",
 		StorageRegion: "us-west-2",
 		Client:        client,
+		Output:        os.Stderr,
 	}
 	StagingConfig = &Marketplace{
 		Host:          "gtwstg.market.csp.vmware.com",
@@ -44,6 +47,7 @@ func init() {
 		StorageBucket: "cspmarketplacestage",
 		StorageRegion: "us-east-2",
 		Client:        client,
+		Output:        os.Stderr,
 	}
 }
 

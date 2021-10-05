@@ -162,7 +162,7 @@ var DownloadChartCmd = &cobra.Command{
 			AppVersion:   chart.AppVersion,
 			ChartVersion: chart.Version,
 			EulaAccepted: true,
-		}, cmd.ErrOrStderr())
+		})
 	},
 }
 

@@ -11,8 +11,9 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
+	"time"
 
-	"github.com/mitchellh/ioprogress"
+	"github.com/schollz/progressbar/v3"
 )
 
 type DownloadRequestPayload struct {
@@ -35,7 +36,7 @@ type DownloadResponse struct {
 	} `json:"response"`
 }
 
-func (m *Marketplace) Download(productId string, filename string, payload *DownloadRequestPayload, output io.Writer) error {
+func (m *Marketplace) Download(productId string, filename string, payload *DownloadRequestPayload) error {
 	requestURL := m.MakeURL(fmt.Sprintf("/api/v1/products/%s/download", productId), nil)
 	encoded, _ := json.Marshal(payload)
 
@@ -63,10 +64,10 @@ func (m *Marketplace) Download(productId string, filename string, payload *Downl
 		return fmt.Errorf("failed to parse response: %w", err)
 	}
 
-	return m.downloadFile(filename, downloadResponse.Response.PreSignedURL, output)
+	return m.downloadFile(filename, downloadResponse.Response.PreSignedURL)
 }
 
-func (m *Marketplace) downloadFile(filename string, fileDownloadURL string, output io.Writer) error {
+func (m *Marketplace) downloadFile(filename string, fileDownloadURL string) error {
 	file, err := os.Create(filename)
 	if err != nil {
 		return err
@@ -83,12 +84,26 @@ func (m *Marketplace) downloadFile(filename string, fileDownloadURL string, outp
 	}
 	defer resp.Body.Close()
 
-	progressBody := &ioprogress.Reader{
-		Reader:   resp.Body,
-		Size:     resp.ContentLength,
-		DrawFunc: ioprogress.DrawTerminalf(output, ioprogress.DrawTextFormatBytes),
-	}
-
-	_, err = io.Copy(file, progressBody)
+	progressBar := m.makeDownloadProgressBar(resp.ContentLength, filename)
+	_, err = io.Copy(io.MultiWriter(file, progressBar), resp.Body)
 	return err
+}
+
+func (m *Marketplace) makeDownloadProgressBar(length int64, filename string) *progressbar.ProgressBar {
+	bar := progressbar.NewOptions64(
+		length,
+		progressbar.OptionSetDescription(fmt.Sprintf("Downloading to %s", filename)),
+		progressbar.OptionSetWriter(m.Output),
+		progressbar.OptionShowBytes(true),
+		progressbar.OptionSetWidth(10),
+		progressbar.OptionThrottle(65*time.Millisecond),
+		progressbar.OptionShowCount(),
+		progressbar.OptionOnCompletion(func() {
+			_, _ = fmt.Fprintln(m.Output, "")
+		}),
+		progressbar.OptionSpinnerType(14),
+		progressbar.OptionFullWidth(),
+	)
+	_ = bar.RenderBlank()
+	return bar
 }

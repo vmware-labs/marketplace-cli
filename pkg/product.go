@@ -11,8 +11,10 @@ import (
 	"net/http"
 	"net/url"
 	"strconv"
+	"time"
 
 	"github.com/google/uuid"
+	"github.com/schollz/progressbar/v3"
 	"github.com/vmware-labs/marketplace-cli/v2/internal"
 	"github.com/vmware-labs/marketplace-cli/v2/internal/models"
 )
@@ -39,13 +41,15 @@ func (m *Marketplace) ListProducts(allOrgs bool, searchTerm string) ([]*models.P
 	}
 
 	var products []*models.Product
-	totalProducts := 1
+	firstTime := true
+	totalProducts := 0
 	pagination := &internal.Pagination{
 		Page:     1,
 		PageSize: 20,
 	}
 
-	for ; len(products) < totalProducts; pagination.Page++ {
+	var progressBar *progressbar.ProgressBar
+	for ; firstTime || len(products) < totalProducts; pagination.Page++ {
 		requestURL := m.MakeURL("/api/v1/products", values)
 		requestURL = pagination.Apply(requestURL)
 		resp, err := m.Get(requestURL)
@@ -67,11 +71,35 @@ func (m *Marketplace) ListProducts(allOrgs bool, searchTerm string) ([]*models.P
 		if err != nil {
 			return nil, fmt.Errorf("failed to parse the list of products: %w", err)
 		}
-		totalProducts = response.Response.Params.ProductCount
 		products = append(products, response.Response.Products...)
+
+		if firstTime {
+			totalProducts = response.Response.Params.ProductCount
+			progressBar = m.makeRequestProgressBar(totalProducts)
+			firstTime = false
+		}
+		_ = progressBar.Add(len(response.Response.Products))
 	}
 
 	return products, nil
+}
+
+func (m *Marketplace) makeRequestProgressBar(max int) *progressbar.ProgressBar {
+	progressBar := progressbar.NewOptions(
+		max,
+		progressbar.OptionSetDescription("Getting the list of products"),
+		progressbar.OptionSetWriter(m.Output),
+		progressbar.OptionSetWidth(10),
+		progressbar.OptionThrottle(65*time.Millisecond),
+		progressbar.OptionShowCount(),
+		progressbar.OptionShowIts(),
+		progressbar.OptionSetItsString("products"),
+		progressbar.OptionClearOnFinish(),
+		progressbar.OptionSpinnerType(14),
+		progressbar.OptionFullWidth(),
+	)
+	_ = progressBar.RenderBlank()
+	return progressBar
 }
 
 type GetProductResponse struct {
