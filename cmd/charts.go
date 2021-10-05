@@ -30,15 +30,24 @@ func init() {
 	ChartCmd.AddCommand(DownloadChartCmd)
 	ChartCmd.AddCommand(AttachChartCmd)
 
-	ChartCmd.PersistentFlags().StringVarP(&ChartProductSlug, "product", "p", "", "Product slug")
-	_ = ChartCmd.MarkPersistentFlagRequired("product")
-	ChartCmd.PersistentFlags().StringVarP(&ChartProductVersion, "product-version", "v", "latest", "Product version")
+	ListChartsCmd.Flags().StringVarP(&ChartProductSlug, "product", "p", "", "Product slug (required)")
+	_ = ListChartsCmd.MarkFlagRequired("product")
+	ListChartsCmd.Flags().StringVarP(&ChartProductVersion, "product-version", "v", "", "Product version (default to latest version)")
 
+	GetChartCmd.Flags().StringVarP(&ChartProductSlug, "product", "p", "", "Product slug (required)")
+	_ = GetChartCmd.MarkFlagRequired("product")
+	GetChartCmd.Flags().StringVarP(&ChartProductVersion, "product-version", "v", "", "Product version (default to latest version)")
 	GetChartCmd.Flags().StringVar(&ChartID, "chart-id", "", "chart ID")
 
+	DownloadChartCmd.Flags().StringVarP(&ChartProductSlug, "product", "p", "", "Product slug (required)")
+	_ = DownloadChartCmd.MarkFlagRequired("product")
+	DownloadChartCmd.Flags().StringVarP(&ChartProductVersion, "product-version", "v", "", "Product version (default to latest version)")
 	DownloadChartCmd.Flags().StringVar(&ChartID, "chart-id", "", "chart ID")
 	DownloadChartCmd.Flags().StringVarP(&downloadedChartFilename, "filename", "f", "chart.tgz", "output file name")
 
+	AttachChartCmd.Flags().StringVarP(&ChartProductSlug, "product", "p", "", "Product slug (required)")
+	_ = AttachChartCmd.MarkFlagRequired("product")
+	AttachChartCmd.Flags().StringVarP(&ChartProductVersion, "product-version", "v", "", "Product version (default to latest version)")
 	AttachChartCmd.Flags().StringVarP(&ChartVersion, "chart-version", "e", "", "chart version")
 	_ = AttachChartCmd.MarkFlagRequired("chart-version")
 	AttachChartCmd.Flags().StringVarP(&ChartURL, "chart-url", "u", "", "url to chart tgz")

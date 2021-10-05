@@ -34,16 +34,25 @@ func init() {
 	ContainerImageCmd.AddCommand(DownloadContainerImageCmd)
 	ContainerImageCmd.AddCommand(AttachContainerImageCmd)
 
-	ContainerImageCmd.PersistentFlags().StringVarP(&ContainerImageProductSlug, "product", "p", "", "Product slug")
-	_ = ContainerImageCmd.MarkPersistentFlagRequired("product")
-	ContainerImageCmd.PersistentFlags().StringVarP(&ContainerImageProductVersion, "product-version", "v", "latest", "Product version")
+	ListContainerImageCmd.Flags().StringVarP(&ContainerImageProductSlug, "product", "p", "", "Product slug (required)")
+	_ = ListContainerImageCmd.MarkFlagRequired("product")
+	ListContainerImageCmd.Flags().StringVarP(&ContainerImageProductVersion, "product-version", "v", "", "Product version (default to latest version)")
 
+	GetContainerImageCmd.Flags().StringVarP(&ContainerImageProductSlug, "product", "p", "", "Product slug (required)")
+	_ = GetContainerImageCmd.MarkFlagRequired("product")
+	GetContainerImageCmd.Flags().StringVarP(&ContainerImageProductVersion, "product-version", "v", "", "Product version (default to latest version)")
 	GetContainerImageCmd.Flags().StringVarP(&ImageRepository, "image-repository", "r", "", "container repository")
 
+	DownloadContainerImageCmd.Flags().StringVarP(&ContainerImageProductSlug, "product", "p", "", "Product slug (required)")
+	_ = DownloadContainerImageCmd.MarkFlagRequired("product")
+	DownloadContainerImageCmd.Flags().StringVarP(&ContainerImageProductVersion, "product-version", "v", "", "Product version (default to latest version)")
 	DownloadContainerImageCmd.Flags().StringVarP(&ImageRepository, "image-repository", "r", "", "container repository")
 	DownloadContainerImageCmd.Flags().StringVar(&ImageTag, "tag", "", "container image tag")
 	DownloadContainerImageCmd.Flags().StringVarP(&downloadedContainerImageFilename, "filename", "f", "image.tar", "output file name")
 
+	AttachContainerImageCmd.Flags().StringVarP(&ContainerImageProductSlug, "product", "p", "", "Product slug (required)")
+	_ = AttachContainerImageCmd.MarkFlagRequired("product")
+	AttachContainerImageCmd.Flags().StringVarP(&ContainerImageProductVersion, "product-version", "v", "", "Product version (default to latest version)")
 	AttachContainerImageCmd.Flags().StringVarP(&ImageRepository, "image-repository", "r", "", "container repository")
 	_ = AttachContainerImageCmd.MarkFlagRequired("image-repository")
 	AttachContainerImageCmd.Flags().StringVar(&ImageTag, "tag", "", "container repository tag")

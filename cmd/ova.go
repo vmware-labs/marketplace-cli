@@ -26,15 +26,24 @@ func init() {
 	OVACmd.AddCommand(DownloadOVACmd)
 	OVACmd.AddCommand(AttachOVACmd)
 
-	OVACmd.PersistentFlags().StringVarP(&OVAProductSlug, "product", "p", "", "Product slug")
-	_ = OVACmd.MarkPersistentFlagRequired("product")
-	OVACmd.PersistentFlags().StringVarP(&OVAProductVersion, "product-version", "v", "latest", "Product version")
+	ListOVACmd.Flags().StringVarP(&OVAProductSlug, "product", "p", "", "Product slug (required)")
+	_ = ListOVACmd.MarkFlagRequired("product")
+	ListOVACmd.Flags().StringVarP(&OVAProductVersion, "product-version", "v", "", "Product version (default to latest version)")
 
+	GetOVACmd.Flags().StringVarP(&OVAProductSlug, "product", "p", "", "Product slug (required)")
+	_ = GetOVACmd.MarkFlagRequired("product")
+	GetOVACmd.Flags().StringVarP(&OVAProductVersion, "product-version", "v", "", "Product version (default to latest version)")
 	GetOVACmd.Flags().StringVar(&ovaFile, "file-id", "", "The file ID of the file to get")
 
+	DownloadOVACmd.Flags().StringVarP(&OVAProductSlug, "product", "p", "", "Product slug (required)")
+	_ = DownloadOVACmd.MarkFlagRequired("product")
+	DownloadOVACmd.Flags().StringVarP(&OVAProductVersion, "product-version", "v", "", "Product version (default to latest version)")
 	DownloadOVACmd.Flags().StringVar(&ovaFile, "file-id", "", "The file ID of the file to download")
 	DownloadOVACmd.Flags().StringVarP(&downloadedOVAFilename, "filename", "f", "", "Downloaded file name (default is original file name)")
 
+	AttachOVACmd.Flags().StringVarP(&OVAProductSlug, "product", "p", "", "Product slug (required)")
+	_ = AttachOVACmd.MarkFlagRequired("product")
+	AttachOVACmd.Flags().StringVarP(&OVAProductVersion, "product-version", "v", "", "Product version (default to latest version)")
 	AttachOVACmd.Flags().StringVar(&ovaFile, "ova-file", "", "OVA file to upload")
 }
 
