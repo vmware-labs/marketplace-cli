@@ -27,15 +27,15 @@ func init() {
 	ListProductsCmd.Flags().StringVar(&searchTerm, "search-text", "", "Filter product list by text")
 	ListProductsCmd.Flags().BoolVarP(&allOrgs, "all-orgs", "a", false, "Show products from all organizations")
 
-	GetProductCmd.Flags().StringVarP(&ProductSlug, "product", "p", "", "Product slug")
+	GetProductCmd.Flags().StringVarP(&ProductSlug, "product", "p", "", "Product slug (required)")
 	_ = GetProductCmd.MarkFlagRequired("product")
 
-	AddProductVersionCmd.Flags().StringVarP(&ProductSlug, "product", "p", "", "Product slug")
+	AddProductVersionCmd.Flags().StringVarP(&ProductSlug, "product", "p", "", "Product slug (required)")
 	_ = AddProductVersionCmd.MarkFlagRequired("product")
-	AddProductVersionCmd.Flags().StringVarP(&ProductVersion, "product-version", "v", "", "Product version")
+	AddProductVersionCmd.Flags().StringVarP(&ProductVersion, "product-version", "v", "", "Product version (required)")
 	_ = AddProductVersionCmd.MarkFlagRequired("product-version")
 
-	ListProductVersionsCmd.Flags().StringVarP(&ProductSlug, "product", "p", "", "Product slug")
+	ListProductVersionsCmd.Flags().StringVarP(&ProductSlug, "product", "p", "", "Product slug (required)")
 	_ = ListProductVersionsCmd.MarkFlagRequired("product")
 }
 
