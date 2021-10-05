@@ -26,7 +26,7 @@ run:
         --product "${PRODUCT_SLUG}" --product-version "${VERSION}"
 
       # Upload an OVA
-      mkpcli ova create --debug --debug-request-payloads \
+      mkpcli ova attach --debug --debug-request-payloads \
         --product "${PRODUCT_SLUG}" --product-version "${VERSION}" \
         --ova-file ova/*.ova
 

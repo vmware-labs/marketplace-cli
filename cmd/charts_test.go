@@ -279,7 +279,7 @@ var _ = Describe("Charts", func() {
 		})
 	})
 
-	Describe("CreateChartCmd", func() {
+	Describe("AttachChartCmd", func() {
 		var productID string
 		BeforeEach(func() {
 			chart1 := &models.ChartVersion{
@@ -352,8 +352,8 @@ var _ = Describe("Charts", func() {
 				Body:       ioutil.NopCloser(bytes.NewReader(responseBytes)),
 			}, nil)
 
-			cmd.CreateChartCmd.SetOut(stdout)
-			cmd.CreateChartCmd.SetErr(stderr)
+			cmd.AttachChartCmd.SetOut(stdout)
+			cmd.AttachChartCmd.SetErr(stderr)
 		})
 
 		It("sends the right requests", func() {
@@ -362,9 +362,9 @@ var _ = Describe("Charts", func() {
 			cmd.ChartURL = "https://charts.nitbami.com/nitbami/charts/mydatabase-2.0.0.tgz"
 			cmd.ChartVersion = "2.0.0"
 			cmd.ChartRepositoryName = "Bitnami charts repo @ Github"
-			cmd.ChartRepositoryURL = "https://github.com/bitnami/charts/tree/master/bitnami/mydatabse"
+			cmd.ChartRepositoryURL = "https://github.com/bitnami/charts/tree/master/bitnami/mydatabase"
 
-			err := cmd.CreateChartCmd.RunE(cmd.CreateChartCmd, []string{""})
+			err := cmd.AttachChartCmd.RunE(cmd.AttachChartCmd, []string{""})
 			Expect(err).ToNot(HaveOccurred())
 
 			Expect(httpClient.DoCallCount()).To(Equal(2))
@@ -387,28 +387,18 @@ var _ = Describe("Charts", func() {
 				Expect(err).ToNot(HaveOccurred())
 
 				Expect(updatedProduct.DeploymentTypes).To(ContainElement("HELM"))
-				//Expect(updatedProduct.ChartVersions).To(ContainElements(
-				//	&models.ChartVersion{
-				//		HelmTarUrl: "https://charts.nitbami.com/nitbami/charts/mydatabase-1.0.0.tgz",
-				//		TarUrl:     "https://charts.nitbami.com/nitbami/charts/mydatabase-1.0.0.tgz",
-				//		Version:    "1.0.0",
-				//		AppVersion: "1.2.3",
-				//		Repo: &models.Repo{
-				//			Name: "Bitnami charts repo @ Github",
-				//			Url:  "https://github.com/bitnami/charts/tree/master/bitnami/mydatabase",
-				//		},
-				//	},
-				//	&models.ChartVersion{
-				//		HelmTarUrl: "https://charts.nitbami.com/nitbami/charts/mydatabase-2.0.0.tgz",
-				//		TarUrl:     "https://charts.nitbami.com/nitbami/charts/mydatabase-2.0.0.tgz",
-				//		Version:    "2.0.0",
-				//		AppVersion: "1.2.3",
-				//		Repo: &models.Repo{
-				//			Name: "Bitnami charts repo @ Github",
-				//			Url:  "https://github.com/bitnami/charts/tree/master/bitnami/mydatabase",
-				//		},
-				//	},
-				//))
+				Expect(updatedProduct.ChartVersions).To(ContainElements(
+					&models.ChartVersion{
+						AppVersion: "1.2.3",
+						Version:    "2.0.0",
+						HelmTarUrl: "https://charts.nitbami.com/nitbami/charts/mydatabase-2.0.0.tgz",
+						TarUrl:     "https://charts.nitbami.com/nitbami/charts/mydatabase-2.0.0.tgz",
+						Repo: &models.Repo{
+							Name: "Bitnami charts repo @ Github",
+							Url:  "https://github.com/bitnami/charts/tree/master/bitnami/mydatabase",
+						},
+					},
+				))
 			})
 
 			By("outputting the response", func() {
@@ -432,8 +422,8 @@ var _ = Describe("Charts", func() {
 				cmd.ChartURL = "https://charts.nitbami.com/nitbami/charts/mydatabase-2.0.0.tgz"
 				cmd.ChartVersion = "2.0.0"
 				cmd.ChartRepositoryName = "Bitnami charts repo @ Github"
-				cmd.ChartRepositoryURL = "https://github.com/bitnami/charts/tree/master/bitnami/mydatabse"
-				err := cmd.CreateChartCmd.RunE(cmd.CreateChartCmd, []string{""})
+				cmd.ChartRepositoryURL = "https://github.com/bitnami/charts/tree/master/bitnami/mydatabase"
+				err := cmd.AttachChartCmd.RunE(cmd.AttachChartCmd, []string{""})
 				Expect(err).To(HaveOccurred())
 				Expect(err.Error()).To(Equal("product \"my-super-product\" not found"))
 			})
@@ -446,8 +436,8 @@ var _ = Describe("Charts", func() {
 				cmd.ChartURL = "https://charts.nitbami.com/nitbami/charts/mydatabase-2.0.0.tgz"
 				cmd.ChartVersion = "2.0.0"
 				cmd.ChartRepositoryName = "Bitnami charts repo @ Github"
-				cmd.ChartRepositoryURL = "https://github.com/bitnami/charts/tree/master/bitnami/mydatabse"
-				err := cmd.CreateChartCmd.RunE(cmd.CreateChartCmd, []string{""})
+				cmd.ChartRepositoryURL = "https://github.com/bitnami/charts/tree/master/bitnami/mydatabase"
+				err := cmd.AttachChartCmd.RunE(cmd.AttachChartCmd, []string{""})
 				Expect(err).To(HaveOccurred())
 				Expect(err.Error()).To(Equal("product \"my-super-product\" does not have a version 0.0.0"))
 			})
@@ -467,8 +457,8 @@ var _ = Describe("Charts", func() {
 				cmd.ChartURL = "https://charts.nitbami.com/nitbami/charts/mydatabase-2.0.0.tgz"
 				cmd.ChartVersion = "2.0.0"
 				cmd.ChartRepositoryName = "Bitnami charts repo @ Github"
-				cmd.ChartRepositoryURL = "https://github.com/bitnami/charts/tree/master/bitnami/mydatabse"
-				err := cmd.CreateChartCmd.RunE(cmd.CreateChartCmd, []string{""})
+				cmd.ChartRepositoryURL = "https://github.com/bitnami/charts/tree/master/bitnami/mydatabase"
+				err := cmd.AttachChartCmd.RunE(cmd.AttachChartCmd, []string{""})
 				Expect(err).To(HaveOccurred())
 				Expect(err.Error()).To(Equal("updating product \"my-super-product\" failed: (418)\nTeapots all the way down"))
 			})
@@ -488,8 +478,8 @@ var _ = Describe("Charts", func() {
 				cmd.ChartURL = "https://charts.nitbami.com/nitbami/charts/mydatabase-2.0.0.tgz"
 				cmd.ChartVersion = "2.0.0"
 				cmd.ChartRepositoryName = "Bitnami charts repo @ Github"
-				cmd.ChartRepositoryURL = "https://github.com/bitnami/charts/tree/master/bitnami/mydatabse"
-				err := cmd.CreateChartCmd.RunE(cmd.CreateChartCmd, []string{""})
+				cmd.ChartRepositoryURL = "https://github.com/bitnami/charts/tree/master/bitnami/mydatabase"
+				err := cmd.AttachChartCmd.RunE(cmd.AttachChartCmd, []string{""})
 				Expect(err).To(HaveOccurred())
 				Expect(err.Error()).To(Equal("you do not have permission to modify the product \"my-super-product\""))
 			})

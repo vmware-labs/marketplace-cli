@@ -32,7 +32,7 @@ func init() {
 	ContainerImageCmd.AddCommand(ListContainerImageCmd)
 	ContainerImageCmd.AddCommand(GetContainerImageCmd)
 	ContainerImageCmd.AddCommand(DownloadContainerImageCmd)
-	ContainerImageCmd.AddCommand(CreateContainerImageCmd)
+	ContainerImageCmd.AddCommand(AttachContainerImageCmd)
 
 	ContainerImageCmd.PersistentFlags().StringVarP(&ContainerImageProductSlug, "product", "p", "", "Product slug")
 	_ = ContainerImageCmd.MarkPersistentFlagRequired("product")
@@ -44,14 +44,14 @@ func init() {
 	DownloadContainerImageCmd.Flags().StringVar(&ImageTag, "tag", "", "container image tag")
 	DownloadContainerImageCmd.Flags().StringVarP(&downloadedContainerImageFilename, "filename", "f", "image.tar", "output file name")
 
-	CreateContainerImageCmd.Flags().StringVarP(&ImageRepository, "image-repository", "r", "", "container repository")
-	_ = CreateContainerImageCmd.MarkFlagRequired("image-repository")
-	CreateContainerImageCmd.Flags().StringVar(&ImageTag, "tag", "", "container repository tag")
-	_ = CreateContainerImageCmd.MarkFlagRequired("tag")
-	CreateContainerImageCmd.Flags().StringVar(&ImageTagType, "tag-type", "", "container repository tag type (fixed or floating)")
-	_ = CreateContainerImageCmd.MarkFlagRequired("tag-type")
-	CreateContainerImageCmd.Flags().StringVarP(&ContainerImageDeploymentInstructions, "deployment-instructions", "i", "", "deployment instructions")
-	_ = CreateContainerImageCmd.MarkFlagRequired("deployment-instructions")
+	AttachContainerImageCmd.Flags().StringVarP(&ImageRepository, "image-repository", "r", "", "container repository")
+	_ = AttachContainerImageCmd.MarkFlagRequired("image-repository")
+	AttachContainerImageCmd.Flags().StringVar(&ImageTag, "tag", "", "container repository tag")
+	_ = AttachContainerImageCmd.MarkFlagRequired("tag")
+	AttachContainerImageCmd.Flags().StringVar(&ImageTagType, "tag-type", "", "container repository tag type (fixed or floating)")
+	_ = AttachContainerImageCmd.MarkFlagRequired("tag-type")
+	AttachContainerImageCmd.Flags().StringVarP(&ContainerImageDeploymentInstructions, "deployment-instructions", "i", "", "deployment instructions")
+	_ = AttachContainerImageCmd.MarkFlagRequired("deployment-instructions")
 }
 
 var ContainerImageCmd = &cobra.Command{
@@ -60,7 +60,7 @@ var ContainerImageCmd = &cobra.Command{
 	Short:     "List and manage container images attached to a product",
 	Long:      "List and manage container images attached to a product in the VMware Marketplace",
 	Args:      cobra.OnlyValidArgs,
-	ValidArgs: []string{ListContainerImageCmd.Use, GetContainerImageCmd.Use, DownloadContainerImageCmd.Use, CreateContainerImageCmd.Use},
+	ValidArgs: []string{ListContainerImageCmd.Use, GetContainerImageCmd.Use, DownloadContainerImageCmd.Use, AttachContainerImageCmd.Use},
 }
 
 var ListContainerImageCmd = &cobra.Command{
@@ -186,8 +186,8 @@ var DownloadContainerImageCmd = &cobra.Command{
 	},
 }
 
-var CreateContainerImageCmd = &cobra.Command{
-	Use:   "create",
+var AttachContainerImageCmd = &cobra.Command{
+	Use:   "attach",
 	Short: "Attach a container image",
 	Long:  "Attaches a container image to a product in the VMware Marketplace",
 	Args:  cobra.NoArgs,
