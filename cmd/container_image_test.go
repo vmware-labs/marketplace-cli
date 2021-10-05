@@ -267,7 +267,7 @@ var _ = Describe("ContainerImage", func() {
 		})
 	})
 
-	Describe("CreateContainerImageCmd", func() {
+	Describe("AttachContainerImageCmd", func() {
 		var productID string
 		BeforeEach(func() {
 			nginx := test.CreateFakeContainerImage("nginx", "latest")
@@ -320,8 +320,8 @@ var _ = Describe("ContainerImage", func() {
 				Body:       ioutil.NopCloser(bytes.NewReader(responseBytes)),
 			}, nil)
 
-			cmd.CreateContainerImageCmd.SetOut(stdout)
-			cmd.CreateContainerImageCmd.SetErr(stderr)
+			cmd.AttachContainerImageCmd.SetOut(stdout)
+			cmd.AttachContainerImageCmd.SetErr(stderr)
 		})
 
 		It("sends the right requests", func() {
@@ -330,7 +330,7 @@ var _ = Describe("ContainerImage", func() {
 			cmd.ImageRepository = "python"
 			cmd.ImageTag = "1.2.3"
 			cmd.ImageTagType = cmd.ImageTagTypeFixed
-			err := cmd.CreateContainerImageCmd.RunE(cmd.CreateContainerImageCmd, []string{""})
+			err := cmd.AttachContainerImageCmd.RunE(cmd.AttachContainerImageCmd, []string{""})
 			Expect(err).ToNot(HaveOccurred())
 
 			Expect(httpClient.DoCallCount()).To(Equal(2))
@@ -407,8 +407,8 @@ var _ = Describe("ContainerImage", func() {
 					Body:       ioutil.NopCloser(bytes.NewReader(responseBytes)),
 				}, nil)
 
-				cmd.CreateContainerImageCmd.SetOut(stdout)
-				cmd.CreateContainerImageCmd.SetErr(stderr)
+				cmd.AttachContainerImageCmd.SetOut(stdout)
+				cmd.AttachContainerImageCmd.SetErr(stderr)
 			})
 
 			It("sends the right requests", func() {
@@ -417,7 +417,7 @@ var _ = Describe("ContainerImage", func() {
 				cmd.ImageRepository = "nginx"
 				cmd.ImageTag = "5.5.5"
 				cmd.ImageTagType = cmd.ImageTagTypeFixed
-				err := cmd.CreateContainerImageCmd.RunE(cmd.CreateContainerImageCmd, []string{""})
+				err := cmd.AttachContainerImageCmd.RunE(cmd.AttachContainerImageCmd, []string{""})
 				Expect(err).ToNot(HaveOccurred())
 
 				Expect(httpClient.DoCallCount()).To(Equal(2))
@@ -461,7 +461,7 @@ var _ = Describe("ContainerImage", func() {
 				cmd.ImageRepository = "nginx"
 				cmd.ImageTag = "5.5.5"
 				cmd.ImageTagType = cmd.ImageTagTypeFixed
-				err := cmd.CreateContainerImageCmd.RunE(cmd.CreateContainerImageCmd, []string{""})
+				err := cmd.AttachContainerImageCmd.RunE(cmd.AttachContainerImageCmd, []string{""})
 				Expect(err).To(HaveOccurred())
 				Expect(err.Error()).To(Equal("product \"my-super-product\" not found"))
 			})
@@ -474,7 +474,7 @@ var _ = Describe("ContainerImage", func() {
 				cmd.ImageRepository = "nginx"
 				cmd.ImageTag = "5.5.5"
 				cmd.ImageTagType = cmd.ImageTagTypeFixed
-				err := cmd.CreateContainerImageCmd.RunE(cmd.CreateContainerImageCmd, []string{""})
+				err := cmd.AttachContainerImageCmd.RunE(cmd.AttachContainerImageCmd, []string{""})
 				Expect(err).To(HaveOccurred())
 				Expect(err.Error()).To(Equal("product \"my-super-product\" does not have a version 0.0.0"))
 			})
@@ -487,7 +487,7 @@ var _ = Describe("ContainerImage", func() {
 				cmd.ImageRepository = "nginx"
 				cmd.ImageTag = "latest"
 				cmd.ImageTagType = cmd.ImageTagTypeFloating
-				err := cmd.CreateContainerImageCmd.RunE(cmd.CreateContainerImageCmd, []string{""})
+				err := cmd.AttachContainerImageCmd.RunE(cmd.AttachContainerImageCmd, []string{""})
 				Expect(err).To(HaveOccurred())
 				Expect(err.Error()).To(Equal("my-super-product 1.2.3 already has the tag nginx:latest"))
 			})
@@ -500,7 +500,7 @@ var _ = Describe("ContainerImage", func() {
 				cmd.ImageRepository = "nginx"
 				cmd.ImageTag = "5.5.5"
 				cmd.ImageTagType = "fancy"
-				err := cmd.CreateContainerImageCmd.RunE(cmd.CreateContainerImageCmd, []string{""})
+				err := cmd.AttachContainerImageCmd.RunE(cmd.AttachContainerImageCmd, []string{""})
 				Expect(err).To(HaveOccurred())
 				Expect(err.Error()).To(Equal("invalid image tag type: FANCY. must be either \"FIXED\" or \"FLOATING\""))
 			})
@@ -520,7 +520,7 @@ var _ = Describe("ContainerImage", func() {
 				cmd.ImageRepository = "nginx"
 				cmd.ImageTag = "5.5.5"
 				cmd.ImageTagType = cmd.ImageTagTypeFixed
-				err := cmd.CreateContainerImageCmd.RunE(cmd.CreateContainerImageCmd, []string{""})
+				err := cmd.AttachContainerImageCmd.RunE(cmd.AttachContainerImageCmd, []string{""})
 				Expect(err).To(HaveOccurred())
 				Expect(err.Error()).To(Equal("you do not have permission to modify the product \"my-super-product\""))
 			})
@@ -540,7 +540,7 @@ var _ = Describe("ContainerImage", func() {
 				cmd.ImageRepository = "nginx"
 				cmd.ImageTag = "5.5.5"
 				cmd.ImageTagType = cmd.ImageTagTypeFixed
-				err := cmd.CreateContainerImageCmd.RunE(cmd.CreateContainerImageCmd, []string{""})
+				err := cmd.AttachContainerImageCmd.RunE(cmd.AttachContainerImageCmd, []string{""})
 				Expect(err).To(HaveOccurred())
 				Expect(err.Error()).To(Equal("updating product \"my-super-product\" failed: (418)\nTeapots all the way down"))
 			})

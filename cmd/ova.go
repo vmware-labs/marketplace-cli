@@ -24,7 +24,7 @@ func init() {
 	OVACmd.AddCommand(ListOVACmd)
 	OVACmd.AddCommand(GetOVACmd)
 	OVACmd.AddCommand(DownloadOVACmd)
-	OVACmd.AddCommand(CreateOVACmd)
+	OVACmd.AddCommand(AttachOVACmd)
 
 	OVACmd.PersistentFlags().StringVarP(&OVAProductSlug, "product", "p", "", "Product slug")
 	_ = OVACmd.MarkPersistentFlagRequired("product")
@@ -35,7 +35,7 @@ func init() {
 	DownloadOVACmd.Flags().StringVar(&ovaFile, "file-id", "", "The file ID of the file to download")
 	DownloadOVACmd.Flags().StringVarP(&downloadedOVAFilename, "filename", "f", "", "Downloaded file name (default is original file name)")
 
-	CreateOVACmd.Flags().StringVar(&ovaFile, "ova-file", "", "OVA file to upload")
+	AttachOVACmd.Flags().StringVar(&ovaFile, "ova-file", "", "OVA file to upload")
 }
 
 var OVACmd = &cobra.Command{
@@ -44,7 +44,7 @@ var OVACmd = &cobra.Command{
 	Short:     "List and manage OVAs attached to a product",
 	Long:      "List and manage OVAs attached to a product in the VMware Marketplace",
 	Args:      cobra.OnlyValidArgs,
-	ValidArgs: []string{ListOVACmd.Use, GetOVACmd.Use, DownloadOVACmd.Use, CreateOVACmd.Use},
+	ValidArgs: []string{ListOVACmd.Use, GetOVACmd.Use, DownloadOVACmd.Use, AttachOVACmd.Use},
 }
 
 var ListOVACmd = &cobra.Command{
@@ -146,8 +146,8 @@ var DownloadOVACmd = &cobra.Command{
 	},
 }
 
-var CreateOVACmd = &cobra.Command{
-	Use:     "create",
+var AttachOVACmd = &cobra.Command{
+	Use:     "attach",
 	Short:   "Upload and attach an OVA",
 	Long:    "Uploads and attaches an OVA to a product in the VMware Marketplace",
 	Args:    cobra.NoArgs,

@@ -29,7 +29,7 @@ run:
         --product "${PRODUCT_SLUG}" --product-version "${VERSION}"
 
       # Upload a chart
-      mkpcli chart create --debug --debug-request-payloads \
+      mkpcli chart attach --debug --debug-request-payloads \
         --product "${PRODUCT_SLUG}" --product-version "${VERSION}" \
         --chart-url "${TEST_CHART_URL}" --chart-version "${VERSION}" \
         --repository-name "${TEST_REPO_NAME}" --repository-url "${TEST_REPO_URL}" \

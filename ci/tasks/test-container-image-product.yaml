@@ -27,7 +27,7 @@ run:
         --product "${PRODUCT_SLUG}" --product-version "${VERSION}"
 
       # Upload a docker image
-      mkpcli container-image create --debug --debug-request-payloads \
+      mkpcli container-image attach --debug --debug-request-payloads \
         --product "${PRODUCT_SLUG}" --product-version "${VERSION}" \
         --image-repository "${TEST_IMAGE_REPO}" --tag "${TEST_IMAGE_TAG}" --tag-type FIXED \
         --deployment-instructions "docker run ${TEST_IMAGE_REPO}:${TEST_IMAGE_TAG}"

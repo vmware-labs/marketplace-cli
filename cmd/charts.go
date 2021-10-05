@@ -28,7 +28,7 @@ func init() {
 	ChartCmd.AddCommand(ListChartsCmd)
 	ChartCmd.AddCommand(GetChartCmd)
 	ChartCmd.AddCommand(DownloadChartCmd)
-	ChartCmd.AddCommand(CreateChartCmd)
+	ChartCmd.AddCommand(AttachChartCmd)
 
 	ChartCmd.PersistentFlags().StringVarP(&ChartProductSlug, "product", "p", "", "Product slug")
 	_ = ChartCmd.MarkPersistentFlagRequired("product")
@@ -39,16 +39,16 @@ func init() {
 	DownloadChartCmd.Flags().StringVar(&ChartID, "chart-id", "", "chart ID")
 	DownloadChartCmd.Flags().StringVarP(&downloadedChartFilename, "filename", "f", "chart.tgz", "output file name")
 
-	CreateChartCmd.Flags().StringVarP(&ChartVersion, "chart-version", "e", "", "chart version")
-	_ = CreateChartCmd.MarkFlagRequired("chart-version")
-	CreateChartCmd.Flags().StringVarP(&ChartURL, "chart-url", "u", "", "url to chart tgz")
-	_ = CreateChartCmd.MarkFlagRequired("chart-url")
-	CreateChartCmd.Flags().StringVar(&ChartRepositoryURL, "repository-url", "", "chart public repository url")
-	_ = CreateChartCmd.MarkFlagRequired("repository-url")
-	CreateChartCmd.Flags().StringVar(&ChartRepositoryName, "repository-name", "", "chart public repository name")
-	_ = CreateChartCmd.MarkFlagRequired("repository-name")
-	CreateChartCmd.Flags().StringVar(&ChartDeploymentInstructions, "readme", "", "readme information")
-	_ = CreateChartCmd.MarkFlagRequired("readme")
+	AttachChartCmd.Flags().StringVarP(&ChartVersion, "chart-version", "e", "", "chart version")
+	_ = AttachChartCmd.MarkFlagRequired("chart-version")
+	AttachChartCmd.Flags().StringVarP(&ChartURL, "chart-url", "u", "", "url to chart tgz")
+	_ = AttachChartCmd.MarkFlagRequired("chart-url")
+	AttachChartCmd.Flags().StringVar(&ChartRepositoryURL, "repository-url", "", "chart public repository url")
+	_ = AttachChartCmd.MarkFlagRequired("repository-url")
+	AttachChartCmd.Flags().StringVar(&ChartRepositoryName, "repository-name", "", "chart public repository name")
+	_ = AttachChartCmd.MarkFlagRequired("repository-name")
+	AttachChartCmd.Flags().StringVar(&ChartDeploymentInstructions, "readme", "", "readme information")
+	_ = AttachChartCmd.MarkFlagRequired("readme")
 }
 
 var ChartCmd = &cobra.Command{
@@ -57,7 +57,7 @@ var ChartCmd = &cobra.Command{
 	Short:     "List and manage Helm charts attached to a product",
 	Long:      "List and manage Helm charts attached to a product in the VMware Marketplace",
 	Args:      cobra.OnlyValidArgs,
-	ValidArgs: []string{ListChartsCmd.Use, GetChartCmd.Use, DownloadChartCmd.Use, CreateChartCmd.Use},
+	ValidArgs: []string{ListChartsCmd.Use, GetChartCmd.Use, DownloadChartCmd.Use, AttachChartCmd.Use},
 }
 
 var ListChartsCmd = &cobra.Command{
@@ -157,8 +157,8 @@ var DownloadChartCmd = &cobra.Command{
 	},
 }
 
-var CreateChartCmd = &cobra.Command{
-	Use:   "create",
+var AttachChartCmd = &cobra.Command{
+	Use:   "attach",
 	Short: "Attach a chart",
 	Long:  "Attaches a Helm Chart to a product in the VMware Marketplace",
 	Args:  cobra.NoArgs,
@@ -172,9 +172,10 @@ var CreateChartCmd = &cobra.Command{
 		product.SetDeploymentType(models.DeploymentTypeHelm)
 		product.PrepForUpdate()
 		product.AddChart(&models.ChartVersion{
-			TarUrl:     ChartURL,
-			Version:    ChartVersion,
 			AppVersion: version.Number,
+			Version:    ChartVersion,
+			HelmTarUrl: ChartURL,
+			TarUrl:     ChartURL,
 			Readme:     ChartDeploymentInstructions,
 			Repo: &models.Repo{
 				Name: ChartRepositoryName,
