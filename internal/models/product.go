@@ -389,7 +389,7 @@ type Product struct {
 }
 
 func (product *Product) GetVersion(version string) *Version {
-	if version == "latest" {
+	if version == "" {
 		return product.GetLatestVersion()
 	}
 

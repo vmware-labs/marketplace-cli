@@ -28,7 +28,7 @@ func init() {
 
 	OVACmd.PersistentFlags().StringVarP(&OVAProductSlug, "product", "p", "", "Product slug")
 	_ = OVACmd.MarkPersistentFlagRequired("product")
-	OVACmd.PersistentFlags().StringVarP(&OVAProductVersion, "product-version", "v", "latest", "Product version")
+	OVACmd.PersistentFlags().StringVarP(&OVAProductVersion, "product-version", "v", "", "Product version")
 
 	GetOVACmd.Flags().StringVar(&ovaFile, "file-id", "", "The file ID of the file to get")
 

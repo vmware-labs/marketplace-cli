@@ -32,7 +32,7 @@ func init() {
 
 	ChartCmd.PersistentFlags().StringVarP(&ChartProductSlug, "product", "p", "", "Product slug")
 	_ = ChartCmd.MarkPersistentFlagRequired("product")
-	ChartCmd.PersistentFlags().StringVarP(&ChartProductVersion, "product-version", "v", "latest", "Product version")
+	ChartCmd.PersistentFlags().StringVarP(&ChartProductVersion, "product-version", "v", "", "Product version")
 
 	GetChartCmd.Flags().StringVar(&ChartID, "chart-id", "", "chart ID")
 

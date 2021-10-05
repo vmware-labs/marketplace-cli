@@ -36,7 +36,7 @@ func init() {
 
 	ContainerImageCmd.PersistentFlags().StringVarP(&ContainerImageProductSlug, "product", "p", "", "Product slug")
 	_ = ContainerImageCmd.MarkPersistentFlagRequired("product")
-	ContainerImageCmd.PersistentFlags().StringVarP(&ContainerImageProductVersion, "product-version", "v", "latest", "Product version")
+	ContainerImageCmd.PersistentFlags().StringVarP(&ContainerImageProductVersion, "product-version", "v", "", "Product version")
 
 	GetContainerImageCmd.Flags().StringVarP(&ImageRepository, "image-repository", "r", "", "container repository")
 
