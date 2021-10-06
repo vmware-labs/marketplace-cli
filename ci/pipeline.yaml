@@ -323,6 +323,28 @@ jobs:
             path: helm
             dir: chart
             args: [create, mkpcli-test-chart]
+      - task: set-chart-version
+        config:
+          platform: linux
+          image_resource:
+            type: registry-image
+            source:
+              repository: harbor-repo.vmware.com/dockerhub-proxy-cache/linuxserver/yq
+              username: ((harbor.username))
+              password: ((harbor.token))
+          inputs:
+            - name: chart
+            - name: test-chart-product-version
+          outputs:
+            - name: chart
+          run:
+            path: bash
+            dir: chart/mkpcli-test-chart
+            args:
+              - -exc
+              - |
+                yq --yaml-output --arg version $(cat ../../test-chart-product-version/version) '.version = $version' Chart.yaml > Chart.yaml.new
+                mv Chart.yaml.new Chart.yaml
       - put: test-chart
         params:
           repository: chart/mkpcli-test-chart

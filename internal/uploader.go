@@ -75,11 +75,13 @@ func (u *S3Uploader) Upload(bucket, filePath string) (*models.ProductDeploymentF
 	if err != nil {
 		return nil, fmt.Errorf("failed to open %s: %w", filePath, err)
 	}
+	stat, _ := file.Stat()
 
 	_, err = io.Copy(u.hashAlgorithm, file)
 	if err != nil {
 		return nil, fmt.Errorf("failed to generate the hash for %s: %w", filePath, err)
 	}
+	_, _ = file.Seek(0, io.SeekStart)
 
 	s3Config, err := config.LoadDefaultConfig(context.Background(),
 		config.WithCredentialsProvider(credentials.StaticCredentialsProvider{
@@ -93,13 +95,14 @@ func (u *S3Uploader) Upload(bucket, filePath string) (*models.ProductDeploymentF
 
 	filename := MakeUniqueFilename(filepath.Base(filePath))
 	client := s3.NewFromConfig(s3Config)
-	input := &s3.PutObjectInput{
-		Bucket: aws.String(bucket),
-		Key:    aws.String(path.Join(u.orgID, "marketplace-product-files", filename)),
-		Body:   file,
-	}
 
-	_, err = client.PutObject(context.Background(), input)
+	key := path.Join(u.orgID, "marketplace-product-files", filename)
+	_, err = client.PutObject(context.Background(), &s3.PutObjectInput{
+		Bucket:        aws.String(bucket),
+		Key:           aws.String(key),
+		Body:          file,
+		ContentLength: stat.Size(),
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -111,7 +114,7 @@ func (u *S3Uploader) Upload(bucket, filePath string) (*models.ProductDeploymentF
 
 	return &models.ProductDeploymentFile{
 		Name:          filename,
-		Url:           fmt.Sprintf("https://%s.s3.%s.amazonaws.com/%s", *input.Bucket, u.region, *input.Key),
+		Url:           fmt.Sprintf("https://%s.s3.%s.amazonaws.com/%s", bucket, u.region, key),
 		HashAlgo:      models.HashAlgoSHA1,
 		HashDigest:    hex.EncodeToString(u.hashAlgorithm.Sum(nil)),
 		IsRedirectUrl: false,

@@ -10,7 +10,7 @@ params:
   PRODUCT_SLUG:
   TEST_CHART_NAME: mkpcli-test-chart
   TEST_REPO_NAME: VMware public chart repository
-  TEST_REPO_URL: https://projects.registry.vmware.com/tanzu_isv_engineering/mkpcli
+  TEST_REPO_URL: https://projects.registry.vmware.com/chartrepo/tanzu_isv_engineering
 
 inputs:
   - name: version
