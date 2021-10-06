@@ -38,13 +38,14 @@ func init() {
 	DownloadOVACmd.Flags().StringVarP(&OVAProductSlug, "product", "p", "", "Product slug (required)")
 	_ = DownloadOVACmd.MarkFlagRequired("product")
 	DownloadOVACmd.Flags().StringVarP(&OVAProductVersion, "product-version", "v", "", "Product version (default to latest version)")
-	DownloadOVACmd.Flags().StringVar(&ovaFile, "file-id", "", "The file ID of the file to download")
+	DownloadOVACmd.Flags().StringVar(&ovaFile, "file-id", "", "The file ID of the file to download (required if product has multiple files attached)")
 	DownloadOVACmd.Flags().StringVarP(&downloadedOVAFilename, "filename", "f", "", "Downloaded file name (default is original file name)")
 
 	AttachOVACmd.Flags().StringVarP(&OVAProductSlug, "product", "p", "", "Product slug (required)")
 	_ = AttachOVACmd.MarkFlagRequired("product")
 	AttachOVACmd.Flags().StringVarP(&OVAProductVersion, "product-version", "v", "", "Product version (default to latest version)")
-	AttachOVACmd.Flags().StringVar(&ovaFile, "ova-file", "", "OVA file to upload")
+	AttachOVACmd.Flags().StringVar(&ovaFile, "ova-file", "", "OVA file to upload (required)")
+	_ = AttachOVACmd.MarkFlagRequired("ova-file")
 }
 
 var OVACmd = &cobra.Command{

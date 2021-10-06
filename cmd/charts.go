@@ -42,7 +42,7 @@ func init() {
 	DownloadChartCmd.Flags().StringVarP(&ChartProductSlug, "product", "p", "", "Product slug (required)")
 	_ = DownloadChartCmd.MarkFlagRequired("product")
 	DownloadChartCmd.Flags().StringVarP(&ChartProductVersion, "product-version", "v", "", "Product version (default to latest version)")
-	DownloadChartCmd.Flags().StringVar(&ChartID, "chart-id", "", "chart ID")
+	DownloadChartCmd.Flags().StringVar(&ChartID, "chart-id", "", "The ID of the chart to download (required if product has multiple charts attached)")
 	DownloadChartCmd.Flags().StringVarP(&downloadedChartFilename, "filename", "f", "chart.tgz", "output file name")
 
 	AttachChartCmd.Flags().StringVarP(&ChartProductSlug, "product", "p", "", "Product slug (required)")
@@ -149,7 +149,7 @@ var DownloadChartCmd = &cobra.Command{
 			} else if len(charts) == 1 {
 				chart = charts[0]
 			} else {
-				return fmt.Errorf("multiple container images found for %s for version %s, please use the --image-repository parameter", ChartProductSlug, version.Number)
+				return fmt.Errorf("multiple charts found for %s %s, please use the --chart-id parameter", ChartProductSlug, version.Number)
 			}
 		}
 
