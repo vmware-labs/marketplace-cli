@@ -46,8 +46,8 @@ func init() {
 	DownloadContainerImageCmd.Flags().StringVarP(&ContainerImageProductSlug, "product", "p", "", "Product slug (required)")
 	_ = DownloadContainerImageCmd.MarkFlagRequired("product")
 	DownloadContainerImageCmd.Flags().StringVarP(&ContainerImageProductVersion, "product-version", "v", "", "Product version (default to latest version)")
-	DownloadContainerImageCmd.Flags().StringVarP(&ImageRepository, "image-repository", "r", "", "container repository")
-	DownloadContainerImageCmd.Flags().StringVar(&ImageTag, "tag", "", "container image tag")
+	DownloadContainerImageCmd.Flags().StringVarP(&ImageRepository, "image-repository", "r", "", "container image repository to download (required if product has multiple container images attached)")
+	DownloadContainerImageCmd.Flags().StringVar(&ImageTag, "tag", "", "container image tag (required if container image has multiple tags)")
 	DownloadContainerImageCmd.Flags().StringVarP(&downloadedContainerImageFilename, "filename", "f", "image.tar", "output file name")
 
 	AttachContainerImageCmd.Flags().StringVarP(&ContainerImageProductSlug, "product", "p", "", "Product slug (required)")
