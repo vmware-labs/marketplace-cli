@@ -271,6 +271,12 @@ jobs:
         params:
           MARKETPLACE_ENV: staging
           PRODUCT_SLUG: test-container-product-41
+      - task: download-attached-container-image
+        image: mkpcli
+        file: source/ci/tasks/download-container-image.yaml
+        params:
+          MARKETPLACE_ENV: acceptance
+          PRODUCT_SLUG: test-container-product-41
 
   - name: test-download-container-product
     plan:
@@ -339,6 +345,12 @@ jobs:
         params:
           MARKETPLACE_ENV: staging
           PRODUCT_SLUG: test-chart-product-42
+      - task: download-attached-chart
+        image: mkpcli
+        file: source/ci/tasks/download-chart.yaml
+        params:
+          MARKETPLACE_ENV: acceptance
+          PRODUCT_SLUG: test-chart-product-42
 
   - name: test-download-chart-product
     plan:
@@ -397,6 +409,12 @@ jobs:
         input_mapping: {version: test-ova-product-version}
         params:
           MARKETPLACE_ENV: staging
+          PRODUCT_SLUG: test-ova-product-201
+      - task: download-attached-file
+        image: mkpcli
+        file: source/ci/tasks/download-ova.yaml
+        params:
+          MARKETPLACE_ENV: acceptance
           PRODUCT_SLUG: test-ova-product-201
 
   - name: test-download-ova-product

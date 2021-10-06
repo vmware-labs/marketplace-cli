@@ -10,24 +10,8 @@ params:
   PRODUCT_SLUG:
   PRODUCT_VERSION:
 
+inputs:
+  - name: source
+
 run:
-  path: bash
-  args:
-    - -exc
-    - |
-      set -ex
-
-      # Get the ID for the first file
-      IMAGES=$(mkpcli container-image list --debug --debug-request-payloads --product "${PRODUCT_SLUG}" --product-version "${PRODUCT_VERSION}" --output json)
-      IMAGE_URL=$(echo ${IMAGES} | jq -r .dockerurlsList[0].url)
-      IMAGE_TAG=$(echo ${IMAGES} | jq -r .dockerurlsList[0].imagetagsList[0].tag)
-
-      # Download the image
-      mkpcli container-image download --debug --debug-request-payloads \
-        --product "${PRODUCT_SLUG}" --product-version "${PRODUCT_VERSION}" \
-        --image-repository "${IMAGE_URL}" --tag "${IMAGE_TAG}" \
-        --filename my-container-image.tar
-
-      # Downloaded file is a real docker image
-      test -f my-container-image.tar
-      tar tvf my-container-image.tar manifest.json
+  path: source/ci/tasks/download-container-image.sh
