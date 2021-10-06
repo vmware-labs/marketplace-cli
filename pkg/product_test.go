@@ -13,6 +13,7 @@ import (
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	. "github.com/onsi/gomega/gbytes"
 	"github.com/vmware-labs/marketplace-cli/v2/internal"
 	"github.com/vmware-labs/marketplace-cli/v2/internal/models"
 	"github.com/vmware-labs/marketplace-cli/v2/pkg"
@@ -22,14 +23,17 @@ import (
 
 var _ = Describe("Product", func() {
 	var (
+		stderr      *Buffer
 		httpClient  *pkgfakes.FakeHTTPClient
 		marketplace *pkg.Marketplace
 	)
 
 	BeforeEach(func() {
+		stderr = NewBuffer()
 		httpClient = &pkgfakes.FakeHTTPClient{}
 		marketplace = &pkg.Marketplace{
 			Client: httpClient,
+			Output: stderr,
 		}
 	})
 

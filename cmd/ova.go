@@ -146,12 +146,11 @@ var DownloadOVACmd = &cobra.Command{
 		if downloadedOVAFilename == "" {
 			downloadedOVAFilename = file.Name
 		}
-		cmd.Printf("Downloading file to %s...\n", downloadedOVAFilename)
 		return Marketplace.Download(product.ProductId, downloadedOVAFilename, &pkg.DownloadRequestPayload{
 			DeploymentFileId: file.FileID,
 			AppVersion:       version.Number,
 			EulaAccepted:     true,
-		}, cmd.ErrOrStderr())
+		})
 	},
 }
 
