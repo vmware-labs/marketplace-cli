@@ -3,7 +3,7 @@
 # Copyright 2021 VMware, Inc.
 # SPDX-License-Identifier: BSD-2-Clause
 
-set -ex
+set -e
 
 if [ -z "${PRODUCT_SLUG}" ] ; then
   echo "PRODUCT_SLUG not defined"
@@ -13,7 +13,7 @@ fi
 # Get the ID for the first chart
 CHARTS=$(mkpcli chart list --debug --debug-request-payloads --product "${PRODUCT_SLUG}" --product-version "${PRODUCT_VERSION}" --output json)
 CHART_ID=$(echo "${CHARTS}" | jq -r .[0].id)
-IS_IN_MKP_REGISTRY=$(echo "${IMAGES}" | jq -r .[0].isupdatedinmarketplaceregistry)
+IS_IN_MKP_REGISTRY=$(echo "${CHARTS}" | jq -r .[0].isupdatedinmarketplaceregistry)
 PROCESSING_ERROR=$(echo "${CHARTS}" | jq -r .[0].processingerror)
 
 while [ "${IS_IN_MKP_REGISTRY}" == "false" ] && [ -z "${PROCESSING_ERROR}" ] ; do
