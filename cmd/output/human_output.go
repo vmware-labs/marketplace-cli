@@ -96,78 +96,124 @@ func (o *HumanOutput) RenderVersions(product *models.Product) error {
 }
 
 func (o *HumanOutput) RenderChart(chart *models.ChartVersion) error {
-	table := o.NewTable("ID", "Version", "URL", "Repository")
-	table.Append([]string{
-		chart.Id,
-		chart.Version,
-		chart.TarUrl,
-		chart.Repo.Name + " " + chart.Repo.Url,
-	})
+	footnote := ""
+	downloads := ""
+	if chart.IsUpdatedInMarketplaceRegistry {
+		downloads = strconv.FormatInt(chart.DownloadCount, 10)
+	} else {
+		if chart.ProcessingError != "" {
+			downloads = "Error*"
+			footnote += fmt.Sprintf("* %s\n", chart.ProcessingError)
+		} else {
+			downloads = "Not yet available"
+		}
+	}
+
+	table := o.NewTable("ID", "Version", "URL", "Repository", "Downloads")
+	table.Append([]string{chart.Id, chart.Version, chart.TarUrl, chart.Repo.Name + " " + chart.Repo.Url, downloads})
 	table.Render()
+
+	if footnote != "" {
+		o.Println()
+		o.Println(footnote)
+	}
 	return nil
 }
 
 func (o *HumanOutput) RenderCharts(charts []*models.ChartVersion) error {
-	table := o.NewTable("ID", "Version", "URL", "Repository")
+	footnotes := ""
+	table := o.NewTable("ID", "Version", "URL", "Repository", "Downloads")
 	for _, chart := range charts {
-		table.Append([]string{
-			chart.Id,
-			chart.Version,
-			chart.TarUrl,
-			chart.Repo.Name + " " + chart.Repo.Url,
-		})
+		downloads := ""
+		if chart.IsUpdatedInMarketplaceRegistry {
+			downloads = strconv.FormatInt(chart.DownloadCount, 10)
+		} else {
+			if chart.ProcessingError != "" {
+				downloads = "Error*"
+				footnotes += fmt.Sprintf("* %s\n", chart.ProcessingError)
+			} else {
+				downloads = "Not yet available"
+			}
+		}
+		table.Append([]string{chart.Id, chart.Version, chart.TarUrl, chart.Repo.Name + " " + chart.Repo.Url, downloads})
 	}
 	table.Render()
+
+	if footnotes != "" {
+		o.Println()
+		o.Println(footnotes)
+	}
 	return nil
 }
 
 func (o *HumanOutput) RenderContainerImage(image *models.DockerURLDetails) error {
-	o.Printf("%s\n", image.Url)
+	o.Println(image.Url)
 	o.Println("Tags:")
 
 	footnotes := ""
 	table := o.NewTable("Tag", "Type", "Downloads")
 	for _, tag := range image.ImageTags {
-		downloads := "N/A*"
+		downloads := ""
 		if tag.IsUpdatedInMarketplaceRegistry {
 			downloads = strconv.FormatInt(tag.DownloadCount, 10)
 		} else {
-			footnotes += fmt.Sprintf("* %s\n", tag.ProcessingError)
+			if tag.ProcessingError != "" {
+				downloads = "Error*"
+				footnotes += fmt.Sprintf("* %s\n", tag.ProcessingError)
+			} else {
+				downloads = "Not yet available"
+			}
 		}
 		table.Append([]string{tag.Tag, tag.Type, downloads})
 	}
 	table.Render()
+	o.Println()
 	if footnotes != "" {
 		o.Println(footnotes)
 	}
 
-	o.Println("\nDeployment instructions:")
+	o.Println("Deployment instructions:")
 	o.Println(image.DeploymentInstruction)
 
 	return nil
 }
 
 func (o *HumanOutput) RenderContainerImages(images *models.DockerVersionList) error {
+	footnote := ""
 	table := o.NewTable("Image", "Tags", "Downloads")
 	for _, docker := range images.DockerURLs {
 		var tagList []string
 		var downloads int64 = 0
 		downloadable := true
+		problem := false
 		for _, tag := range docker.ImageTags {
 			if downloadable && tag.IsUpdatedInMarketplaceRegistry {
 				downloads += tag.DownloadCount
 			} else {
 				downloadable = false
+				if tag.ProcessingError != "" {
+					problem = true
+				}
 			}
 			tagList = append(tagList, tag.Tag)
 		}
 		if downloadable {
 			table.Append([]string{docker.Url, strings.Join(tagList, ", "), strconv.FormatInt(downloads, 10)})
+		} else if problem {
+			table.Append([]string{docker.Url, strings.Join(tagList, ", "), "Err*"})
+			footnote = "* There is an error with this image."
 		} else {
-			table.Append([]string{docker.Url, strings.Join(tagList, ", "), "Err"})
+			table.Append([]string{docker.Url, strings.Join(tagList, ", "), "N/A"})
 		}
 	}
 	table.Render()
+	o.Println()
+
+	if footnote != "" {
+		o.Println(footnote)
+		o.Println()
+	}
+
 	if images.DeploymentInstruction != "" {
 		o.Println("Deployment instructions:")
 		o.Println(images.DeploymentInstruction)
@@ -176,7 +222,16 @@ func (o *HumanOutput) RenderContainerImages(images *models.DockerVersionList) er
 }
 
 func (o *HumanOutput) RenderOVA(file *models.ProductDeploymentFile) error {
-	table := o.NewTable("ID", "Name", "Status", "Size", "Type", "Files")
+	footnotes := ""
+	table := o.NewTable("ID", "Name", "Status", "Size", "Type", "Files", "Downloads")
+	downloads := ""
+	if file.Status == "INACTIVE" {
+		downloads = "Error*"
+		footnotes += fmt.Sprintf("* %s\n", file.Comment)
+	} else {
+		downloads = strconv.FormatInt(file.DownloadCount, 10)
+	}
+
 	if file.ItemJson != "" {
 		details := &models.ProductItemDetails{}
 		err := json.Unmarshal([]byte(file.ItemJson), details)
@@ -188,21 +243,34 @@ func (o *HumanOutput) RenderOVA(file *models.ProductDeploymentFile) error {
 		for _, file := range details.Files {
 			size += int64(file.Size)
 		}
-		table.Append([]string{file.FileID, details.Name, file.Status, FormatSize(size), details.Type, strconv.Itoa(len(details.Files))})
+		table.Append([]string{file.FileID, details.Name, file.Status, FormatSize(size), details.Type, strconv.Itoa(len(details.Files)), downloads})
 	} else {
-		table.Append([]string{file.FileID, "unknown", file.Status, "unknown", "unknown", "unknown"})
+		table.Append([]string{file.FileID, file.Name, file.Status, "unknown*", "unknown*", "unknown*", downloads})
 	}
-
 	table.Render()
+
+	if footnotes != "" {
+		o.Println()
+		o.Println(footnotes)
+	}
 	return nil
 }
 
-func (o *HumanOutput) RenderOVAs(ovas []*models.ProductDeploymentFile) error {
-	table := o.NewTable("ID", "Name", "Status", "Size", "Type", "Files")
-	for _, ova := range ovas {
-		if ova.ItemJson != "" {
+func (o *HumanOutput) RenderOVAs(files []*models.ProductDeploymentFile) error {
+	footnotes := ""
+	table := o.NewTable("ID", "Name", "Status", "Size", "Type", "Files", "Downloads")
+	for _, file := range files {
+		downloads := ""
+		if file.Status == "INACTIVE" {
+			downloads = "Error*"
+			footnotes += fmt.Sprintf("* %s\n", file.Comment)
+		} else {
+			downloads = strconv.FormatInt(file.DownloadCount, 10)
+		}
+
+		if file.ItemJson != "" {
 			details := &models.ProductItemDetails{}
-			err := json.Unmarshal([]byte(ova.ItemJson), details)
+			err := json.Unmarshal([]byte(file.ItemJson), details)
 			if err != nil {
 				return fmt.Errorf("failed to parse the list of OVA files: %w", err)
 			}
@@ -211,13 +279,17 @@ func (o *HumanOutput) RenderOVAs(ovas []*models.ProductDeploymentFile) error {
 			for _, file := range details.Files {
 				size += int64(file.Size)
 			}
-			table.Append([]string{ova.FileID, details.Name, ova.Status, FormatSize(size), details.Type, strconv.Itoa(len(details.Files))})
+			table.Append([]string{file.FileID, details.Name, file.Status, FormatSize(size), details.Type, strconv.Itoa(len(details.Files)), downloads})
 		} else {
-			table.Append([]string{ova.FileID, ova.Name, ova.Status, "unknown", "unknown", "unknown"})
+			table.Append([]string{file.FileID, file.Name, file.Status, "unknown*", "unknown*", "unknown*", downloads})
 		}
-
 	}
 	table.Render()
+
+	if footnotes != "" {
+		o.Println()
+		o.Println(footnotes)
+	}
 	return nil
 }
 
