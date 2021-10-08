@@ -4,6 +4,10 @@
 package cmd_test
 
 import (
+	"bytes"
+	"encoding/json"
+	"io/ioutil"
+	"net/http"
 	"testing"
 
 	. "github.com/onsi/ginkgo"
@@ -13,4 +17,14 @@ import (
 func TestCmdSuite(t *testing.T) {
 	RegisterFailHandler(Fail)
 	RunSpecs(t, "Cmd test suite")
+}
+
+func ResponseWithPayload(payload interface{}) *http.Response {
+	encoded, err := json.Marshal(payload)
+	Expect(err).ToNot(HaveOccurred())
+
+	return &http.Response{
+		StatusCode: http.StatusOK,
+		Body:       ioutil.NopCloser(bytes.NewReader(encoded)),
+	}
 }

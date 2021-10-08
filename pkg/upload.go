@@ -9,6 +9,9 @@ import (
 	"io/ioutil"
 	"net/http"
 	"time"
+
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/vmware-labs/marketplace-cli/v2/internal"
 )
 
 type CredentialsResponse struct {
@@ -42,4 +45,11 @@ func (m *Marketplace) GetUploadCredentials() (*CredentialsResponse, error) {
 	}
 
 	return credsResponse, nil
+}
+
+func (m *Marketplace) GetUploader(orgID, hashAlgorithm string, credentials aws.Credentials) internal.Uploader {
+	if m.Uploader == nil {
+		return internal.NewS3Uploader(m.StorageBucket, m.StorageRegion, hashAlgorithm, orgID, credentials)
+	}
+	return m.Uploader
 }
