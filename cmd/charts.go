@@ -82,11 +82,8 @@ var ListChartsCmd = &cobra.Command{
 		}
 
 		charts := product.GetChartsForVersion(version.Number)
-		if len(charts) == 0 {
-			fmt.Printf("%s %s does not have any charts\n", product.Slug, version.Number)
-			return nil
-		}
 
+		Output.PrintHeader(fmt.Sprintf("Charts for %s %s:", product.DisplayName, version.Number))
 		return Output.RenderCharts(charts)
 	},
 }
@@ -157,7 +154,6 @@ var DownloadChartCmd = &cobra.Command{
 			return fmt.Errorf("%s %s in %s %s is not downloadable: %s", chart.TarUrl, chart.Version, ChartProductSlug, version.Number, chart.ValidationStatus)
 		}
 
-		cmd.Printf("Downloading chart to %s...\n", downloadedChartFilename)
 		return Marketplace.Download(product.ProductId, downloadedChartFilename, &pkg.DownloadRequestPayload{
 			AppVersion:   chart.AppVersion,
 			ChartVersion: chart.Version,
@@ -197,6 +193,7 @@ var AttachChartCmd = &cobra.Command{
 			return err
 		}
 
+		Output.PrintHeader(fmt.Sprintf("Charts for %s %s:", updatedProduct.DisplayName, version.Number))
 		return Output.RenderCharts(updatedProduct.GetChartsForVersion(version.Number))
 	},
 }

@@ -25,6 +25,12 @@ func CreateFakeProduct(id, name, slug, status string) *models.Product {
 		EncryptionDetails: &models.ProductEncryptionDetails{
 			List: []string{"userAuthEncryption"},
 		},
+		PublisherDetails: &models.Publisher{
+			UserId:         "test-user",
+			OrgId:          uuid.New().String(),
+			OrgName:        "my-org",
+			OrgDisplayName: "my-org",
+		},
 	}
 }
 

@@ -42,6 +42,9 @@ func (o *EncodedOutput) Print(object interface{}) error {
 	return err
 }
 
+// PrintHeader is a no-op for encoded output. This output only prints the data
+func (o *EncodedOutput) PrintHeader(message string) {}
+
 func (o *EncodedOutput) RenderProduct(product *models.Product) error {
 	return o.Print(product)
 }
@@ -70,11 +73,11 @@ func (o *EncodedOutput) RenderContainerImages(images *models.DockerVersionList) 
 	return o.Print(images)
 }
 
-func (o *EncodedOutput) RenderOVA(file *models.ProductDeploymentFile) error {
+func (o *EncodedOutput) RenderFile(file *models.ProductDeploymentFile) error {
 	return o.Print(file)
 }
 
-func (o *EncodedOutput) RenderOVAs(files []*models.ProductDeploymentFile) error {
+func (o *EncodedOutput) RenderFiles(files []*models.ProductDeploymentFile) error {
 	return o.Print(files)
 }
 

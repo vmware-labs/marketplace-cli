@@ -71,12 +71,9 @@ var ListOVACmd = &cobra.Command{
 		}
 
 		ovas := product.GetFilesForVersion(version.Number)
-		if len(ovas) == 0 {
-			cmd.Printf("product \"%s\" %s does not have any OVAs\n", product.Slug, version.Number)
-			return nil
-		}
 
-		return Output.RenderOVAs(ovas)
+		Output.PrintHeader(fmt.Sprintf("OVSa for %s %s:", product.DisplayName, version.Number))
+		return Output.RenderFiles(ovas)
 	},
 }
 
@@ -110,7 +107,7 @@ var GetOVACmd = &cobra.Command{
 			}
 		}
 
-		return Output.RenderOVA(file)
+		return Output.RenderFile(file)
 	},
 }
 
@@ -184,6 +181,7 @@ var AttachOVACmd = &cobra.Command{
 			return err
 		}
 
-		return Output.RenderOVAs(updatedProduct.GetFilesForVersion(version.Number))
+		Output.PrintHeader(fmt.Sprintf("OVSa for %s %s:", updatedProduct.DisplayName, version.Number))
+		return Output.RenderFiles(updatedProduct.GetFilesForVersion(version.Number))
 	},
 }

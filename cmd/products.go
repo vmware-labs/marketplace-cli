@@ -25,7 +25,7 @@ func init() {
 	ProductCmd.AddCommand(ListProductVersionsCmd)
 
 	ListProductsCmd.Flags().StringVar(&searchTerm, "search-text", "", "Filter product list by text")
-	ListProductsCmd.Flags().BoolVarP(&allOrgs, "all-orgs", "a", false, "Show products from all organizations")
+	ListProductsCmd.Flags().BoolVarP(&allOrgs, "all-orgs", "a", false, "Show published products from all organizations")
 
 	GetProductCmd.Flags().StringVarP(&ProductSlug, "product", "p", "", "Product slug (required)")
 	_ = GetProductCmd.MarkFlagRequired("product")
@@ -51,8 +51,9 @@ var ProductCmd = &cobra.Command{
 var ListProductsCmd = &cobra.Command{
 	Use:   "list",
 	Short: "List products",
-	Long:  "List and search for products in the VMware Marketplace",
-	Args:  cobra.NoArgs,
+	Long: "List and search for products in the VMware Marketplace\n" +
+		"Default without --all-orgs is to list all products (including unpublished) from your organization",
+	Args: cobra.NoArgs,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		cmd.SilenceUsage = true
 		products, err := Marketplace.ListProducts(allOrgs, searchTerm)
@@ -60,6 +61,17 @@ var ListProductsCmd = &cobra.Command{
 			return err
 		}
 
+		header := "All products"
+		if allOrgs {
+			header += " from all organizations"
+		} else if len(products) > 0 {
+			header += fmt.Sprintf(" from %s", products[0].PublisherDetails.OrgDisplayName)
+		}
+		if searchTerm != "" {
+			header += fmt.Sprintf(" filtered by \"%s\"", searchTerm)
+		}
+
+		Output.PrintHeader(header)
 		return Output.RenderProducts(products)
 	},
 }
@@ -106,6 +118,7 @@ var AddProductVersionCmd = &cobra.Command{
 			return err
 		}
 
+		Output.PrintHeader(fmt.Sprintf("Versions for %s:", updatedProduct.DisplayName))
 		return Output.RenderVersions(updatedProduct)
 	},
 }
@@ -122,6 +135,7 @@ var ListProductVersionsCmd = &cobra.Command{
 			return err
 		}
 
+		Output.PrintHeader(fmt.Sprintf("Versions for %s:", product.DisplayName))
 		return Output.RenderVersions(product)
 	},
 }

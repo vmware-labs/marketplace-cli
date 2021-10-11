@@ -85,11 +85,8 @@ var ListContainerImageCmd = &cobra.Command{
 		}
 
 		images := product.GetContainerImagesForVersion(version.Number)
-		if images == nil || len(images.DockerURLs) == 0 {
-			cmd.Printf("%s %s does not have any container images\n", product.Slug, version.Number)
-			return nil
-		}
 
+		Output.PrintHeader(fmt.Sprintf("Container images for %s %s:", product.DisplayName, version.Number))
 		return Output.RenderContainerImages(images)
 	},
 }
@@ -184,7 +181,6 @@ var DownloadContainerImageCmd = &cobra.Command{
 			return fmt.Errorf("%s with tag %s in %s %s is not downloadable: %s", containerImage.Url, imageTag.Tag, ContainerImageProductSlug, version.Number, imageTag.ProcessingError)
 		}
 
-		cmd.Printf("Downloading image to %s...\n", downloadedContainerImageFilename)
 		return Marketplace.Download(product.ProductId, downloadedContainerImageFilename, &pkg.DownloadRequestPayload{
 			DockerlinkVersionID: containerImages.ID,
 			DockerUrlId:         containerImage.ID,
@@ -253,6 +249,7 @@ var AttachContainerImageCmd = &cobra.Command{
 			return err
 		}
 
+		Output.PrintHeader(fmt.Sprintf("Container images for %s %s:", updatedProduct.DisplayName, version.Number))
 		return Output.RenderContainerImages(updatedProduct.GetContainerImagesForVersion(version.Number))
 	},
 }
