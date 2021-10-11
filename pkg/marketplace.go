@@ -11,6 +11,7 @@ import (
 	"os"
 
 	"github.com/spf13/viper"
+	"github.com/vmware-labs/marketplace-cli/v2/internal"
 )
 
 type Marketplace struct {
@@ -21,6 +22,7 @@ type Marketplace struct {
 	StorageRegion string
 	Client        HTTPClient
 	Output        io.Writer
+	Uploader      internal.Uploader
 }
 
 var (

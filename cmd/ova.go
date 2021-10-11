@@ -166,8 +166,8 @@ var AttachOVACmd = &cobra.Command{
 			return err
 		}
 
-		uploader := internal.NewS3Uploader(Marketplace.StorageRegion, internal.HashAlgoSHA1, product.PublisherDetails.OrgId, UploadCredentials)
-		file, err := uploader.Upload(Marketplace.StorageBucket, ovaFile)
+		uploader := internal.NewS3Uploader(Marketplace.StorageBucket, Marketplace.StorageRegion, internal.HashAlgoSHA1, product.PublisherDetails.OrgId, UploadCredentials)
+		file, err := uploader.UploadFile(ovaFile)
 		if err != nil {
 			return err
 		}

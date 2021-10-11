@@ -345,10 +345,23 @@ jobs:
               - |
                 yq --yaml-output --arg version $(cat ../../test-chart-product-version/version) '.version = $version' Chart.yaml > Chart.yaml.new
                 mv Chart.yaml.new Chart.yaml
-      - put: test-chart
-        params:
-          repository: chart/mkpcli-test-chart
-          version_file: test-chart-product-version/version
+      - task: package-helm-chart
+        config:
+          platform: linux
+          image_resource:
+            type: registry-image
+            source:
+              repository: harbor-repo.vmware.com/dockerhub-proxy-cache/alpine/helm
+              username: ((harbor.username))
+              password: ((harbor.token))
+          inputs:
+            - name: chart
+          outputs:
+            - name: chart
+          run:
+            path: helm
+            dir: chart
+            args: [package, mkpcli-test-chart]
       - task: add-version-to-marketplace
         image: mkpcli
         file: source/ci/tasks/add-version.yaml

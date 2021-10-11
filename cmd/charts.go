@@ -5,22 +5,21 @@ package cmd
 
 import (
 	"fmt"
+	"net/url"
 
 	"github.com/spf13/cobra"
+	"github.com/vmware-labs/marketplace-cli/v2/internal"
 	"github.com/vmware-labs/marketplace-cli/v2/internal/models"
 	"github.com/vmware-labs/marketplace-cli/v2/pkg"
 )
 
 var (
-	ChartID                     string
-	ChartDeploymentInstructions string
-	ChartProductSlug            string
-	ChartProductVersion         string
-	ChartVersion                string
-	ChartRepositoryName         string
-	ChartRepositoryURL          string
-	ChartURL                    string
-	downloadedChartFilename     string
+	ChartID                 string
+	ChartReadme             string
+	ChartProductSlug        string
+	ChartProductVersion     string
+	ChartURL                string
+	downloadedChartFilename string
 )
 
 func init() {
@@ -48,15 +47,15 @@ func init() {
 	AttachChartCmd.Flags().StringVarP(&ChartProductSlug, "product", "p", "", "Product slug (required)")
 	_ = AttachChartCmd.MarkFlagRequired("product")
 	AttachChartCmd.Flags().StringVarP(&ChartProductVersion, "product-version", "v", "", "Product version (default to latest version)")
-	AttachChartCmd.Flags().StringVarP(&ChartVersion, "chart-version", "e", "", "chart version")
-	_ = AttachChartCmd.MarkFlagRequired("chart-version")
-	AttachChartCmd.Flags().StringVarP(&ChartURL, "chart-url", "u", "", "url to chart tgz")
-	_ = AttachChartCmd.MarkFlagRequired("chart-url")
-	AttachChartCmd.Flags().StringVar(&ChartRepositoryURL, "repository-url", "", "chart public repository url")
-	_ = AttachChartCmd.MarkFlagRequired("repository-url")
-	AttachChartCmd.Flags().StringVar(&ChartRepositoryName, "repository-name", "", "chart public repository name")
-	_ = AttachChartCmd.MarkFlagRequired("repository-name")
-	AttachChartCmd.Flags().StringVar(&ChartDeploymentInstructions, "readme", "", "readme information")
+	//AttachChartCmd.Flags().StringVarP(&ChartVersion, "chart-version", "e", "", "chart version (required)")
+	//_ = AttachChartCmd.MarkFlagRequired("chart-version")
+	AttachChartCmd.Flags().StringVarP(&ChartURL, "chart", "c", "", "path to to chart, either local tgz or public URL (required)")
+	_ = AttachChartCmd.MarkFlagRequired("chart")
+	//AttachChartCmd.Flags().StringVar(&ChartRepositoryURL, "repository-url", "", "chart public repository url")
+	//_ = AttachChartCmd.MarkFlagRequired("repository-url")
+	//AttachChartCmd.Flags().StringVar(&ChartRepositoryName, "repository-name", "", "chart public repository name")
+	//_ = AttachChartCmd.MarkFlagRequired("repository-name")
+	AttachChartCmd.Flags().StringVar(&ChartReadme, "readme", "", "readme information")
 	_ = AttachChartCmd.MarkFlagRequired("readme")
 }
 
@@ -176,18 +175,44 @@ var AttachChartCmd = &cobra.Command{
 
 		product.SetDeploymentType(models.DeploymentTypeHelm)
 		product.PrepForUpdate()
-		product.AddChart(&models.ChartVersion{
-			AppVersion: version.Number,
-			Version:    ChartVersion,
-			HelmTarUrl: ChartURL,
-			TarUrl:     ChartURL,
-			Readme:     ChartDeploymentInstructions,
-			Repo: &models.Repo{
-				Name: ChartRepositoryName,
-				Url:  ChartRepositoryURL,
-			},
-		})
 
+		chartURL, err := url.Parse(ChartURL)
+		if err != nil {
+			return fmt.Errorf("failed to parse chart URL: %w", err)
+		}
+
+		var chart *models.ChartVersion
+		if chartURL.Scheme == "" || chartURL.Scheme == "file" {
+			chart, err = pkg.LoadChart(ChartURL)
+			if err != nil {
+				return err
+			}
+
+			err = GetUploadCredentials(cmd, args)
+			if err != nil {
+				return err
+			}
+
+			uploader := Marketplace.GetUploader(product.PublisherDetails.OrgId, internal.HashAlgoSHA1, UploadCredentials)
+			uploadedChart, err := uploader.Upload(ChartURL)
+			if err != nil {
+				return err
+			}
+
+			chart.HelmTarUrl = uploadedChart
+		} else if chartURL.Scheme == "http" || chartURL.Scheme == "https" {
+			chart, err = Marketplace.DownloadChart(chartURL)
+			if err != nil {
+				return err
+			}
+		} else {
+			return fmt.Errorf("unsupported protocol scheme: %s", chartURL.Scheme)
+		}
+
+		chart.AppVersion = version.Number
+		chart.Readme = ChartReadme
+
+		product.AddChart(chart)
 		updatedProduct, err := Marketplace.PutProduct(product, false)
 		if err != nil {
 			return err
