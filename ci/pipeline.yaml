@@ -100,15 +100,6 @@ resources:
       file: test-chart-product/version
       commit_message: "[ci skip] Updating to version %version%"
 
-  - name: test-chart
-    type: helm-chart
-    icon: map
-    source:
-      repository_url: https://projects.registry.vmware.com/chartrepo/tanzu_isv_engineering
-      chart: mkpcli-test-chart
-      username: ((harbor-public.username))
-      password: ((harbor-public.token))
-
   - name: test-ova-product-version
     type: semver
     icon: gitlab
@@ -308,7 +299,7 @@ jobs:
             passed: [build]
           - get: version
             passed: [build]
-      - task: publish-new-helm-chart
+      - task: create-test-helm-chart
         config:
           platform: linux
           image_resource:
@@ -345,7 +336,7 @@ jobs:
               - |
                 yq --yaml-output --arg version $(cat ../../test-chart-product-version/version) '.version = $version' Chart.yaml > Chart.yaml.new
                 mv Chart.yaml.new Chart.yaml
-      - task: package-helm-chart
+      - task: package-test-helm-chart
         config:
           platform: linux
           image_resource:
