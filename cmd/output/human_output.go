@@ -178,9 +178,13 @@ func (o *HumanOutput) RenderContainerImage(image *models.DockerURLDetails) error
 }
 
 func (o *HumanOutput) RenderContainerImages(images *models.DockerVersionList) error {
+	var imageList []*models.DockerURLDetails
+	if images != nil {
+		imageList = images.DockerURLs
+	}
 	footnote := ""
 	table := o.NewTable("Image", "Tags", "Downloads")
-	for _, docker := range images.DockerURLs {
+	for _, docker := range imageList {
 		var tagList []string
 		var downloads int64 = 0
 		downloadable := true
@@ -207,14 +211,14 @@ func (o *HumanOutput) RenderContainerImages(images *models.DockerVersionList) er
 	}
 	table.Render()
 	o.Println()
-	o.Printf("Total count: %d\n", len(images.DockerURLs))
+	o.Printf("Total count: %d\n", len(imageList))
 
 	if footnote != "" {
 		o.Println(footnote)
 		o.Println()
 	}
 
-	if images.DeploymentInstruction != "" {
+	if images != nil && images.DeploymentInstruction != "" {
 		o.Println("Deployment instructions:")
 		o.Println(images.DeploymentInstruction)
 	}
