@@ -9,6 +9,11 @@ import (
 )
 
 type FakeFormat struct {
+	PrintHeaderStub        func(string)
+	printHeaderMutex       sync.RWMutex
+	printHeaderArgsForCall []struct {
+		arg1 string
+	}
 	RenderChartStub        func(*models.ChartVersion) error
 	renderChartMutex       sync.RWMutex
 	renderChartArgsForCall []struct {
@@ -53,26 +58,26 @@ type FakeFormat struct {
 	renderContainerImagesReturnsOnCall map[int]struct {
 		result1 error
 	}
-	RenderOVAStub        func(*models.ProductDeploymentFile) error
-	renderOVAMutex       sync.RWMutex
-	renderOVAArgsForCall []struct {
+	RenderFileStub        func(*models.ProductDeploymentFile) error
+	renderFileMutex       sync.RWMutex
+	renderFileArgsForCall []struct {
 		arg1 *models.ProductDeploymentFile
 	}
-	renderOVAReturns struct {
+	renderFileReturns struct {
 		result1 error
 	}
-	renderOVAReturnsOnCall map[int]struct {
+	renderFileReturnsOnCall map[int]struct {
 		result1 error
 	}
-	RenderOVAsStub        func([]*models.ProductDeploymentFile) error
-	renderOVAsMutex       sync.RWMutex
-	renderOVAsArgsForCall []struct {
+	RenderFilesStub        func([]*models.ProductDeploymentFile) error
+	renderFilesMutex       sync.RWMutex
+	renderFilesArgsForCall []struct {
 		arg1 []*models.ProductDeploymentFile
 	}
-	renderOVAsReturns struct {
+	renderFilesReturns struct {
 		result1 error
 	}
-	renderOVAsReturnsOnCall map[int]struct {
+	renderFilesReturnsOnCall map[int]struct {
 		result1 error
 	}
 	RenderProductStub        func(*models.Product) error
@@ -121,6 +126,37 @@ type FakeFormat struct {
 	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
+}
+
+func (fake *FakeFormat) PrintHeader(arg1 string) {
+	fake.printHeaderMutex.Lock()
+	fake.printHeaderArgsForCall = append(fake.printHeaderArgsForCall, struct {
+		arg1 string
+	}{arg1})
+	fake.recordInvocation("PrintHeader", []interface{}{arg1})
+	fake.printHeaderMutex.Unlock()
+	if fake.PrintHeaderStub != nil {
+		fake.PrintHeaderStub(arg1)
+	}
+}
+
+func (fake *FakeFormat) PrintHeaderCallCount() int {
+	fake.printHeaderMutex.RLock()
+	defer fake.printHeaderMutex.RUnlock()
+	return len(fake.printHeaderArgsForCall)
+}
+
+func (fake *FakeFormat) PrintHeaderCalls(stub func(string)) {
+	fake.printHeaderMutex.Lock()
+	defer fake.printHeaderMutex.Unlock()
+	fake.PrintHeaderStub = stub
+}
+
+func (fake *FakeFormat) PrintHeaderArgsForCall(i int) string {
+	fake.printHeaderMutex.RLock()
+	defer fake.printHeaderMutex.RUnlock()
+	argsForCall := fake.printHeaderArgsForCall[i]
+	return argsForCall.arg1
 }
 
 func (fake *FakeFormat) RenderChart(arg1 *models.ChartVersion) error {
@@ -368,127 +404,127 @@ func (fake *FakeFormat) RenderContainerImagesReturnsOnCall(i int, result1 error)
 	}{result1}
 }
 
-func (fake *FakeFormat) RenderOVA(arg1 *models.ProductDeploymentFile) error {
-	fake.renderOVAMutex.Lock()
-	ret, specificReturn := fake.renderOVAReturnsOnCall[len(fake.renderOVAArgsForCall)]
-	fake.renderOVAArgsForCall = append(fake.renderOVAArgsForCall, struct {
+func (fake *FakeFormat) RenderFile(arg1 *models.ProductDeploymentFile) error {
+	fake.renderFileMutex.Lock()
+	ret, specificReturn := fake.renderFileReturnsOnCall[len(fake.renderFileArgsForCall)]
+	fake.renderFileArgsForCall = append(fake.renderFileArgsForCall, struct {
 		arg1 *models.ProductDeploymentFile
 	}{arg1})
-	fake.recordInvocation("RenderOVA", []interface{}{arg1})
-	fake.renderOVAMutex.Unlock()
-	if fake.RenderOVAStub != nil {
-		return fake.RenderOVAStub(arg1)
+	fake.recordInvocation("RenderFile", []interface{}{arg1})
+	fake.renderFileMutex.Unlock()
+	if fake.RenderFileStub != nil {
+		return fake.RenderFileStub(arg1)
 	}
 	if specificReturn {
 		return ret.result1
 	}
-	fakeReturns := fake.renderOVAReturns
+	fakeReturns := fake.renderFileReturns
 	return fakeReturns.result1
 }
 
-func (fake *FakeFormat) RenderOVACallCount() int {
-	fake.renderOVAMutex.RLock()
-	defer fake.renderOVAMutex.RUnlock()
-	return len(fake.renderOVAArgsForCall)
+func (fake *FakeFormat) RenderFileCallCount() int {
+	fake.renderFileMutex.RLock()
+	defer fake.renderFileMutex.RUnlock()
+	return len(fake.renderFileArgsForCall)
 }
 
-func (fake *FakeFormat) RenderOVACalls(stub func(*models.ProductDeploymentFile) error) {
-	fake.renderOVAMutex.Lock()
-	defer fake.renderOVAMutex.Unlock()
-	fake.RenderOVAStub = stub
+func (fake *FakeFormat) RenderFileCalls(stub func(*models.ProductDeploymentFile) error) {
+	fake.renderFileMutex.Lock()
+	defer fake.renderFileMutex.Unlock()
+	fake.RenderFileStub = stub
 }
 
-func (fake *FakeFormat) RenderOVAArgsForCall(i int) *models.ProductDeploymentFile {
-	fake.renderOVAMutex.RLock()
-	defer fake.renderOVAMutex.RUnlock()
-	argsForCall := fake.renderOVAArgsForCall[i]
+func (fake *FakeFormat) RenderFileArgsForCall(i int) *models.ProductDeploymentFile {
+	fake.renderFileMutex.RLock()
+	defer fake.renderFileMutex.RUnlock()
+	argsForCall := fake.renderFileArgsForCall[i]
 	return argsForCall.arg1
 }
 
-func (fake *FakeFormat) RenderOVAReturns(result1 error) {
-	fake.renderOVAMutex.Lock()
-	defer fake.renderOVAMutex.Unlock()
-	fake.RenderOVAStub = nil
-	fake.renderOVAReturns = struct {
+func (fake *FakeFormat) RenderFileReturns(result1 error) {
+	fake.renderFileMutex.Lock()
+	defer fake.renderFileMutex.Unlock()
+	fake.RenderFileStub = nil
+	fake.renderFileReturns = struct {
 		result1 error
 	}{result1}
 }
 
-func (fake *FakeFormat) RenderOVAReturnsOnCall(i int, result1 error) {
-	fake.renderOVAMutex.Lock()
-	defer fake.renderOVAMutex.Unlock()
-	fake.RenderOVAStub = nil
-	if fake.renderOVAReturnsOnCall == nil {
-		fake.renderOVAReturnsOnCall = make(map[int]struct {
+func (fake *FakeFormat) RenderFileReturnsOnCall(i int, result1 error) {
+	fake.renderFileMutex.Lock()
+	defer fake.renderFileMutex.Unlock()
+	fake.RenderFileStub = nil
+	if fake.renderFileReturnsOnCall == nil {
+		fake.renderFileReturnsOnCall = make(map[int]struct {
 			result1 error
 		})
 	}
-	fake.renderOVAReturnsOnCall[i] = struct {
+	fake.renderFileReturnsOnCall[i] = struct {
 		result1 error
 	}{result1}
 }
 
-func (fake *FakeFormat) RenderOVAs(arg1 []*models.ProductDeploymentFile) error {
+func (fake *FakeFormat) RenderFiles(arg1 []*models.ProductDeploymentFile) error {
 	var arg1Copy []*models.ProductDeploymentFile
 	if arg1 != nil {
 		arg1Copy = make([]*models.ProductDeploymentFile, len(arg1))
 		copy(arg1Copy, arg1)
 	}
-	fake.renderOVAsMutex.Lock()
-	ret, specificReturn := fake.renderOVAsReturnsOnCall[len(fake.renderOVAsArgsForCall)]
-	fake.renderOVAsArgsForCall = append(fake.renderOVAsArgsForCall, struct {
+	fake.renderFilesMutex.Lock()
+	ret, specificReturn := fake.renderFilesReturnsOnCall[len(fake.renderFilesArgsForCall)]
+	fake.renderFilesArgsForCall = append(fake.renderFilesArgsForCall, struct {
 		arg1 []*models.ProductDeploymentFile
 	}{arg1Copy})
-	fake.recordInvocation("RenderOVAs", []interface{}{arg1Copy})
-	fake.renderOVAsMutex.Unlock()
-	if fake.RenderOVAsStub != nil {
-		return fake.RenderOVAsStub(arg1)
+	fake.recordInvocation("RenderFiles", []interface{}{arg1Copy})
+	fake.renderFilesMutex.Unlock()
+	if fake.RenderFilesStub != nil {
+		return fake.RenderFilesStub(arg1)
 	}
 	if specificReturn {
 		return ret.result1
 	}
-	fakeReturns := fake.renderOVAsReturns
+	fakeReturns := fake.renderFilesReturns
 	return fakeReturns.result1
 }
 
-func (fake *FakeFormat) RenderOVAsCallCount() int {
-	fake.renderOVAsMutex.RLock()
-	defer fake.renderOVAsMutex.RUnlock()
-	return len(fake.renderOVAsArgsForCall)
+func (fake *FakeFormat) RenderFilesCallCount() int {
+	fake.renderFilesMutex.RLock()
+	defer fake.renderFilesMutex.RUnlock()
+	return len(fake.renderFilesArgsForCall)
 }
 
-func (fake *FakeFormat) RenderOVAsCalls(stub func([]*models.ProductDeploymentFile) error) {
-	fake.renderOVAsMutex.Lock()
-	defer fake.renderOVAsMutex.Unlock()
-	fake.RenderOVAsStub = stub
+func (fake *FakeFormat) RenderFilesCalls(stub func([]*models.ProductDeploymentFile) error) {
+	fake.renderFilesMutex.Lock()
+	defer fake.renderFilesMutex.Unlock()
+	fake.RenderFilesStub = stub
 }
 
-func (fake *FakeFormat) RenderOVAsArgsForCall(i int) []*models.ProductDeploymentFile {
-	fake.renderOVAsMutex.RLock()
-	defer fake.renderOVAsMutex.RUnlock()
-	argsForCall := fake.renderOVAsArgsForCall[i]
+func (fake *FakeFormat) RenderFilesArgsForCall(i int) []*models.ProductDeploymentFile {
+	fake.renderFilesMutex.RLock()
+	defer fake.renderFilesMutex.RUnlock()
+	argsForCall := fake.renderFilesArgsForCall[i]
 	return argsForCall.arg1
 }
 
-func (fake *FakeFormat) RenderOVAsReturns(result1 error) {
-	fake.renderOVAsMutex.Lock()
-	defer fake.renderOVAsMutex.Unlock()
-	fake.RenderOVAsStub = nil
-	fake.renderOVAsReturns = struct {
+func (fake *FakeFormat) RenderFilesReturns(result1 error) {
+	fake.renderFilesMutex.Lock()
+	defer fake.renderFilesMutex.Unlock()
+	fake.RenderFilesStub = nil
+	fake.renderFilesReturns = struct {
 		result1 error
 	}{result1}
 }
 
-func (fake *FakeFormat) RenderOVAsReturnsOnCall(i int, result1 error) {
-	fake.renderOVAsMutex.Lock()
-	defer fake.renderOVAsMutex.Unlock()
-	fake.RenderOVAsStub = nil
-	if fake.renderOVAsReturnsOnCall == nil {
-		fake.renderOVAsReturnsOnCall = make(map[int]struct {
+func (fake *FakeFormat) RenderFilesReturnsOnCall(i int, result1 error) {
+	fake.renderFilesMutex.Lock()
+	defer fake.renderFilesMutex.Unlock()
+	fake.RenderFilesStub = nil
+	if fake.renderFilesReturnsOnCall == nil {
+		fake.renderFilesReturnsOnCall = make(map[int]struct {
 			result1 error
 		})
 	}
-	fake.renderOVAsReturnsOnCall[i] = struct {
+	fake.renderFilesReturnsOnCall[i] = struct {
 		result1 error
 	}{result1}
 }
@@ -746,6 +782,8 @@ func (fake *FakeFormat) RenderVersionsReturnsOnCall(i int, result1 error) {
 func (fake *FakeFormat) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
+	fake.printHeaderMutex.RLock()
+	defer fake.printHeaderMutex.RUnlock()
 	fake.renderChartMutex.RLock()
 	defer fake.renderChartMutex.RUnlock()
 	fake.renderChartsMutex.RLock()
@@ -754,10 +792,10 @@ func (fake *FakeFormat) Invocations() map[string][][]interface{} {
 	defer fake.renderContainerImageMutex.RUnlock()
 	fake.renderContainerImagesMutex.RLock()
 	defer fake.renderContainerImagesMutex.RUnlock()
-	fake.renderOVAMutex.RLock()
-	defer fake.renderOVAMutex.RUnlock()
-	fake.renderOVAsMutex.RLock()
-	defer fake.renderOVAsMutex.RUnlock()
+	fake.renderFileMutex.RLock()
+	defer fake.renderFileMutex.RUnlock()
+	fake.renderFilesMutex.RLock()
+	defer fake.renderFilesMutex.RUnlock()
 	fake.renderProductMutex.RLock()
 	defer fake.renderProductMutex.RUnlock()
 	fake.renderProductsMutex.RLock()

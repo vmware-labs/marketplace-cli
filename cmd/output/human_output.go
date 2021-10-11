@@ -22,8 +22,13 @@ type HumanOutput struct {
 func (o *HumanOutput) Printf(format string, a ...interface{}) {
 	_, _ = fmt.Fprintf(o.writer, format, a...)
 }
+
 func (o *HumanOutput) Println(a ...interface{}) {
 	_, _ = fmt.Fprintln(o.writer, a...)
+}
+
+func (o *HumanOutput) PrintHeader(message string) {
+	o.Println(message)
 }
 
 func NewHumanOutput(writer io.Writer, marketplaceHost string) *HumanOutput {
@@ -46,13 +51,6 @@ func (o *HumanOutput) NewTable(headers ...string) *tablewriter.Table {
 	table.SetHeaderLine(false)
 	table.SetRowSeparator("")
 	table.SetTablePadding("\t\t")
-	//if outputSupportsColor {
-	//	var colors []tablewriter.Colors
-	//	for range headers {
-	//		colors = append(colors, []int{tablewriter.Bold})
-	//	}
-	//	table.SetHeaderColor(colors...)
-	//}
 	return table
 }
 
@@ -138,6 +136,7 @@ func (o *HumanOutput) RenderCharts(charts []*models.ChartVersion) error {
 		table.Append([]string{chart.Id, chart.Version, chart.TarUrl, chart.Repo.Name + " " + chart.Repo.Url, downloads})
 	}
 	table.Render()
+	o.Printf("Total count: %d\n", len(charts))
 
 	if footnotes != "" {
 		o.Println()
@@ -208,6 +207,7 @@ func (o *HumanOutput) RenderContainerImages(images *models.DockerVersionList) er
 	}
 	table.Render()
 	o.Println()
+	o.Printf("Total count: %d\n", len(images.DockerURLs))
 
 	if footnote != "" {
 		o.Println(footnote)
@@ -221,7 +221,7 @@ func (o *HumanOutput) RenderContainerImages(images *models.DockerVersionList) er
 	return nil
 }
 
-func (o *HumanOutput) RenderOVA(file *models.ProductDeploymentFile) error {
+func (o *HumanOutput) RenderFile(file *models.ProductDeploymentFile) error {
 	footnotes := ""
 	table := o.NewTable("ID", "Name", "Status", "Size", "Type", "Files", "Downloads")
 	downloads := ""
@@ -256,7 +256,7 @@ func (o *HumanOutput) RenderOVA(file *models.ProductDeploymentFile) error {
 	return nil
 }
 
-func (o *HumanOutput) RenderOVAs(files []*models.ProductDeploymentFile) error {
+func (o *HumanOutput) RenderFiles(files []*models.ProductDeploymentFile) error {
 	footnotes := ""
 	table := o.NewTable("ID", "Name", "Status", "Size", "Type", "Files", "Downloads")
 	for _, file := range files {
@@ -285,6 +285,7 @@ func (o *HumanOutput) RenderOVAs(files []*models.ProductDeploymentFile) error {
 		}
 	}
 	table.Render()
+	o.Printf("Total count: %d\n", len(files))
 
 	if footnotes != "" {
 		o.Println()
