@@ -11,7 +11,7 @@ if [ -z "${PRODUCT_SLUG}" ] ; then
 fi
 
 # Get the ID for the first chart
-FILES=$(mkpcli ova list --debug --debug-request-payloads --product "${PRODUCT_SLUG}" --product-version "${PRODUCT_VERSION}" --output json)
+FILES=$(mkpcli vm list --debug --debug-request-payloads --product "${PRODUCT_SLUG}" --product-version "${PRODUCT_VERSION}" --output json)
 FILE_ID=$(echo "${FILES}" | jq -r .[0].fileid)
 STATUS=$(echo "${FILES}" | jq -r .[0].status)
 
@@ -21,15 +21,15 @@ STATUS=$(echo "${FILES}" | jq -r .[0].status)
 
 if [ "${STATUS}" == "APPROVAL_PENDING" ] || [ "${STATUS}" == "ACTIVE" ] ; then
   # Download the file
-  mkpcli ova download --debug --debug-request-payloads \
+  mkpcli vm download --debug --debug-request-payloads \
     --product "${PRODUCT_SLUG}" --product-version "${PRODUCT_VERSION}" \
     --file-id "${FILE_ID}" \
-    --filename my-file.ova
+    --filename my-file
 
-  # Downloaded file is a real OVA
-  test -f my-file.ova
+  # Downloaded virtual machine file is a real file
+  test -f my-file
 elif [ "${STATUS}" == "INACTIVE" ] ; then
-  echo "Chart is not downloadable"
+  echo "VM file is not downloadable"
   echo "${FILES}" | jq -r .[0].comment
   exit 1
 else

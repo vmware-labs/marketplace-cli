@@ -11,19 +11,19 @@ import (
 	. "github.com/vmware-labs/marketplace-cli/v2/test"
 )
 
-var _ = Describe("OVA", func() {
+var _ = Describe("Virtual Machine", func() {
 	steps := NewSteps()
 
-	Scenario("Listing OVAs", func() {
-		steps.When("running mkpcli ova list --product nginxstack --product-version 1.21.0_1")
+	Scenario("Listing virtual machine files", func() {
+		steps.When("running mkpcli vm list --product nginxstack --product-version 1.21.0_1")
 		steps.Then("the command exits without error")
-		steps.And("the table of OVAs is printed")
+		steps.And("the table of virtual machine files is printed")
 	})
 
 	steps.Define(func(define Definitions) {
 		DefineCommonSteps(define, "production")
 
-		define.Then(`^the table of OVAs is printed$`, func() {
+		define.Then(`^the table of virtual machine files is printed$`, func() {
 			Eventually(CommandSession.Out).Should(Say("ID"))
 			Eventually(CommandSession.Out).Should(Say("NAME"))
 			Eventually(CommandSession.Out).Should(Say("STATUS"))

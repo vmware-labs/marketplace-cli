@@ -86,8 +86,8 @@ resources:
       uri: git@gitlab.eng.vmware.com:marketplace-partner-eng/test-products.git
       private_key: ((gitlab.private_key))
       branch: master
-      file: test-container-product/version
-      commit_message: "[ci skip] Updating to version %version%"
+      file: test-container-product-version
+      commit_message: "[ci skip] Updating test container product to version %version%"
 
   - name: test-chart-product-version
     type: semver
@@ -97,8 +97,19 @@ resources:
       uri: git@gitlab.eng.vmware.com:marketplace-partner-eng/test-products.git
       private_key: ((gitlab.private_key))
       branch: master
-      file: test-chart-product/version
-      commit_message: "[ci skip] Updating to version %version%"
+      file: test-chart-product-version
+      commit_message: "[ci skip] Updating test chart product to version %version%"
+
+  - name: test-iso-product-version
+    type: semver
+    icon: gitlab
+    source:
+      driver: git
+      uri: git@gitlab.eng.vmware.com:marketplace-partner-eng/test-products.git
+      private_key: ((gitlab.private_key))
+      branch: master
+      file: test-iso-product-version
+      commit_message: "[ci skip] Updating test iso product to version %version%"
 
   - name: test-ova-product-version
     type: semver
@@ -108,8 +119,8 @@ resources:
       uri: git@gitlab.eng.vmware.com:marketplace-partner-eng/test-products.git
       private_key: ((gitlab.private_key))
       branch: master
-      file: test-ova-product/version
-      commit_message: "[ci skip] Updating to version %version%"
+      file: test-ova-product-version
+      commit_message: "[ci skip] Updating test ova product to version %version%"
 
   - name: daily
     type: time
@@ -396,6 +407,71 @@ jobs:
           PRODUCT_SLUG: nginx
           PRODUCT_VERSION: 1.21.3_0
 
+  - name: test-publish-iso-product
+    plan:
+      - in_parallel:
+          - get: test-iso-product-version
+            params: { bump: patch }
+          - get: mkpcli
+            trigger: true
+            passed: [build]
+          - get: source
+            passed: [build]
+          - get: version
+            passed: [build]
+      - task: download-iso
+        image: mkpcli
+        config:
+          platform: linux
+          outputs:
+            - name: vm
+          run:
+            path: curl
+            dir: vm
+            args: [ -O, https://packages.vmware.com/photon/4.0/GA/iso/photon-minimal-4.0-1526e30ba.iso ]
+      - task: add-version-to-marketplace
+        image: mkpcli
+        file: source/ci/tasks/add-version.yaml
+        input_mapping: {version: test-iso-product-version}
+        params:
+          MARKETPLACE_ENV: staging
+          PRODUCT_SLUG: test-iso-product1
+      - put: test-iso-product-version
+        inputs: detect
+        params:
+          file: test-iso-product-version/version
+      - task: add-iso-to-marketplace
+        image: mkpcli
+        file: source/ci/tasks/test-vm-product.yaml
+        input_mapping: {version: test-iso-product-version}
+        params:
+          MARKETPLACE_ENV: staging
+          PRODUCT_SLUG: test-iso-product1
+      - task: download-attached-file
+        image: mkpcli
+        file: source/ci/tasks/download-vm.yaml
+        params:
+          MARKETPLACE_ENV: staging
+          PRODUCT_SLUG: test-iso-product1
+
+  - name: test-download-iso-product
+    plan:
+      - in_parallel:
+          - get: mkpcli
+            trigger: true
+            passed: [build]
+          - get: source
+            passed: [build]
+          - get: version
+            passed: [build]
+      - task: download-iso
+        image: mkpcli
+        file: source/ci/tasks/download-vm.yaml
+        params:
+          MARKETPLACE_ENV: production
+          PRODUCT_SLUG: veeam-backup-and-replication-version-111
+          PRODUCT_VERSION: 11
+
   - name: test-publish-ova-product
     plan:
       - in_parallel:
@@ -431,14 +507,14 @@ jobs:
           file: test-ova-product-version/version
       - task: add-ova-to-marketplace
         image: mkpcli
-        file: source/ci/tasks/test-ova-product.yaml
+        file: source/ci/tasks/test-vm-product.yaml
         input_mapping: {version: test-ova-product-version}
         params:
           MARKETPLACE_ENV: staging
           PRODUCT_SLUG: test-ova-product-201
       - task: download-attached-file
         image: mkpcli
-        file: source/ci/tasks/download-ova.yaml
+        file: source/ci/tasks/download-vm.yaml
         params:
           MARKETPLACE_ENV: staging
           PRODUCT_SLUG: test-ova-product-201
@@ -455,11 +531,13 @@ jobs:
             passed: [build]
       - task: download-ova
         image: mkpcli
-        file: source/ci/tasks/download-ova.yaml
+        file: source/ci/tasks/download-vm.yaml
         params:
           MARKETPLACE_ENV: production
           PRODUCT_SLUG: nginxstack
           PRODUCT_VERSION: 1.21.3_1
+
+
 
   - name: release
     serial_groups: [ version ]
@@ -469,17 +547,21 @@ jobs:
           passed:
             - test-publish-chart-product
             - test-publish-container-product
+            - test-publish-iso-product
             - test-publish-ova-product
             - test-download-chart-product
             - test-download-container-product
+            - test-download-iso-product
             - test-download-ova-product
         - get: version
           passed:
             - test-publish-chart-product
             - test-publish-container-product
+            - test-publish-iso-product
             - test-publish-ova-product
             - test-download-chart-product
             - test-download-container-product
+            - test-download-iso-product
             - test-download-ova-product
           params:
             bump: final

@@ -20,7 +20,7 @@ import (
 	"github.com/vmware-labs/marketplace-cli/v2/test"
 )
 
-var _ = Describe("OVA", func() {
+var _ = Describe("Virtual Machines", func() {
 	var (
 		stdout     *Buffer
 		stderr     *Buffer
@@ -39,7 +39,7 @@ var _ = Describe("OVA", func() {
 		stderr = NewBuffer()
 	})
 
-	Describe("ListOVACmd", func() {
+	Describe("ListVMCmd", func() {
 		BeforeEach(func() {
 			product := test.CreateFakeProduct(
 				"",
@@ -64,14 +64,14 @@ var _ = Describe("OVA", func() {
 				Body:       ioutil.NopCloser(bytes.NewReader(responseBytes)),
 			}, nil)
 
-			cmd.ListOVACmd.SetOut(stdout)
-			cmd.ListOVACmd.SetErr(stderr)
+			cmd.ListVMCmd.SetOut(stdout)
+			cmd.ListVMCmd.SetErr(stderr)
 		})
 
-		It("outputs the ovas", func() {
-			cmd.OVAProductSlug = "my-super-product"
-			cmd.OVAProductVersion = "1.2.3"
-			err := cmd.ListOVACmd.RunE(cmd.ListOVACmd, []string{""})
+		It("outputs the vm files", func() {
+			cmd.VMProductSlug = "my-super-product"
+			cmd.VMProductVersion = "1.2.3"
+			err := cmd.ListVMCmd.RunE(cmd.ListVMCmd, []string{""})
 			Expect(err).ToNot(HaveOccurred())
 
 			By("sending the correct request", func() {
@@ -99,9 +99,9 @@ var _ = Describe("OVA", func() {
 			})
 
 			It("says there are no products", func() {
-				cmd.OVAProductSlug = "my-super-product"
-				cmd.OVAProductVersion = "1.2.3"
-				err := cmd.ListOVACmd.RunE(cmd.ListOVACmd, []string{""})
+				cmd.VMProductSlug = "my-super-product"
+				cmd.VMProductVersion = "1.2.3"
+				err := cmd.ListVMCmd.RunE(cmd.ListVMCmd, []string{""})
 				Expect(err).To(HaveOccurred())
 				Expect(err.Error()).To(Equal("product \"my-super-product\" not found"))
 			})
@@ -113,9 +113,9 @@ var _ = Describe("OVA", func() {
 			})
 
 			It("prints the error", func() {
-				cmd.OVAProductSlug = "my-super-product"
-				cmd.OVAProductVersion = "1.2.3"
-				err := cmd.ListOVACmd.RunE(cmd.ListOVACmd, []string{""})
+				cmd.VMProductSlug = "my-super-product"
+				cmd.VMProductVersion = "1.2.3"
+				err := cmd.ListVMCmd.RunE(cmd.ListVMCmd, []string{""})
 				Expect(err).To(HaveOccurred())
 				Expect(err.Error()).To(Equal("sending the request for product \"my-super-product\" failed: marketplace request failed: request failed"))
 			})
@@ -123,9 +123,9 @@ var _ = Describe("OVA", func() {
 
 		Context("No product version found", func() {
 			It("says that the version does not exist", func() {
-				cmd.OVAProductSlug = "my-super-product"
-				cmd.OVAProductVersion = "9.9.9"
-				err := cmd.ListOVACmd.RunE(cmd.ListOVACmd, []string{""})
+				cmd.VMProductSlug = "my-super-product"
+				cmd.VMProductVersion = "9.9.9"
+				err := cmd.ListVMCmd.RunE(cmd.ListVMCmd, []string{""})
 				Expect(err).To(HaveOccurred())
 				Expect(err.Error()).To(Equal("product \"my-super-product\" does not have a version 9.9.9"))
 			})

@@ -11,7 +11,7 @@ params:
 
 inputs:
   - name: version
-  - name: chart
+  - name: vm
 
 run:
   path: bash
@@ -20,16 +20,17 @@ run:
     - |
       set -ex
       VERSION=$(cat version/version)
+      VM_FILE=$(find vm -type f -name '*.iso' -or -name '*.ova')
 
-      # Get the list of charts
-      mkpcli chart list --debug --debug-request-payloads \
+      # Get the list of virtual machine files
+      mkpcli vm list --debug --debug-request-payloads \
         --product "${PRODUCT_SLUG}" --product-version "${VERSION}"
 
-      # Upload a chart
-      mkpcli chart attach --debug --debug-request-payloads \
+      # Attach a virtual machine file
+      mkpcli vm attach --debug --debug-request-payloads \
         --product "${PRODUCT_SLUG}" --product-version "${VERSION}" \
-        --chart chart/*.tgz --readme "helm install it"
+        --file "{VM_FILE}"
 
-      # Get the list of charts
-      mkpcli chart list --debug --debug-request-payloads \
+      # Get the list of virtual machine files
+      mkpcli vm list --debug --debug-request-payloads \
         --product "${PRODUCT_SLUG}" --product-version "${VERSION}" | grep -v "Total count: 0"
