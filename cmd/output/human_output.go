@@ -82,7 +82,6 @@ func (o *HumanOutput) RenderProducts(products []*models.Product) error {
 }
 
 func (o *HumanOutput) RenderVersions(product *models.Product) error {
-	o.Println("Versions:")
 	table := o.NewTable("Number", "Status")
 
 	models.Sort(product.AllVersions)

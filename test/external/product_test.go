@@ -36,6 +36,7 @@ var _ = Describe("Product", func() {
 		DefineCommonSteps(define, "production")
 
 		define.Then(`^the list of products is printed$`, func() {
+			Eventually(CommandSession.Out).Should(Say("All products from all organizations filtered by \"nginx\""))
 			Eventually(CommandSession.Out).Should(Say("SLUG"))
 			Eventually(CommandSession.Out).Should(Say("NAME"))
 			Eventually(CommandSession.Out).Should(Say("PUBLISHER"))
@@ -51,7 +52,7 @@ var _ = Describe("Product", func() {
 		})
 
 		define.Then(`^the list of product versions is printed$`, func() {
-			Eventually(CommandSession.Out).Should(Say("Versions:"))
+			Eventually(CommandSession.Out).Should(Say("Versions for NGINX Open Source Helm Chart packaged by Bitnami:"))
 			Eventually(CommandSession.Out).Should(Say("NUMBER"))
 			Eventually(CommandSession.Out).Should(Say("STATUS"))
 
