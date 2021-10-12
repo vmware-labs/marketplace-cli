@@ -14,4 +14,4 @@ inputs:
   - name: source
 
 run:
-  path: source/ci/tasks/download-ova.sh
+  path: source/ci/tasks/download-vm.sh

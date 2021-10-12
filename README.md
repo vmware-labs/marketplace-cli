@@ -10,7 +10,7 @@ Features:
   * Add versions
   * Attach container images
   * Attach Helm charts
-  * Attach OVA files
+  * Attach virtual machine files (ISOs & OVAs)
 * Download assets from a product
 
 ## Authentication

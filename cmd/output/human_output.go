@@ -229,8 +229,11 @@ func (o *HumanOutput) RenderFile(file *models.ProductDeploymentFile) error {
 	table := o.NewTable("ID", "Name", "Status", "Size", "Type", "Files", "Downloads")
 	downloads := ""
 	if file.Status == "INACTIVE" {
-		downloads = "Error*"
-		footnotes += fmt.Sprintf("* %s\n", file.Comment)
+		downloads = "N/A"
+		if file.Comment != "" {
+			downloads = "Error*"
+			footnotes += fmt.Sprintf("* %s\n", file.Comment)
+		}
 	} else {
 		downloads = strconv.FormatInt(file.DownloadCount, 10)
 	}
@@ -239,7 +242,7 @@ func (o *HumanOutput) RenderFile(file *models.ProductDeploymentFile) error {
 		details := &models.ProductItemDetails{}
 		err := json.Unmarshal([]byte(file.ItemJson), details)
 		if err != nil {
-			return fmt.Errorf("failed to parse the list of OVA files: %w", err)
+			return fmt.Errorf("failed to parse the list of virtual machine files: %w", err)
 		}
 
 		var size int64 = 0
@@ -248,7 +251,7 @@ func (o *HumanOutput) RenderFile(file *models.ProductDeploymentFile) error {
 		}
 		table.Append([]string{file.FileID, details.Name, file.Status, FormatSize(size), details.Type, strconv.Itoa(len(details.Files)), downloads})
 	} else {
-		table.Append([]string{file.FileID, file.Name, file.Status, "unknown*", "unknown*", "unknown*", downloads})
+		table.Append([]string{file.FileID, file.Name, file.Status, "unknown", "unknown", "unknown", downloads})
 	}
 	table.Render()
 
@@ -265,8 +268,11 @@ func (o *HumanOutput) RenderFiles(files []*models.ProductDeploymentFile) error {
 	for _, file := range files {
 		downloads := ""
 		if file.Status == "INACTIVE" {
-			downloads = "Error*"
-			footnotes += fmt.Sprintf("* %s\n", file.Comment)
+			downloads = "N/A"
+			if file.Comment != "" {
+				downloads = "Error*"
+				footnotes += fmt.Sprintf("* %s\n", file.Comment)
+			}
 		} else {
 			downloads = strconv.FormatInt(file.DownloadCount, 10)
 		}
@@ -275,7 +281,7 @@ func (o *HumanOutput) RenderFiles(files []*models.ProductDeploymentFile) error {
 			details := &models.ProductItemDetails{}
 			err := json.Unmarshal([]byte(file.ItemJson), details)
 			if err != nil {
-				return fmt.Errorf("failed to parse the list of OVA files: %w", err)
+				return fmt.Errorf("failed to parse the list of virtual machine files: %w", err)
 			}
 
 			var size int64 = 0
@@ -284,7 +290,7 @@ func (o *HumanOutput) RenderFiles(files []*models.ProductDeploymentFile) error {
 			}
 			table.Append([]string{file.FileID, details.Name, file.Status, FormatSize(size), details.Type, strconv.Itoa(len(details.Files)), downloads})
 		} else {
-			table.Append([]string{file.FileID, file.Name, file.Status, "unknown*", "unknown*", "unknown*", downloads})
+			table.Append([]string{file.FileID, file.Name, file.Status, "unknown", "unknown", "unknown", downloads})
 		}
 	}
 	table.Render()

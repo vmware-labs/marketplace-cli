@@ -304,9 +304,9 @@ type RateCardDimension struct {
 	DimensionUnit  string  `json:"dimensionunit"`
 }
 
-const (
-	SolutionTypeHelm = "HELMCHARTS"
-)
+//const (
+//	SolutionTypeHelm = "HELMCHARTS"
+//)
 
 type Product struct {
 	ProductId        string          `json:"productid"`
