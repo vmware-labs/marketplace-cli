@@ -62,8 +62,8 @@ func (o *HumanOutput) RenderProduct(product *models.Product) error {
 	o.Printf("https://%s/services/details/%s?slug=true\n", o.marketplaceHost, product.Slug)
 	o.Println()
 	o.Println("Product Details:")
-	table := o.NewTable("Product ID", "Slug", "Type", "Latest Version")
-	table.Append([]string{product.ProductId, product.Slug, product.SolutionType, product.GetLatestVersion().Number})
+	table := o.NewTable("Product ID", "Slug", "Type", "Latest Version", "Status")
+	table.Append([]string{product.ProductId, product.Slug, product.SolutionType, product.GetLatestVersion().Number, product.Status})
 	table.Render()
 	o.Println()
 	o.Println("Description:")
@@ -72,9 +72,9 @@ func (o *HumanOutput) RenderProduct(product *models.Product) error {
 }
 
 func (o *HumanOutput) RenderProducts(products []*models.Product) error {
-	table := o.NewTable("Slug", "Name", "Publisher", "Type", "Latest Version")
+	table := o.NewTable("Slug", "Name", "Publisher", "Type", "Latest Version", "Status")
 	for _, product := range products {
-		table.Append([]string{product.Slug, product.DisplayName, product.PublisherDetails.OrgDisplayName, product.SolutionType, product.GetLatestVersion().Number})
+		table.Append([]string{product.Slug, product.DisplayName, product.PublisherDetails.OrgDisplayName, product.SolutionType, product.GetLatestVersion().Number, product.Status})
 	}
 	table.Render()
 	o.Printf("Total count: %d\n", len(products))
