@@ -489,10 +489,10 @@ jobs:
         config:
           platform: linux
           outputs:
-            - name: ova
+            - name: vm
           run:
             path: curl
-            dir: ova
+            dir: vm
             args: [ -O, https://packages.vmware.com/photon/4.0/GA/ova/photon-hw13-uefi-4.0-1526e30ba0.ova ]
       - task: add-version-to-marketplace
         image: mkpcli

@@ -29,7 +29,7 @@ run:
       # Attach a virtual machine file
       mkpcli vm attach --debug --debug-request-payloads \
         --product "${PRODUCT_SLUG}" --product-version "${VERSION}" \
-        --file "{VM_FILE}"
+        --file "${VM_FILE}"
 
       # Get the list of virtual machine files
       mkpcli vm list --debug --debug-request-payloads \
