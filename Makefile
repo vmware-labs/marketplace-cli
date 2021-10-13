@@ -24,6 +24,8 @@ endif
 HAS_COUNTERFEITER := $(shell command -v counterfeiter;)
 HAS_GINKGO := $(shell command -v ginkgo;)
 HAS_GOLANGCI_LINT := $(shell command -v golangci-lint;)
+HAS_SHELLCHECK := $(shell command -v shellcheck;)
+PLATFORM := $(shell uname -s)
 
 # If go get is run from inside the project directory it will add the dependencies
 # to the go.mod file. To avoid that we import from another directory
@@ -40,6 +42,16 @@ endif
 deps-golangci-lint: deps-go-binary
 ifndef HAS_GOLANGCI_LINT
 	cd /; go get github.com/golangci/golangci-lint/cmd/golangci-lint
+endif
+
+deps-shellcheck:
+ifndef HAS_SHELLCHECK
+ifeq ($(PLATFORM), Darwin)
+	brew install shellcheck
+endif
+ifeq ($(PLATFORM), Linux)
+	apt-get update && apt-get install -y shellcheck
+endif
 endif
 
 # #### CLEAN ####
@@ -100,8 +112,9 @@ endif
 
 test: deps lint test-units test-features test-external
 
-lint: deps-golangci-lint
+lint: deps-golangci-lint deps-shellcheck
 	golangci-lint run
+	shellcheck ci/tasks/*.sh
 
 # #### DEVOPS ####
 .PHONY: set-pipeline
