@@ -195,33 +195,55 @@ jobs:
           - get: version
             params:
               pre: rc
-      - task: build-cli
-        file: source/ci/tasks/build.yaml
-      - task: build-image
-        privileged: true
-        config:
-          platform: linux
-          image_resource:
-            type: registry-image
-            source:
-              repository: harbor-repo.vmware.com/dockerhub-proxy-cache/concourse/oci-build-task
-              username: ((harbor.username))
-              password: ((harbor.token))
-          inputs:
-            - name: build
-            - name: source
-          outputs:
-            - name: image
-          params:
-            DOCKERFILE: source/Dockerfile
-          run:
-            path: build
-
-      - put: mkpcli
-        inputs: [ image, version ]
-        params:
-          image: image/image.tar
-          additional_tags: version/version  # Update the parameter list if/when concourse is updated
+      - in_parallel:
+        - task: build-binaries
+          file: source/ci/tasks/build.yaml
+        - do:
+          - task: make-args-file
+            config:
+              platform: linux
+              image_resource:
+                type: registry-image
+                source:
+                  repository: harbor-repo.vmware.com/dockerhub-proxy-cache/library/ubuntu
+                  username: ((harbor.username))
+                  password: ((harbor.token))
+              inputs:
+                - name: version
+              outputs:
+                - name: args-file
+              run:
+                path: bash
+                args:
+                  - -exc
+                  - |
+                    echo "VERSION=$(cat version/version)" > args-file/args.env
+          - task: build-image
+            privileged: true
+            config:
+              platform: linux
+              image_resource:
+                type: registry-image
+                source:
+                  repository: harbor-repo.vmware.com/dockerhub-proxy-cache/concourse/oci-build-task
+                  username: ((harbor.username))
+                  password: ((harbor.token))
+              inputs:
+                - name: args-file
+                - name: source
+                  path: .
+              outputs:
+                - name: image
+              params:
+                BUILD_ARGS_FILE: args-file/args.env
+                REGISTRY_MIRRORS: mirror.kokoni.info
+              run:
+                path: build
+          - put: mkpcli
+            inputs: [ image, version ]
+            params:
+              image: image/image.tar
+              additional_tags: version/version  # Update the parameter list if/when concourse is updated
       - put: version
         inputs: detect
         params:
