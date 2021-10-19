@@ -4,7 +4,7 @@ inputs:
   version:
     description: "1=latest version of v1, 2=latest version of v2, #.#.#=specific version"
     required: false
-    default: "0.2.4"
+    default: "0.4.9"
   marketplace_api_token:
     description: "API token to manage products on VMWare market place"
     required: true    
@@ -24,6 +24,6 @@ runs:
       run: sudo --preserve-env ${{ github.action_path }}/entrypoint.sh
       shell: bash
     - id: set-output
-      run: echo "::set-output name=version::$(mkpcli --version)"
+      run: echo "::set-output name=version::$(mkpcli version)"
       shell: bash
       
