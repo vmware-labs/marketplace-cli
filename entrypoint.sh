@@ -62,8 +62,8 @@ install_mkp_cli(){
 }
 
 test_mkp_cli(){
-    msg_log "Printing MKP CLI installed version"
-    mkpcli version
+    msg_log "Printing Help"
+    mkpcli --help
 }
 
 #Main
