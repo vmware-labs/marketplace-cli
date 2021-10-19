@@ -22,10 +22,11 @@ var SubscriptionCmd = &cobra.Command{
 }
 
 var ListSubscriptionsCmd = &cobra.Command{
-	Use:   "list",
-	Short: "List subscriptions",
-	Long:  "Lists subscriptions",
-	Args:  cobra.NoArgs,
+	Use:    "list",
+	Short:  "List subscriptions",
+	Long:   "Lists subscriptions",
+	Args:   cobra.NoArgs,
+	Hidden: true,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		cmd.SilenceUsage = true
 		subscriptions, err := Marketplace.ListSubscriptions()
