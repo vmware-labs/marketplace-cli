@@ -81,15 +81,21 @@ LDFLAGS="-X github.com/vmware-labs/marketplace-cli/v2/cmd.version=$(VERSION)"
 build/mkpcli: $(SRC)
 	go build -o build/mkpcli -ldflags ${LDFLAGS} ./main.go
 
-build/mkpcli-darwin: $(SRC)
-	GOARCH=amd64 GOOS=darwin go build -o build/mkpcli-darwin -ldflags ${LDFLAGS} ./main.go
+build/mkpcli-darwin-amd64: $(SRC)
+	GOARCH=amd64 GOOS=darwin go build -o build/mkpcli-darwin-amd64 -ldflags ${LDFLAGS} ./main.go
 
-build/mkpcli-linux: $(SRC)
-	GOARCH=amd64 GOOS=linux go build -o build/mkpcli-linux -ldflags ${LDFLAGS} ./main.go
+build/mkpcli-darwin-arm64: $(SRC)
+	GOARCH=arm64 GOOS=darwin go build -o build/mkpcli-darwin-arm64 -ldflags ${LDFLAGS} ./main.go
+
+build/mkpcli-linux-amd64: $(SRC)
+	GOARCH=amd64 GOOS=linux go build -o build/mkpcli-linux-amd64 -ldflags ${LDFLAGS} ./main.go
+
+build/mkpcli-windows-amd64: $(SRC)
+	GOARCH=amd64 GOOS=windows go build -o build/mkpcli-windows-amd64 -ldflags ${LDFLAGS} ./main.go
 
 build: deps build/mkpcli
 
-build-all: build/mkpcli-darwin build/mkpcli-linux
+build-all: build/mkpcli-darwin-amd64 build/mkpcli-darwin-arm64 build/mkpcli-linux-amd64 build/mkpcli-windows-amd64
 
 build-image: build/mkpcli-linux
 	docker build . --tag harbor-repo.vmware.com/tanzu_isv_engineering/mkpcli:$(VERSION)
