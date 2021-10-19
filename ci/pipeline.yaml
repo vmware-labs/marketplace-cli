@@ -172,6 +172,8 @@ jobs:
           params:
             CSP_API_TOKEN: ((marketplace_api_token))
             MARKETPLACE_ENV: staging
+        - task: build-binaries
+          file: source/ci/tasks/build.yaml
         on_failure:
           put: pull-requests
           inputs: detect
