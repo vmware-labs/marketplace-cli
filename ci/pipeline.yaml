@@ -147,6 +147,7 @@ jobs:
     serial: true
     plan:
       - in_parallel:
+          - get: version
           - get: source
             resource: pull-requests
             trigger: true
