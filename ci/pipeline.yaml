@@ -591,9 +591,28 @@ jobs:
           params:
             bump: final
       - in_parallel:
+        - task: build-cli
+          file: source/ci/tasks/build.yaml
         - do:
-          - task: build-cli
-            file: source/ci/tasks/build.yaml
+          - task: make-args-file
+            config:
+              platform: linux
+              image_resource:
+                type: registry-image
+                source:
+                  repository: harbor-repo.vmware.com/dockerhub-proxy-cache/library/ubuntu
+                  username: ((harbor.username))
+                  password: ((harbor.token))
+              inputs:
+                - name: version
+              outputs:
+                - name: args-file
+              run:
+                path: bash
+                args:
+                  - -exc
+                  - |
+                    echo "VERSION=$(cat version/version)" > args-file/args.env
           - task: build-image
             privileged: true
             config:
@@ -605,12 +624,14 @@ jobs:
                   username: ((harbor.username))
                   password: ((harbor.token))
               inputs:
-                - name: build
+                - name: args-file
                 - name: source
+                  path: .
               outputs:
                 - name: image
               params:
-                DOCKERFILE: source/Dockerfile
+                BUILD_ARGS_FILE: args-file/args.env
+                REGISTRY_MIRRORS: mirror.kokoni.info
               run:
                 path: build
         - do:
@@ -637,7 +658,6 @@ jobs:
                   - -exc
                   - |
                     git log $(cat ../release/tag)..HEAD --oneline | grep -v "\[ci skip\] bump version" > ../release-notes/notes.txt
-
       - put: mkpcli-public
         params:
           image: image/image.tar
