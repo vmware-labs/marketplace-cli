@@ -15,12 +15,12 @@ jobs:
     runs-on: ubuntu-latest
     name: latest v1
     env:
-      MARKETPLACE_CLI_VERSION: "0.2.4"    
+      MARKETPLACE_CLI_VERSION: "0.4.9"    
     steps:
       - uses: actions/checkout@v2
         with:
           marketplace_api_token: "testtoken"
-          version: "0.2.4"
+          version: "v0.4.9"
       - name: test on Runner
         run: |
           sudo ./entrypoint.sh 

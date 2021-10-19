@@ -14,7 +14,7 @@ _ROOT_DIR="${PWD}"
 _WORKDIR="${_ROOT_DIR}/vmware-mkpcli"
 #_MARKETPLACE_CLI_VERSION=${"0.2.4":-$MARKETPLACE_CLI_VERSION} # Use env or arg
 
-_MARKETPLACE_CLI_VERSION="0.2.4"
+_MARKETPLACE_CLI_VERSION="v0.4.9"
 
 _MKP_CLI_VERSION=${_MARKETPLACE_CLI_VERSION}
 _DOWNLOAD_URL=""
@@ -62,8 +62,8 @@ install_mkp_cli(){
 }
 
 test_mkp_cli(){
-    msg_log "Printing MKP CLI installed version"
-    mkpcli version
+    msg_log "Printing Help"
+    mkpcli --help
 }
 
 #Main
