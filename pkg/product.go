@@ -57,13 +57,13 @@ func (m *Marketplace) ListProducts(allOrgs bool, searchTerm string) ([]*models.P
 			return nil, fmt.Errorf("sending the request for the list of products failed: %w", err)
 		}
 
-		if resp.StatusCode != http.StatusOK {
-			return nil, fmt.Errorf("getting the list of products failed: (%d) %s", resp.StatusCode, resp.Status)
-		}
-
 		body, err := ioutil.ReadAll(resp.Body)
 		if err != nil {
 			return nil, fmt.Errorf("failed to read the list of products: %w", err)
+		}
+
+		if resp.StatusCode != http.StatusOK {
+			return nil, fmt.Errorf("getting the list of products failed: (%d) %s: %s", resp.StatusCode, resp.Status, body)
 		}
 
 		response := &ListProductResponse{}
@@ -71,6 +71,14 @@ func (m *Marketplace) ListProducts(allOrgs bool, searchTerm string) ([]*models.P
 		if err != nil {
 			return nil, fmt.Errorf("failed to parse the list of products: %w", err)
 		}
+
+		// Return immediately if we get an empty list.
+		// On empty lists, we cannot necessarily trust response.Response.Params.ProductCount
+		// See: https://github.com/vmware-labs/marketplace-cli/issues/62
+		if len(response.Response.Products) == 0 {
+			return products, nil
+		}
+
 		products = append(products, response.Response.Products...)
 
 		if firstTime {

@@ -115,13 +115,14 @@ var _ = Describe("Products", func() {
 				httpClient.DoReturns(&http.Response{
 					StatusCode: http.StatusTeapot,
 					Status:     http.StatusText(http.StatusTeapot),
+					Body:       ioutil.NopCloser(bytes.NewReader([]byte("Teapots!"))),
 				}, nil)
 			})
 
 			It("prints the error", func() {
 				err := cmd.ListProductsCmd.RunE(cmd.ListProductsCmd, []string{})
 				Expect(err).To(HaveOccurred())
-				Expect(err.Error()).To(Equal("getting the list of products failed: (418) I'm a teapot"))
+				Expect(err.Error()).To(Equal("getting the list of products failed: (418) I'm a teapot: Teapots!"))
 			})
 		})
 
