@@ -27,7 +27,7 @@ func RunSerially(funcs ...func(cmd *cobra.Command, args []string) error) func(cm
 }
 
 func EnableDebugging(command *cobra.Command, _ []string) error {
-	if viper.GetBool("debug") {
+	if viper.GetBool("debugging.enabled") {
 		Marketplace.Client = pkg.EnableDebugging(viper.GetBool("debug-request-payloads"), Marketplace.Client, command.ErrOrStderr())
 	}
 	return nil
@@ -79,28 +79,21 @@ func init() {
 	_ = rootCmd.PersistentFlags().MarkHidden("csp-host")
 	_ = viper.BindPFlag("csp.host", rootCmd.PersistentFlags().Lookup("csp-host"))
 
-	viper.SetDefault("marketplace.gateway", "gtw.marketplace.cloud.vmware.com")
-	viper.SetDefault("marketplace.api", "api.marketplace.cloud.vmware.com")
-	viper.SetDefault("marketplace.ui", "marketplace.cloud.vmware.com")
-	viper.SetDefault("marketplace.storage.bucket", "cspmarketplaceprd")
-	viper.SetDefault("marketplace.storage.region", "us-west-2")
-
-	if os.Getenv("MARKETPLACE_ENV") == "staging" {
-		viper.SetDefault("marketplace.gateway", "gtw.marketplace.cloud.vmware.com")
-		viper.SetDefault("marketplace.api", "api.marketplace.cloud.vmware.com")
-		viper.SetDefault("marketplace.ui", "marketplace.cloud.vmware.com")
-		viper.SetDefault("marketplace.storage.bucket", "cspmarketplaceprd")
-		viper.SetDefault("marketplace.storage.region", "us-west-2")
-	}
-
 	Marketplace = &pkg.Marketplace{
-		Host:          viper.GetString("marketplace.gateway"),
-		APIHost:       viper.GetString("marketplace.api"),
-		UIHost:        viper.GetString("marketplace.ui"),
-		StorageBucket: viper.GetString("marketplace.storage.bucket"),
-		StorageRegion: viper.GetString("marketplace.storage.region"),
+		Host:          "gtw.marketplace.cloud.vmware.com",
+		APIHost:       "api.marketplace.cloud.vmware.com",
+		UIHost:        "marketplace.cloud.vmware.com",
+		StorageBucket: "cspmarketplaceprd",
+		StorageRegion: "us-west-2",
 		Client:        pkg.NewClient(),
 		Output:        os.Stderr,
+	}
+	if os.Getenv("MARKETPLACE_ENV") == "staging" {
+		Marketplace.Host = "gtwstg.market.csp.vmware.com"
+		Marketplace.APIHost = "gtwstg.market.csp.vmware.com"
+		Marketplace.UIHost = "stg.market.csp.vmware.com"
+		Marketplace.StorageBucket = "cspmarketplacestage"
+		Marketplace.StorageRegion = "us-east-2"
 	}
 
 	viper.SetDefault("output_format", output.FormatHuman)
