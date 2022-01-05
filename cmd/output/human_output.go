@@ -12,6 +12,7 @@ import (
 
 	"github.com/olekukonko/tablewriter"
 	"github.com/vmware-labs/marketplace-cli/v2/internal/models"
+	"jaytaylor.com/html2text"
 )
 
 type HumanOutput struct {
@@ -67,7 +68,15 @@ func (o *HumanOutput) RenderProduct(product *models.Product) error {
 	table.Render()
 	o.Println()
 	o.Println("Description:")
-	o.Println(product.Description.Description)
+	description, err := html2text.FromString(product.Description.Description, html2text.Options{
+		PrettyTables: true,
+	})
+	if err != nil {
+		o.Printf("(unable to render description HTML: %s)\n", err.Error())
+		o.Println(product.Description.Description)
+	} else {
+		o.Println(description)
+	}
 	return nil
 }
 
