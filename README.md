@@ -20,9 +20,11 @@ Features:
 The token can be set via CLI flag (i.e. `--csp-api-token`) or environment variable (i.e. `CSP_API_TOKEN`).
 
 ## Example
-<a href="https://asciinema.org/a/68HbJWxv13rmrOwukYhO72ndD" target="_blank">
-  <img src="https://asciinema.org/a/68HbJWxv13rmrOwukYhO72ndD.svg" alt="Demo of mkpcli" />
-</a>
+```bash
+$ export CSP_API_TOKEN=...
+$ mkpcli product add-version --product hyperspace-database --version 1.0.1
+$ mkpcli chart attach --product hyperspace-database --version 1.0.1 --chart ./hyperspace-database-1.0.1.tgz
+```
 
 ## Building
 
