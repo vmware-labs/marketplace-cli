@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Copyright 2021 VMware, Inc.
+# Copyright 2022 VMware, Inc.
 # SPDX-License-Identifier: BSD-2-Clause
 
 echo -n CSP_API_TOKEN=

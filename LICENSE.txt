@@ -1,5 +1,5 @@
 Marketplace CLI
-Copyright 2021 VMware, Inc.
+Copyright 2022 VMware, Inc.
 
 The BSD-2 license (the "License") set forth below applies to all parts of the vSphere with Marketplace CLI project. You may not use this file except in compliance with the License.
 
