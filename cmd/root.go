@@ -56,33 +56,54 @@ enabling users to view, get, and manage their Marketplace entries.`, AppName),
 }
 
 func init() {
-	// debug
-	_ = viper.BindEnv("debug", "MKPCLI_DEBUG")
+	viper.SetDefault("debugging.enabled", false)
+	_ = viper.BindEnv("debugging.enabled", "MKPCLI_DEBUG")
 	rootCmd.PersistentFlags().Bool("debug", false, "Enable debug output [$MKPCLI_DEBUG}")
 	_ = rootCmd.PersistentFlags().MarkHidden("debug")
-	_ = viper.BindPFlag("debug", rootCmd.PersistentFlags().Lookup("debug"))
+	_ = viper.BindPFlag("debugging.enabled", rootCmd.PersistentFlags().Lookup("debug"))
 
-	// debug-request-payloads
-	_ = viper.BindEnv("debug", "MKPCLI_DEBUG_REQUEST_PAYLOADS")
+	viper.SetDefault("debugging.print-request-payloads", false)
+	_ = viper.BindEnv("debugging.print-request-payloads", "MKPCLI_DEBUG_REQUEST_PAYLOADS")
 	rootCmd.PersistentFlags().Bool("debug-request-payloads", false, "Also print request payloads [$MKPCLI_DEBUG_REQUEST_PAYLOADS]")
 	_ = rootCmd.PersistentFlags().MarkHidden("debug-request-payloads")
-	_ = viper.BindPFlag("debug-request-payloads", rootCmd.PersistentFlags().Lookup("debug-request-payloads"))
+	_ = viper.BindPFlag("debugging.print-request-payloads", rootCmd.PersistentFlags().Lookup("debug-request-payloads"))
 
-	// csp-api-token
+	viper.SetDefault("csp.api-token", "")
 	_ = viper.BindEnv("csp.api-token", "CSP_API_TOKEN")
 	rootCmd.PersistentFlags().String("csp-api-token", "", "VMware Cloud Service Platform API Token, used for authenticating to the VMware Marketplace [$CSP_API_TOKEN]")
 	_ = viper.BindPFlag("csp.api-token", rootCmd.PersistentFlags().Lookup("csp-api-token"))
 
+	viper.SetDefault("csp.host", "console.cloud.vmware.com")
 	_ = viper.BindEnv("csp.host", "CSP_HOST")
 	rootCmd.PersistentFlags().String("csp-host", "console.cloud.vmware.com", "Host for VMware Cloud Service Platform")
 	_ = rootCmd.PersistentFlags().MarkHidden("csp-host")
 	_ = viper.BindPFlag("csp.host", rootCmd.PersistentFlags().Lookup("csp-host"))
 
-	Marketplace = pkg.ProductionConfig
+	viper.SetDefault("marketplace.gateway", "gtw.marketplace.cloud.vmware.com")
+	viper.SetDefault("marketplace.api", "api.marketplace.cloud.vmware.com")
+	viper.SetDefault("marketplace.ui", "marketplace.cloud.vmware.com")
+	viper.SetDefault("marketplace.storage.bucket", "cspmarketplaceprd")
+	viper.SetDefault("marketplace.storage.region", "us-west-2")
+
 	if os.Getenv("MARKETPLACE_ENV") == "staging" {
-		Marketplace = pkg.StagingConfig
+		viper.SetDefault("marketplace.gateway", "gtw.marketplace.cloud.vmware.com")
+		viper.SetDefault("marketplace.api", "api.marketplace.cloud.vmware.com")
+		viper.SetDefault("marketplace.ui", "marketplace.cloud.vmware.com")
+		viper.SetDefault("marketplace.storage.bucket", "cspmarketplaceprd")
+		viper.SetDefault("marketplace.storage.region", "us-west-2")
 	}
 
+	Marketplace = &pkg.Marketplace{
+		Host:          viper.GetString("marketplace.gateway"),
+		APIHost:       viper.GetString("marketplace.api"),
+		UIHost:        viper.GetString("marketplace.ui"),
+		StorageBucket: viper.GetString("marketplace.storage.bucket"),
+		StorageRegion: viper.GetString("marketplace.storage.region"),
+		Client:        pkg.NewClient(),
+		Output:        os.Stderr,
+	}
+
+	viper.SetDefault("output_format", output.FormatHuman)
 	_ = viper.BindEnv("output_format", "MKPCLI_OUTPUT")
 	rootCmd.PersistentFlags().StringP("output", "o", output.FormatHuman, fmt.Sprintf("Output format. One of %s. [$MKPCLI_OUTPUT]", strings.Join(output.SupportedOutputs, "|")))
 	_ = viper.BindPFlag("output_format", rootCmd.PersistentFlags().Lookup("output"))

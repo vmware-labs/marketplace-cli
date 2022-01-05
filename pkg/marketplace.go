@@ -8,7 +8,6 @@ import (
 	"io"
 	"net/http"
 	"net/url"
-	"os"
 
 	"github.com/spf13/viper"
 	"github.com/vmware-labs/marketplace-cli/v2/internal"
@@ -23,34 +22,6 @@ type Marketplace struct {
 	Client        HTTPClient
 	Output        io.Writer
 	Uploader      internal.Uploader
-}
-
-var (
-	ProductionConfig *Marketplace
-	StagingConfig    *Marketplace
-)
-
-func init() {
-	client := NewClient()
-
-	ProductionConfig = &Marketplace{
-		Host:          "gtw.marketplace.cloud.vmware.com",
-		APIHost:       "api.marketplace.cloud.vmware.com",
-		UIHost:        "marketplace.cloud.vmware.com",
-		StorageBucket: "cspmarketplaceprd",
-		StorageRegion: "us-west-2",
-		Client:        client,
-		Output:        os.Stderr,
-	}
-	StagingConfig = &Marketplace{
-		Host:          "gtwstg.market.csp.vmware.com",
-		APIHost:       "apistg.market.csp.vmware.com",
-		UIHost:        "stg.market.csp.vmware.com",
-		StorageBucket: "cspmarketplacestage",
-		StorageRegion: "us-east-2",
-		Client:        client,
-		Output:        os.Stderr,
-	}
 }
 
 func (m *Marketplace) MakeURL(path string, params url.Values) *url.URL {
