@@ -34,9 +34,6 @@ var _ = Describe("Container Image", func() {
 			Eventually(CommandSession.Out).Should(Say("TAGS"))
 			Eventually(CommandSession.Out).Should(Say("DOWNLOADS"))
 			Eventually(CommandSession.Out).Should(Say("https://hub.docker.com/u/redislabs"))
-			Eventually(CommandSession.Out).Should(Say("https://hub.docker.com/r/redislabs/redis"))
-			Eventually(CommandSession.Out).Should(Say("https://hub.docker.com/r/redislabs/k8s-controller"))
-			Eventually(CommandSession.Out).Should(Say("https://hub.docker.com/r/redislabs/operator"))
 
 			Eventually(CommandSession.Out).Should(Say("Deployment instructions:"))
 			Eventually(CommandSession.Out).Should(Say("Redis Enterprise for PKS is deployed and maintained using a Kubernetes Operator."))
