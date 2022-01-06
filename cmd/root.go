@@ -28,7 +28,7 @@ func RunSerially(funcs ...func(cmd *cobra.Command, args []string) error) func(cm
 
 func EnableDebugging(command *cobra.Command, _ []string) error {
 	if viper.GetBool("debugging.enabled") {
-		Marketplace.Client = pkg.EnableDebugging(viper.GetBool("debug-request-payloads"), Marketplace.Client, command.ErrOrStderr())
+		Marketplace.Client = pkg.EnableDebugging(viper.GetBool("debugging.print-request-payloads"), Marketplace.Client, command.ErrOrStderr())
 	}
 	return nil
 }
