@@ -13,18 +13,23 @@ Features:
   * Attach virtual machine files (ISOs & OVAs)
 * Download assets from a product
 
-## Authentication
-
-`mkpcli` requires an API Token from [VMware Cloud Services](https://console.cloud.vmware.com/csp/gateway/portal/#/user/tokens). See [this doc](./docs/Authentication.md) for more information.
-
-The token can be set via CLI flag (i.e. `--csp-api-token`) or environment variable (i.e. `CSP_API_TOKEN`).
-
 ## Example
 ```bash
 $ export CSP_API_TOKEN=...
 $ mkpcli product add-version --product hyperspace-database --version 1.0.1
 $ mkpcli chart attach --product hyperspace-database --version 1.0.1 --chart ./hyperspace-database-1.0.1.tgz
 ```
+
+For more information, see [Updating Products](docs/UpdatingProducts.md)
+
+
+## Authentication
+
+`mkpcli` requires an API Token from [VMware Cloud Services](https://console.cloud.vmware.com/csp/gateway/portal/#/user/tokens). See [this doc](./docs/Authentication.md) for more information.
+
+The token can be set via CLI flag (i.e. `--csp-api-token`) or environment variable (i.e. `CSP_API_TOKEN`).
+
+For more information, see [Authentication](docs/Authentication.md)
 
 ## Building
 

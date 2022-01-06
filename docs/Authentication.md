@@ -4,8 +4,9 @@ The Marketplace CLI authenticates using a VMware Cloud Services API Token.
 
 ## Generating a token
 
+![](images/csp-api-token.png)
 To generate a new API Token:
-1. Go to the [API Tokens](https://console.cloud.vmware.com/csp/gateway/portal/#/user/tokens) page on My Account
+1. Go to the [API Tokens](https://console.cloud.vmware.com/csp/gateway/portal/#/user/tokens) page on [My Account](https://console.cloud.vmware.com/csp/gateway/portal/#/user/profile)
 2. Click "Generate Token"
 3. Set the token's name
 4. Set the token's expiration

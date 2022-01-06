@@ -90,7 +90,7 @@ func init() {
 	}
 	if os.Getenv("MARKETPLACE_ENV") == "staging" {
 		Marketplace.Host = "gtwstg.market.csp.vmware.com"
-		Marketplace.APIHost = "gtwstg.market.csp.vmware.com"
+		Marketplace.APIHost = "apistg.market.csp.vmware.com"
 		Marketplace.UIHost = "stg.market.csp.vmware.com"
 		Marketplace.StorageBucket = "cspmarketplacestage"
 		Marketplace.StorageRegion = "us-east-2"
