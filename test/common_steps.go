@@ -4,7 +4,6 @@
 package test
 
 import (
-	"fmt"
 	"os"
 	"os/exec"
 	"strings"
@@ -36,11 +35,16 @@ var _ = AfterSuite(func() {
 })
 
 func DefineCommonSteps(define Definitions, marketplaceEnvironment string) {
+	var envVars []string
+
+	define.When(`^The environment variable ([_A-Z]*) is set to (.*)$`, func(key, value string) {
+		envVars = append(envVars, key+"="+value)
+	})
+
 	define.When(`^running mkpcli (.*)$`, func(argString string) {
 		command := exec.Command(mkpcliPath, strings.Split(argString, " ")...)
-		command.Env = append(os.Environ(),
-			fmt.Sprintf("MARKETPLACE_ENV=%s", marketplaceEnvironment),
-		)
+		envVars = append(envVars, "MARKETPLACE_ENV="+marketplaceEnvironment)
+		command.Env = append(os.Environ(), envVars...)
 
 		var err error
 		CommandSession, err = gexec.Start(command, GinkgoWriter, GinkgoWriter)

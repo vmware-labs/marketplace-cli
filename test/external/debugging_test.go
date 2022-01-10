@@ -23,8 +23,24 @@ var _ = Describe("Debugging", func() {
 		steps.And("the request is printed")
 	})
 
+	Scenario("Debugging enabled with environment variable", func() {
+		steps.When("The environment variable MKPCLI_DEBUG is set to true")
+		steps.And("running mkpcli product get --product vmware-tanzu-rabbitmq-for-kubernetes1")
+		steps.Then("the command exits without error")
+		steps.And("the request is printed")
+	})
+
 	Scenario("Debugging enabled with request payloads", func() {
 		steps.When("running mkpcli --debug --debug-request-payloads container-image download -p vmware-tanzu-rabbitmq-for-kubernetes1 -v 1.0.0")
+		steps.Then("the command exits without error")
+		steps.And("the container image is downloaded")
+		steps.And("the requests are printed with request payloads")
+	})
+
+	Scenario("Debugging enabled with request payloads with environment variables", func() {
+		steps.When("The environment variable MKPCLI_DEBUG is set to true")
+		steps.And("The environment variable MKPCLI_DEBUG_REQUEST_PAYLOADS is set to true")
+		steps.And("running mkpcli container-image download -p vmware-tanzu-rabbitmq-for-kubernetes1 -v 1.0.0")
 		steps.Then("the command exits without error")
 		steps.And("the container image is downloaded")
 		steps.And("the requests are printed with request payloads")
