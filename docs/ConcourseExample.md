@@ -67,6 +67,6 @@ jobs:
                   VERSION=$(cat version/version)
 
                   mkpcli chart list --product "${PRODUCT_SLUG}" --product-version "${VERSION}"
-                  mkpcli chart attach --product "${PRODUCT_SLUG}" --product-version "${VERSION}" --chart chart/*.tgz --readme "helm install it"            
+                  mkpcli chart attach --product "${PRODUCT_SLUG}" --product-version "${VERSION}" --chart hyperspace-db-chart/*.tgz --readme "helm install it"
                   mkpcli chart list --product "${PRODUCT_SLUG}" --product-version "${VERSION}"
 ```
