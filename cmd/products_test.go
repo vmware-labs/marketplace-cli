@@ -59,7 +59,10 @@ var _ = Describe("Products", func() {
 			}
 			response := &pkg.ListProductResponse{
 				Response: &pkg.ListProductResponsePayload{
-					Products:   products,
+					Products: products,
+					Params: &pkg.ListProductResponseParams{
+						ProductCount: len(products),
+					},
 					StatusCode: http.StatusOK,
 					Message:    "testing",
 				},

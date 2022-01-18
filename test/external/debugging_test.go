@@ -18,20 +18,20 @@ var _ = Describe("Debugging", func() {
 	steps := NewSteps()
 
 	Scenario("Debugging enabled", func() {
-		steps.When("running mkpcli --debug product get --product vmware-tanzu-rabbitmq-for-kubernetes1")
+		steps.When("running mkpcli --debug product get --product vmware-tanzu-rabbitmq1")
 		steps.Then("the command exits without error")
 		steps.And("the request is printed")
 	})
 
 	Scenario("Debugging enabled with environment variable", func() {
 		steps.When("The environment variable MKPCLI_DEBUG is set to true")
-		steps.And("running mkpcli product get --product vmware-tanzu-rabbitmq-for-kubernetes1")
+		steps.And("running mkpcli product get --product vmware-tanzu-rabbitmq1")
 		steps.Then("the command exits without error")
 		steps.And("the request is printed")
 	})
 
 	Scenario("Debugging enabled with request payloads", func() {
-		steps.When("running mkpcli --debug --debug-request-payloads container-image download -p vmware-tanzu-rabbitmq-for-kubernetes1 -v 1.0.0")
+		steps.When("running mkpcli --debug --debug-request-payloads container-image download -p vmware-tanzu-rabbitmq1 -v 1.0.0")
 		steps.Then("the command exits without error")
 		steps.And("the container image is downloaded")
 		steps.And("the requests are printed with request payloads")
@@ -40,7 +40,7 @@ var _ = Describe("Debugging", func() {
 	Scenario("Debugging enabled with request payloads with environment variables", func() {
 		steps.When("The environment variable MKPCLI_DEBUG is set to true")
 		steps.And("The environment variable MKPCLI_DEBUG_REQUEST_PAYLOADS is set to true")
-		steps.And("running mkpcli container-image download -p vmware-tanzu-rabbitmq-for-kubernetes1 -v 1.0.0")
+		steps.And("running mkpcli container-image download -p vmware-tanzu-rabbitmq1 -v 1.0.0")
 		steps.Then("the command exits without error")
 		steps.And("the container image is downloaded")
 		steps.And("the requests are printed with request payloads")
@@ -50,9 +50,9 @@ var _ = Describe("Debugging", func() {
 		DefineCommonSteps(define, "production")
 
 		define.Then(`^the request is printed$`, func() {
-			Eventually(CommandSession.Err).Should(Say(regexp.QuoteMeta("Request #0: GET https://gtw.marketplace.cloud.vmware.com/api/v1/products/vmware-tanzu-rabbitmq-for-kubernetes1?increaseViewCount=false&isSlug=true")))
+			Eventually(CommandSession.Err).Should(Say(regexp.QuoteMeta("Request #0: GET https://gtw.marketplace.cloud.vmware.com/api/v1/products/vmware-tanzu-rabbitmq1?increaseViewCount=false&isSlug=true")))
 			Eventually(CommandSession.Err).Should(Say("Request #0 Response: 200 OK"))
-			Eventually(CommandSession.Out).Should(Say("Name:      VMware Tanzu RabbitMQ for Kubernetes"))
+			Eventually(CommandSession.Out).Should(Say("Name:      VMware Tanzu RabbitMQ"))
 			Eventually(CommandSession.Out).Should(Say("Publisher: VMware Inc"))
 		})
 
@@ -62,11 +62,11 @@ var _ = Describe("Debugging", func() {
 		})
 
 		define.Then(`^the requests are printed with request payloads$`, func() {
-			Eventually(CommandSession.Err).Should(Say(regexp.QuoteMeta("Request #0: GET https://gtw.marketplace.cloud.vmware.com/api/v1/products/vmware-tanzu-rabbitmq-for-kubernetes1?increaseViewCount=false&isSlug=true")))
+			Eventually(CommandSession.Err).Should(Say(regexp.QuoteMeta("Request #0: GET https://gtw.marketplace.cloud.vmware.com/api/v1/products/vmware-tanzu-rabbitmq1?increaseViewCount=false&isSlug=true")))
 			Eventually(CommandSession.Err).Should(Say("Request #0 Response: 200 OK"))
-			Eventually(CommandSession.Err).Should(Say(regexp.QuoteMeta("Request #1: POST https://gtw.marketplace.cloud.vmware.com/api/v1/products/11c931ca-1fbb-4cda-ab78-5c30617d351c/download")))
+			Eventually(CommandSession.Err).Should(Say(regexp.QuoteMeta("Request #1: POST https://gtw.marketplace.cloud.vmware.com/api/v1/products/5f99a9d5-dbfd-4cfc-a564-b1a67d092b4f/download")))
 			Eventually(CommandSession.Err).Should(Say("--- Start of request #1 body payload ---"))
-			Eventually(CommandSession.Err).Should(Say(regexp.QuoteMeta("{\"dockerlinkVersionId\":\"c00178b2-c198-4ebc-ac4e-bc09aeae5f04\",\"dockerUrlId\":\"888aecdc-d4ca-422d-bf7f-6b45088bb419\",\"imageTagId\":\"6da7ac43-ff53-4f78-90ca-0007c0467a92\",\"appVersion\":\"1.0.0\",\"eulaAccepted\":true}")))
+			Eventually(CommandSession.Err).Should(Say(regexp.QuoteMeta("{\"dockerlinkVersionId\":\"d333021c-6e7d-4a15-b87a-2f66eda9d30c\",\"dockerUrlId\":\"f1702bcd-5634-4983-a652-653b6aedbe1d\",\"imageTagId\":\"83fa36ea-4ebc-4499-b68d-b95bc185dd65\",\"appVersion\":\"1.0.0\",\"eulaAccepted\":true}")))
 			Eventually(CommandSession.Err).Should(Say("--- End of request #1 body payload ---"))
 			Eventually(CommandSession.Err).Should(Say("Request #1 Response: 200 OK"))
 			Eventually(CommandSession.Err).Should(Say(regexp.QuoteMeta("Request #2: GET https://cmpprdcontainersolutions.s3.us-west-2.amazonaws.com/containerImageTars/")))

@@ -51,12 +51,16 @@ var _ = Describe("Product", func() {
 				"my-other-product",
 				"PENDING")
 			test.AddVerions(product2, "2.2.2")
+			products := []*models.Product{
+				product1,
+				product2,
+			}
 
 			response := &pkg.ListProductResponse{
 				Response: &pkg.ListProductResponsePayload{
-					Products: []*models.Product{
-						product1,
-						product2,
+					Products: products,
+					Params: &pkg.ListProductResponseParams{
+						ProductCount: len(products),
 					},
 					StatusCode: http.StatusOK,
 					Message:    "testing",
@@ -118,10 +122,7 @@ var _ = Describe("Product", func() {
 					Response: &pkg.ListProductResponsePayload{
 						Products:   products[:20],
 						StatusCode: http.StatusOK,
-						Params: struct {
-							ProductCount int                  `json:"itemsnumber"`
-							Pagination   *internal.Pagination `json:"pagination"`
-						}{
+						Params: &pkg.ListProductResponseParams{
 							ProductCount: len(products),
 							Pagination: &internal.Pagination{
 								Enabled:  true,
@@ -136,10 +137,7 @@ var _ = Describe("Product", func() {
 					Response: &pkg.ListProductResponsePayload{
 						Products:   products[20:],
 						StatusCode: http.StatusOK,
-						Params: struct {
-							ProductCount int                  `json:"itemsnumber"`
-							Pagination   *internal.Pagination `json:"pagination"`
-						}{
+						Params: &pkg.ListProductResponseParams{
 							ProductCount: len(products),
 							Pagination: &internal.Pagination{
 								Enabled:  true,

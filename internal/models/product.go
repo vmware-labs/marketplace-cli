@@ -10,31 +10,12 @@ import (
 	"github.com/coreos/go-semver/semver"
 )
 
-type Repo struct {
-	Name string `json:"name,omitempty"`
-	Url  string `json:"url,omitempty"`
-}
-
-type ChartVersion struct {
-	Id         string `json:"id,omitempty"`
-	Version    string `json:"version,omitempty"`
-	AppVersion string `json:"appversion"`
-	Details    string `json:"details,omitempty"`
-	Readme     string `json:"readme,omitempty"`
-	Repo       *Repo  `json:"repo,omitempty"`
-	Values     string `json:"values,omitempty"`
-	Digest     string `json:"digest,omitempty"`
-	Status     string `json:"status,omitempty"`
-
-	TarUrl                         string `json:"tarurl"` // to use during imgprocessor update & download from UI/API
-	IsExternalUrl                  bool   `json:"isexternalurl"`
-	HelmTarUrl                     string `json:"helmtarurl"` // to use during UI/API create & update product
-	IsUpdatedInMarketplaceRegistry bool   `json:"isupdatedinmarketplaceregistry"`
-	ProcessingError                string `json:"processingerror"`
-	DownloadCount                  int64  `json:"downloadcount"`
-	ValidationStatus               string `json:"validationstatus"`
-	InstallOptions                 string `json:"installoptions"`
-}
+const (
+	DeploymentStatusActive          = "ACTIVE"
+	DeploymentStatusInactive        = "INACTIVE"
+	DeploymentStatusApprovalPending = "APPROVAL_PENDING"
+	DeploymentStatusNotProcessed    = "NOT_PROCESSED"
+)
 
 type Tier struct {
 	Id            int64  `json:"id,omitempty"`
@@ -51,40 +32,6 @@ type Tier struct {
 type Tiers struct {
 	Id   int64 `json:"id,omitempty"`
 	Tier *Tier `json:"tier,omitempty"`
-}
-
-type VmwareProduct struct {
-	Id                  int64    `json:"id,omitempty"` // will be deprecated
-	ShortName           string   `json:"shortname"`
-	DisplayName         string   `json:"displayname"`
-	Version             string   `json:"version,omitempty"`
-	HideVmwareReadyLogo bool     `json:"hidevmwarereadylogo"`
-	LastUpdated         int64    `json:"lastupdated"`
-	EntitlementLevel    string   `json:"entitlementlevel"`
-	Tiers               []*Tiers `json:"tiersList"`
-	VsxId               string   `json:"vsxid"`
-}
-
-type CompatibilityMatrix struct {
-	ProductId                    string         `json:"productid"`
-	VmwareProductId              int32          `json:"vmwareproductid"` // will be deprecated
-	VmwareProductName            string         `json:"vmwareproductname"`
-	IsPrimary                    bool           `json:"isprimary"`
-	PartnerProd                  string         `json:"partnerprod"`
-	PartnerProdVer               string         `json:"partnerprodver"`
-	ThirdPartyCompany            string         `json:"thirdpartycompany"`
-	ThirdPartyProd               string         `json:"thirdpartyprod"`
-	ThirdPartyVer                string         `json:"thirdpartyver"`
-	SupportStatement             string         `json:"supportstatement"`
-	SupportStatementExternalLink string         `json:"supportstatementexternallink"`
-	IsVmwareReady                bool           `json:"isvmwareready"`
-	CompId                       string         `json:"compid"`
-	VmwareProductDetails         *VmwareProduct `json:"vmwareproductdetails"`
-	VsxProductId                 string         `json:"vsxproductid"`
-	VersionNumber                string         `json:"versionnumber"`
-	IsPartnerReady               bool           `json:"ispartnerready"`
-	IsNone                       bool           `json:"isnone"`
-	CertificationName            string         `json:"certificationname"`
 }
 
 type TechSpecs struct {
@@ -135,11 +82,12 @@ type ProductDeploymentFile struct {
 	DownloadCount   int64    `json:"downloadcount,omitempty"`
 	UniqueFileID    string   `json:"uniqueFileId,omitempty"`
 	VersionList     []string `json:"versionList"`
+	Size            int64    `json:"size,omitempty"`
 }
 
 const (
 	HashAlgoSHA1   = "SHA1"
-	HashAlgoSHA256 = "SAH256"
+	HashAlgoSHA256 = "SHA256"
 )
 
 const (
@@ -203,7 +151,8 @@ type EULADetails struct {
 }
 
 type ProductEncryptionDetails struct {
-	List []string `json:"listList"`
+	List                  []string `json:"listList"`
+	NonstandardEncryption bool     `json:"nonstandardencryption"`
 }
 
 type ProductEncryption struct {
@@ -229,10 +178,13 @@ type Logo struct {
 }
 
 type Version struct {
-	Number       string `json:"versionnumber"`
-	Details      string `json:"versiondetails"`
-	Status       string `json:"status,omitempty"`
-	Instructions string `json:"versioninstruction"`
+	Number           string `json:"versionnumber"`
+	Details          string `json:"versiondetails"`
+	Status           string `json:"status,omitempty"`
+	Instructions     string `json:"versioninstruction"`
+	CreatedOn        int32  `json:"createdon,omitempty"`
+	HasLimitedAccess bool   `json:"haslimitedaccess,omitempty"`
+	Tag              string `json:"tag,omitempty"`
 }
 
 type DockerImageTag struct {
@@ -246,8 +198,10 @@ type DockerImageTag struct {
 	S3TarBackupUrl                 string `json:"s3tarbackupurl"`
 	ProcessingError                string `json:"processingerror"`
 	DownloadCount                  int64  `json:"downloadcount"`
+	DownloadURL                    string `json:"downloadurl"`
 	HashAlgo                       int    `json:"hashalgo"`
 	HashDigest                     string `json:"hashdigest"`
+	Size                           int64  `json:"size,omitempty"`
 }
 
 type DockerURLDetails struct {
@@ -279,7 +233,7 @@ type DockerVersionList struct {
 	DeploymentInstruction string              `json:"deploymentinstruction"`
 	DockerURLs            []*DockerURLDetails `json:"dockerurlsList"`
 	Status                string              `json:"status,omitempty"`
-	//ImageTags             []*DockerImageTag   `json:"imagetags"` // DEPRECATED
+	ImageTags             []*DockerImageTag   `json:"imagetagsList"`
 }
 
 func (l *DockerVersionList) GetImage(imageURL string) *DockerURLDetails {
@@ -289,6 +243,20 @@ func (l *DockerVersionList) GetImage(imageURL string) *DockerURLDetails {
 		}
 	}
 	return nil
+}
+
+type AppProductResources struct {
+	Type           string `json:"type"`
+	Name           string `json:"name"`
+	URL            string `json:"url"`
+	IsDownloadable bool   `json:"isdownloadable"`
+}
+
+type AppProductMetaDetails struct {
+	OfficialEmail       string `json:"officialemail"`
+	OfficialPhoneNumber string `json:"officialphonenumber"`
+	WebsiteURL          string `json:"websiteurl"`
+	AppID               string `json:"appid"`
 }
 
 type RateCard struct {
@@ -309,30 +277,32 @@ type RateCardDimension struct {
 //)
 
 type Product struct {
-	ProductId        string          `json:"productid"`
-	IsParent         bool            `json:"isparent"`
-	Slug             string          `json:"slug,omitempty"`
-	DisplayName      string          `json:"displayname"`
-	Published        bool            `json:"published,omitempty"`
-	TechSpecs        *TechSpecs      `json:"techspecs"`
-	Description      *Description    `json:"description,omitempty"`
-	License          *License        `json:"license,omitempty"`
-	Categories       []string        `json:"categoriesList"`
-	SupportAvailable bool            `json:"supportavailable"`
-	SupportDetails   *SupportDetails `json:"supportdetails"`
-	LoginRequired    bool            `json:"loginrequired"`
-	PublisherDetails *Publisher      `json:"publisherdetails"` // Mandatory
-	Type             string          `json:"type,omitempty"`
-	ProductPricing   []*RateCard     `json:"productpricingList"`
-	//Resources []*AppProductResources `json:"resourcesList"`
-	//MetaDetails *AppProductMetaDetails `json:"metadetails"`
-	Status          string       `json:"status,omitempty"`
-	ParentProductId string       `json:"parentproductid"`
-	Byol            bool         `json:"byol,omitempty"`
-	EulaDetails     *EULADetails `json:"euladetails"`
-	EulaURL         string       `json:"eulaurl"`
-	EulaTempURL     string       `json:"eulatempurl"`
-	//Highlights      []string     `json:"highlightsList"`
+	ProductId                    string                       `json:"productid"`
+	PublishedProductId           string                       `json:"publishedproductid"`
+	IsParent                     bool                         `json:"isparent"`
+	Slug                         string                       `json:"slug,omitempty"`
+	DisplayName                  string                       `json:"displayname"`
+	IsPublished                  bool                         `json:"ispublished,omitempty"` // Set on product list requests
+	Published                    bool                         `json:"published,omitempty"`   // Set on product get requests
+	TechSpecs                    *TechSpecs                   `json:"techspecs"`
+	Description                  *Description                 `json:"description,omitempty"`
+	License                      *License                     `json:"license,omitempty"`
+	Categories                   []string                     `json:"categoriesList"`
+	SupportAvailable             bool                         `json:"supportavailable"`
+	SupportDetails               *SupportDetails              `json:"supportdetails"`
+	LoginRequired                bool                         `json:"loginrequired"`
+	PublisherDetails             *Publisher                   `json:"publisherdetails"` // Mandatory
+	Type                         string                       `json:"type,omitempty"`
+	ProductPricing               []*RateCard                  `json:"productpricingList"`
+	Resources                    []*AppProductResources       `json:"resourcesList"`
+	MetaDetails                  *AppProductMetaDetails       `json:"metadetails"`
+	Status                       string                       `json:"status,omitempty"`
+	ParentProductId              string                       `json:"parentproductid"`
+	Byol                         bool                         `json:"byol,omitempty"`
+	EulaDetails                  *EULADetails                 `json:"euladetails"`
+	EulaURL                      string                       `json:"eulaurl"`
+	EulaTempURL                  string                       `json:"eulatempurl"`
+	Highlights                   []string                     `json:"highlightsList"`
 	ProductDeploymentMediaImages []*DeploymentMediaImage      `json:"productdeploymentmediaimagesList"`
 	ProductDeploymentFiles       []*ProductDeploymentFile     `json:"productdeploymentfilesList"`
 	SaasURL                      string                       `json:"saasurl"`
@@ -346,46 +316,52 @@ type Product struct {
 	Encryption                   *ProductEncryption           `json:"encryption"`
 	ExportCompliance             *ProductExportCompliance     `json:"exportcompliance"`
 	OpenSourceDisclosure         *OpenSourceDisclosureURLS    `json:"opensourcedisclosure"`
+	Logo                         string                       `json:"logo"`
 	ProductLogo                  *Logo                        `json:"productlogo"`
 	InLegalReview                bool                         `json:"inlegalreview"`
 	IsVSX                        bool                         `json:"isvsx"`
-	Versions                     []*Version                   `json:"versionsList"`
 	AllVersions                  []*Version                   `json:"allversiondetailsList"`
+	LatestVersion                string                       `json:"latestversion"`
+	Version                      *Version                     `json:"version,omitempty"`
+	Versions                     []*Version                   `json:"versionsList"`
 	DeploymentTypes              []string                     `json:"deploymenttypesList"`
 	SolutionType                 string                       `json:"solutiontype"`
 	FormFactor                   string                       `json:"formfactor"`
 	ChartVersions                []*ChartVersion              `json:"chartversionsList"`
-	//Blueprints []*ProductBlueprintDetails `json:"blueprintsList"`
-	//BlueprintDetails             *BlueprintDetails       `json:"blueprintdetails"`
-	//DockerURLs                   []*DockerURL            `json:"dockerurlsList"`
-	DockerLinkVersions   []*DockerVersionList   `json:"dockerlinkversionsList"`
-	RelatedSlugs         []string               `json:"relatedslugsList"`
-	IsFeatured           bool                   `json:"isfeatured"`
-	IsPopular            bool                   `json:"isPopular,omitempty"`
-	IsPrivate            bool                   `json:"isprivate"`
-	IsListingProduct     bool                   `json:"islistingproduct"`
-	CompatibilityMatrix  []*CompatibilityMatrix `json:"compatibilitymatrixList"` // compatibility-matrix-supported-features needed for vsx.
-	CertificationType    []string               `json:"certificationtypeList"`
-	SolutionAreaId       []string               `json:"solutionareaidList"`
-	SolutionAreaName     []string               `json:"solutionareanameList"`
-	SolutionAreaTypeId   []string               `json:"solutionareatypeidList"`
-	SolutionAreaTypeName []string               `json:"solutionareatypenameList"`
-	Category             []string               `json:"categoryList"`
-	SubCategories        []string               `json:"subcategoriesList"`
-	SubCategoryId        []string               `json:"subcategoryidList"`
-
-	Version                *Version `json:"version,omitempty"`
-	IsDraft                bool     `json:"isdraft"`
-	DeploymentType         string   `json:"deploymenttype"`         // TO BE DEPRECATED
-	DeploymentInstructions string   `json:"deploymentinstructions"` // TO BE DEPRECATED
-	Unsubscribable         bool     `json:"unsubscribable,omitempty"`
-	CannotDownload         bool     `json:"cannotdownload"`
-	//VsxDetails             *VSXDetails     `json:"vsxdetails"`
-	//SaaSProduct            *SaaSProduct    `json:"saasproduct"`
-	DraftId     string `pjson:"draftid"`
-	ChartId     string `json:"chartid"`
-	IsAutoDraft bool   `json:"isautodraft"`
-	//ProductAddOnFiles []*AddOnFiles `json:"addonfilesList"`
+	Blueprints                   []*ProductBlueprintDetails   `json:"blueprintsList"`
+	DockerURLs                   []*DockerURLDetails          `json:"dockerurlsList"`
+	DockerLinkVersions           []*DockerVersionList         `json:"dockerlinkversionsList"`
+	RelatedSlugs                 []string                     `json:"relatedslugsList"`
+	VSXDetails                   *VSXDetails                  `json:"vsxdetails"`
+	IsFeatured                   bool                         `json:"isfeatured"`
+	IsPopular                    bool                         `json:"isPopular,omitempty"`
+	IsPrivate                    bool                         `json:"isprivate"`
+	IsListingProduct             bool                         `json:"islistingproduct"`
+	CompatibilityMatrix          []*CompatibilityMatrix       `json:"compatibilitymatrixList"` // compatibility-matrix-supported-features needed for vsx.
+	CompatiblePlatformIDList     []string                     `json:"compatibleplatformidList"`
+	CompatiblePlatformNameList   []string                     `json:"compatibleplatformnameList"`
+	CertificationList            []*Certification             `json:"certificationList"`
+	CertificationType            []string                     `json:"certificationtypeList"`
+	SolutionAreaId               []string                     `json:"solutionareaidList"`
+	SolutionAreaName             []string                     `json:"solutionareanameList"`
+	SolutionAreaTypeId           []string                     `json:"solutionareatypeidList"`
+	SolutionAreaTypeName         []string                     `json:"solutionareatypenameList"`
+	Category                     []string                     `json:"categoryList"`
+	SubCategories                []string                     `json:"subcategoriesList"`
+	SubCategoryId                []string                     `json:"subcategoryidList"`
+	DeploymentType               string                       `json:"deploymenttype"`
+	DeploymentInstructions       string                       `json:"deploymentinstructions"`
+	Unsubscribable               bool                         `json:"unsubscribable,omitempty"`
+	CannotDownload               bool                         `json:"cannotdownload"`
+	IsDraft                      bool                         `json:"isdraft"`
+	IsAutoDraft                  bool                         `json:"isautodraft"`
+	DraftId                      string                       `json:"draftid"`
+	ChartId                      string                       `json:"chartid"`
+	AddOnFiles                   []*AddOnFiles                `json:"addonfilesList"`
+	ProductAddOnFiles            []*AddOnFiles                `json:"productaddonfilesList"`
+	Tags                         []string                     `json:"tagsList"`
+	SKUS                         []*SKUPublisherView          `json:"skusList"`
+	MetaFiles                    []*MetaFile                  `json:"metafilesList"`
 }
 
 func (product *Product) GetVersion(version string) *Version {
@@ -405,6 +381,8 @@ func (product *Product) GetLatestVersion() *Version {
 	if len(product.AllVersions) == 0 {
 		return &Version{Number: "N/A"}
 	}
+
+	// TODO: use the new product.latestversion field instead?
 
 	version, err := product.getLatestVersionSemver()
 	if err != nil {
@@ -484,29 +462,6 @@ func (product *Product) GetContainerImagesForVersion(version string) *DockerVers
 		}
 	}
 	return nil
-}
-
-func (product *Product) GetChartsForVersion(version string) []*ChartVersion {
-	var charts []*ChartVersion
-	for _, chart := range product.ChartVersions {
-		if chart.AppVersion == product.GetVersion(version).Number {
-			charts = append(charts, chart)
-		}
-	}
-	return charts
-}
-
-func (product *Product) GetChart(chartId string) *ChartVersion {
-	for _, chart := range product.ChartVersions {
-		if chart.Id == chartId {
-			return chart
-		}
-	}
-	return nil
-}
-
-func (product *Product) AddChart(chart *ChartVersion) {
-	product.ChartVersions = append(product.ChartVersions, chart)
 }
 
 func (product *Product) GetFilesForVersion(version string) []*ProductDeploymentFile {

@@ -34,6 +34,40 @@ var _ = Describe("Marketplace", func() {
 		}, nil)
 	})
 
+	Describe("DecodeJson", func() {
+		type AnObject struct {
+			A string `json:"a"`
+			B string `json:"b"`
+			C string `json:"c"`
+		}
+
+		It("parses JSON", func() {
+			input := "{\"a\": \"Apple\", \"b\": \"Butter\", \"c\": \"Croissant\"}"
+			output := &AnObject{}
+			err := marketplace.DecodeJson(strings.NewReader(input), output)
+
+			Expect(err).ToNot(HaveOccurred())
+			Expect(output.A).To(Equal("Apple"))
+			Expect(output.B).To(Equal("Butter"))
+			Expect(output.C).To(Equal("Croissant"))
+		})
+
+		Context("Strict decoding enabled", func() {
+			BeforeEach(func() {
+				marketplace.EnableStrictDecoding()
+			})
+
+			It("throws an error on unknown fields", func() {
+				input := "{\"extra\": \"How did this get here?\", \"a\": \"Apple\", \"b\": \"Butter\", \"c\": \"Croissant\"}"
+				output := &AnObject{}
+				err := marketplace.DecodeJson(strings.NewReader(input), output)
+
+				Expect(err).To(HaveOccurred())
+				Expect(err.Error()).To(Equal("json: unknown field \"extra\""))
+			})
+		})
+	})
+
 	Describe("MakeURL", func() {
 		It("sets the scheme and host", func() {
 			marketplaceURL := marketplace.MakeURL(

@@ -22,14 +22,22 @@ import (
 type ListProductResponse struct {
 	Response *ListProductResponsePayload `json:"response"`
 }
+
+type ListProductResponseParams struct {
+	Filters      map[string][]interface{} `json:"filters"`
+	Pagination   *internal.Pagination     `json:"pagination"`
+	ProductCount int                      `json:"itemsnumber"`
+	Search       string                   `json:"search"`
+	SortingList  []interface{}            `json:"sortinglist"`
+	SelectList   []interface{}            `json:"selectlist"`
+}
+
 type ListProductResponsePayload struct {
-	Message    string            `json:"string"`
-	StatusCode int               `json:"statuscode"`
-	Products   []*models.Product `json:"dataList"`
-	Params     struct {
-		ProductCount int                  `json:"itemsnumber"`
-		Pagination   *internal.Pagination `json:"pagination"`
-	} `json:"params"`
+	Message          string                     `json:"message"`
+	StatusCode       int                        `json:"statuscode"`
+	Products         []*models.Product          `json:"dataList"`
+	AvailableFilters interface{}                `json:"availablefilters"`
+	Params           *ListProductResponseParams `json:"params"`
 }
 
 func (m *Marketplace) ListProducts(allOrgs bool, searchTerm string) ([]*models.Product, error) {
@@ -57,17 +65,16 @@ func (m *Marketplace) ListProducts(allOrgs bool, searchTerm string) ([]*models.P
 			return nil, fmt.Errorf("sending the request for the list of products failed: %w", err)
 		}
 
-		body, err := ioutil.ReadAll(resp.Body)
-		if err != nil {
-			return nil, fmt.Errorf("failed to read the list of products: %w", err)
-		}
-
 		if resp.StatusCode != http.StatusOK {
+			body, err := ioutil.ReadAll(resp.Body)
+			if err != nil {
+				body = []byte{}
+			}
 			return nil, fmt.Errorf("getting the list of products failed: (%d) %s: %s", resp.StatusCode, resp.Status, body)
 		}
 
 		response := &ListProductResponse{}
-		err = json.Unmarshal(body, response)
+		err = m.DecodeJson(resp.Body, response)
 		if err != nil {
 			return nil, fmt.Errorf("failed to parse the list of products: %w", err)
 		}
@@ -147,13 +154,8 @@ func (m *Marketplace) GetProduct(slug string) (*models.Product, error) {
 		return nil, fmt.Errorf("getting product \"%s\" failed: (%d)", slug, resp.StatusCode)
 	}
 
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return nil, fmt.Errorf("failed to read the response for product \"%s\": %w", slug, err)
-	}
-
 	response := &GetProductResponse{}
-	err = json.Unmarshal(body, response)
+	err = m.DecodeJson(resp.Body, response)
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse the response for product \"%s\": %w", slug, err)
 	}
@@ -192,20 +194,19 @@ func (m *Marketplace) PutProduct(product *models.Product, versionUpdate bool) (*
 		return nil, fmt.Errorf("sending the update for product \"%s\" failed: %w", product.Slug, err)
 	}
 
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return nil, fmt.Errorf("failed to read the update response for product \"%s\": %w", product.Slug, err)
-	}
-
 	if resp.StatusCode == http.StatusForbidden {
 		return nil, fmt.Errorf("you do not have permission to modify the product \"%s\"", product.Slug)
 	}
 	if resp.StatusCode != http.StatusOK {
+		body, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			body = []byte{}
+		}
 		return nil, fmt.Errorf("updating product \"%s\" failed: (%d)\n%s", product.Slug, resp.StatusCode, body)
 	}
 
 	response := &GetProductResponse{}
-	err = json.Unmarshal(body, response)
+	err = m.DecodeJson(resp.Body, response)
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse the response for product \"%s\": %w", product.Slug, err)
 	}

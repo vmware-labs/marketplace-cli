@@ -320,7 +320,7 @@ jobs:
         file: source/ci/tasks/download-container-image.yaml
         params:
           MARKETPLACE_ENV: production
-          PRODUCT_SLUG: vmware-tanzu-rabbitmq-for-kubernetes1
+          PRODUCT_SLUG: vmware-tanzu-rabbitmq1
           PRODUCT_VERSION: 1.0.0
 
   - name: test-publish-chart-product

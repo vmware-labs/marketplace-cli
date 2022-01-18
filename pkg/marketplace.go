@@ -4,6 +4,7 @@
 package pkg
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
@@ -14,14 +15,27 @@ import (
 )
 
 type Marketplace struct {
-	Host          string
-	APIHost       string
-	UIHost        string
-	StorageBucket string
-	StorageRegion string
-	Client        HTTPClient
-	Output        io.Writer
-	Uploader      internal.Uploader
+	Host           string
+	APIHost        string
+	UIHost         string
+	StorageBucket  string
+	StorageRegion  string
+	Client         HTTPClient
+	Output         io.Writer
+	Uploader       internal.Uploader
+	strictDecoding bool
+}
+
+func (m *Marketplace) EnableStrictDecoding() {
+	m.strictDecoding = true
+}
+
+func (m *Marketplace) DecodeJson(input io.Reader, output interface{}) error {
+	d := json.NewDecoder(input)
+	if m.strictDecoding {
+		d.DisallowUnknownFields()
+	}
+	return d.Decode(output)
 }
 
 func (m *Marketplace) MakeURL(path string, params url.Values) *url.URL {

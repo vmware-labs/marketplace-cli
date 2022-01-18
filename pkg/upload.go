@@ -6,7 +6,6 @@ package pkg
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"net/http"
 	"time"
 
@@ -33,13 +32,12 @@ func (m *Marketplace) GetUploadCredentials() (*CredentialsResponse, error) {
 		return nil, fmt.Errorf("failed to fetch credentials: %d", response.StatusCode)
 	}
 
-	body, err := ioutil.ReadAll(response.Body)
-	if err != nil {
-		return nil, err
-	}
-
 	credsResponse := &CredentialsResponse{}
-	err = json.Unmarshal(body, credsResponse)
+	d := json.NewDecoder(response.Body)
+	if m.strictDecoding {
+		d.DisallowUnknownFields()
+	}
+	err = d.Decode(response)
 	if err != nil {
 		return nil, err
 	}

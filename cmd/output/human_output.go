@@ -247,6 +247,7 @@ func (o *HumanOutput) RenderFile(file *models.ProductDeploymentFile) error {
 		downloads = strconv.FormatInt(file.DownloadCount, 10)
 	}
 
+	// TODO: check if we can replace with the newly added 'size' parameter
 	if file.ItemJson != "" {
 		details := &models.ProductItemDetails{}
 		err := json.Unmarshal([]byte(file.ItemJson), details)
@@ -286,6 +287,7 @@ func (o *HumanOutput) RenderFiles(files []*models.ProductDeploymentFile) error {
 			downloads = strconv.FormatInt(file.DownloadCount, 10)
 		}
 
+		// TODO: check if we can replace with the newly added 'size' parameter
 		if file.ItemJson != "" {
 			details := &models.ProductItemDetails{}
 			err := json.Unmarshal([]byte(file.ItemJson), details)
