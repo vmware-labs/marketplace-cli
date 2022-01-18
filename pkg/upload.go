@@ -37,7 +37,7 @@ func (m *Marketplace) GetUploadCredentials() (*CredentialsResponse, error) {
 	if m.strictDecoding {
 		d.DisallowUnknownFields()
 	}
-	err = d.Decode(response)
+	err = d.Decode(credsResponse)
 	if err != nil {
 		return nil, err
 	}
