@@ -6,7 +6,6 @@ package pkg
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"net/http"
 
 	"github.com/vmware-labs/marketplace-cli/v2/internal"
@@ -46,13 +45,12 @@ func (m *Marketplace) ListSubscriptions() ([]*models.Subscription, error) {
 			return nil, fmt.Errorf("getting the list of subscriptions failed: (%d) %s", resp.StatusCode, resp.Status)
 		}
 
-		body, err := ioutil.ReadAll(resp.Body)
-		if err != nil {
-			return nil, fmt.Errorf("failed to read the list of subscriptions: %w", err)
-		}
-
 		response := &ListSubscriptionsResponse{}
-		err = json.Unmarshal(body, response)
+		d := json.NewDecoder(resp.Body)
+		if m.strictDecoding {
+			d.DisallowUnknownFields()
+		}
+		err = d.Decode(response)
 		if err != nil {
 			return nil, fmt.Errorf("failed to parse the list of subscriptions: %w", err)
 		}

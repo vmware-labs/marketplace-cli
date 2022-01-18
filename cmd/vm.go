@@ -166,7 +166,7 @@ var AttachVMCmd = &cobra.Command{
 			return err
 		}
 
-		uploader := internal.NewS3Uploader(Marketplace.StorageBucket, Marketplace.StorageRegion, internal.HashAlgoSHA1, product.PublisherDetails.OrgId, UploadCredentials)
+		uploader := internal.NewS3Uploader(Marketplace.StorageBucket, Marketplace.StorageRegion, models.HashAlgoSHA1, product.PublisherDetails.OrgId, UploadCredentials)
 		file, err := uploader.UploadFile(vmFile)
 		if err != nil {
 			return err

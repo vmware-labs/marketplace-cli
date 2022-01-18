@@ -8,7 +8,6 @@ import (
 	"net/url"
 
 	"github.com/spf13/cobra"
-	"github.com/vmware-labs/marketplace-cli/v2/internal"
 	"github.com/vmware-labs/marketplace-cli/v2/internal/models"
 	"github.com/vmware-labs/marketplace-cli/v2/pkg"
 )
@@ -193,7 +192,7 @@ var AttachChartCmd = &cobra.Command{
 				return err
 			}
 
-			uploader := Marketplace.GetUploader(product.PublisherDetails.OrgId, internal.HashAlgoSHA1, UploadCredentials)
+			uploader := Marketplace.GetUploader(product.PublisherDetails.OrgId, models.HashAlgoSHA1, UploadCredentials)
 			uploadedChart, err := uploader.Upload(ChartURL)
 			if err != nil {
 				return err

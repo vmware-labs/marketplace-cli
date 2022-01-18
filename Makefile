@@ -116,7 +116,14 @@ else
 	ginkgo -r test/external
 endif
 
-test: deps lint test-units test-features test-external
+test-external-with-strict-decoding: deps
+ifndef CSP_API_TOKEN
+	$(error CSP_API_TOKEN must be defined to run external tests)
+else
+	MKPCLI_STRICT_DECODING=true ginkgo -r test/external
+endif
+
+test: deps lint test-units test-features test-external test-external-with-strict-decoding
 
 lint: deps-golangci-lint deps-shellcheck
 	golangci-lint run

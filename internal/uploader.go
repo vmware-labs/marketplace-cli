@@ -45,11 +45,6 @@ type Uploader interface {
 	UploadFile(filePath string) (*models.ProductDeploymentFile, error)
 }
 
-const (
-	HashAlgoSHA1   = "SHA1"
-	HashAlgoSHA256 = "SAH256"
-)
-
 type S3Uploader struct {
 	bucket        string
 	region        string
@@ -61,9 +56,9 @@ type S3Uploader struct {
 
 func NewS3Uploader(bucket, region, hashAlgorithm, orgID string, credentials aws.Credentials) *S3Uploader {
 	var hashAlgo hash.Hash
-	if hashAlgorithm == HashAlgoSHA1 {
+	if hashAlgorithm == models.HashAlgoSHA1 {
 		hashAlgo = sha1.New()
-	} else if hashAlgorithm == HashAlgoSHA256 {
+	} else if hashAlgorithm == models.HashAlgoSHA256 {
 		hashAlgo = sha256.New()
 	}
 

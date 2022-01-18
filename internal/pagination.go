@@ -9,6 +9,7 @@ import (
 )
 
 type Pagination struct {
+	Enable   bool  `json:"enable"` // TODO: I see this when product list request returns. Maybe a bug?
 	Enabled  bool  `json:"enabled"`
 	Page     int32 `json:"page"`
 	PageSize int32 `json:"pagesize"`

@@ -96,6 +96,12 @@ func init() {
 		Marketplace.StorageRegion = "us-east-2"
 	}
 
+	viper.SetDefault("marketplace.strict-decoding", false)
+	_ = viper.BindEnv("marketplace.strict-decoding", "MKPCLI_STRICT_DECODING")
+	if viper.GetBool("marketplace.strict-decoding") {
+		Marketplace.EnableStrictDecoding()
+	}
+
 	viper.SetDefault("output_format", output.FormatHuman)
 	_ = viper.BindEnv("output_format", "MKPCLI_OUTPUT")
 	rootCmd.PersistentFlags().StringP("output", "o", output.FormatHuman, fmt.Sprintf("Output format. One of %s. [$MKPCLI_OUTPUT]", strings.Join(output.SupportedOutputs, "|")))

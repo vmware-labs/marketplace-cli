@@ -53,13 +53,8 @@ func (m *Marketplace) Download(productId string, filename string, payload *Downl
 		return fmt.Errorf("failed to fetch download link: %s", resp.Status)
 	}
 
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return fmt.Errorf("failed to read response: %w", err)
-	}
-
 	downloadResponse := &DownloadResponse{}
-	err = json.Unmarshal(body, downloadResponse)
+	err = m.DecodeJson(resp.Body, downloadResponse)
 	if err != nil {
 		return fmt.Errorf("failed to parse response: %w", err)
 	}
