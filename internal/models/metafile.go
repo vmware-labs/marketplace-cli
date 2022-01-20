@@ -30,10 +30,21 @@ type MetaFile struct {
 	GroupId    string            `json:"groupid"`
 	GroupName  string            `json:"groupname"`
 	FileType   string            `json:"filetype"`
-	Version    string            `json:"version"`
-	AppVersion string            `json:"appversion"`
+	Version    string            `json:"version"`    // Note: This is the version of this particular file...
+	AppVersion string            `json:"appversion"` // Note: and this is the associated Marketplace product version
 	Status     string            `json:"status"`
 	Objects    []*MetaFileObject `json:"metafileobjectsList"`
 	CreatedBy  string            `json:"createdby"`
 	CreatedOn  int32             `json:"createdon"`
+}
+
+func (product *Product) GetMetaFilesForVersion(version string) []*MetaFile {
+	var metafiles []*MetaFile
+	for _, metafile := range product.MetaFiles {
+		if metafile.AppVersion == product.GetVersion(version).Number {
+			metafiles = append(metafiles, metafile)
+		}
+	}
+
+	return metafiles
 }

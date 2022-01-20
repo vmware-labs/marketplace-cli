@@ -11,8 +11,8 @@ if [ -z "${PRODUCT_SLUG}" ] ; then
 fi
 
 # Get the ID for the first chart
-CHARTS=$(mkpcli chart list --debug --debug-request-payloads --product "${PRODUCT_SLUG}" --product-version "${PRODUCT_VERSION}" --output json)
-CHART_ID=$(echo "${CHARTS}" | jq -r .[0].id)
+CHARTS=$(mkpcli chart list --product "${PRODUCT_SLUG}" --product-version "${PRODUCT_VERSION}" --output json)
+CHART_NAME=$(echo "${CHARTS}" | jq -r .[0].name)
 IS_IN_MKP_REGISTRY=$(echo "${CHARTS}" | jq -r .[0].isupdatedinmarketplaceregistry)
 PROCESSING_ERROR=$(echo "${CHARTS}" | jq -r .[0].processingerror)
 
@@ -22,9 +22,8 @@ done
 
 if [ "${IS_IN_MKP_REGISTRY}" == "true" ] ; then
   # Download the chart
-  mkpcli chart download --debug --debug-request-payloads \
-    --product "${PRODUCT_SLUG}" --product-version "${PRODUCT_VERSION}" \
-    --chart-id "${CHART_ID}" \
+  mkpcli download --product "${PRODUCT_SLUG}" --product-version "${PRODUCT_VERSION}" \
+    --filter "${CHART_NAME}" \
     --filename my-chart.tgz
 
   # Downloaded file is a real Helm chart

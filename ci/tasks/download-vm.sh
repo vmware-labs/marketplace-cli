@@ -10,20 +10,15 @@ if [ -z "${PRODUCT_SLUG}" ] ; then
   exit 1
 fi
 
-# Get the ID for the first chart
-FILES=$(mkpcli vm list --debug --debug-request-payloads --product "${PRODUCT_SLUG}" --product-version "${PRODUCT_VERSION}" --output json)
-FILE_ID=$(echo "${FILES}" | jq -r .[0].fileid)
+# Get the name for the first vm
+FILES=$(mkpcli vm list --product "${PRODUCT_SLUG}" --product-version "${PRODUCT_VERSION}" --output json)
+FILE_NAME=$(echo "${FILES}" | jq -r .[0].filename)
 STATUS=$(echo "${FILES}" | jq -r .[0].status)
-
-#while [ "${VALIDATION_STATUS}" == "pending" ] && [ -z "${PROCESSING_ERROR}" ] ; do
-#  sleep 60
-#done
 
 if [ "${STATUS}" == "APPROVAL_PENDING" ] || [ "${STATUS}" == "ACTIVE" ] ; then
   # Download the file
-  mkpcli vm download --debug --debug-request-payloads \
-    --product "${PRODUCT_SLUG}" --product-version "${PRODUCT_VERSION}" \
-    --file-id "${FILE_ID}" \
+  mkpcli vm download --product "${PRODUCT_SLUG}" --product-version "${PRODUCT_VERSION}" \
+    --filter "${FILE_NAME}" \
     --filename my-file
 
   # Downloaded virtual machine file is a real file

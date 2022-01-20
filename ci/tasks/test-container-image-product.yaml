@@ -10,6 +10,8 @@ params:
   PRODUCT_SLUG:
   TEST_IMAGE_REPO: bitnami/nginx
   TEST_IMAGE_TAG: 1.21.1
+  MKPCLI_DEBUG: true
+  MKPCLI_DEBUG_REQUEST_PAYLOADS: true
 
 inputs:
   - name: version
@@ -23,15 +25,12 @@ run:
       VERSION=$(cat version/version)
 
       # Get the list of container images
-      mkpcli container-image list --debug --debug-request-payloads \
-        --product "${PRODUCT_SLUG}" --product-version "${VERSION}"
+      mkpcli container-image list --product "${PRODUCT_SLUG}" --product-version "${VERSION}"
 
       # Upload a docker image
-      mkpcli container-image attach --debug --debug-request-payloads \
-        --product "${PRODUCT_SLUG}" --product-version "${VERSION}" \
+      mkpcli container-image attach --product "${PRODUCT_SLUG}" --product-version "${VERSION}" \
         --image-repository "${TEST_IMAGE_REPO}" --tag "${TEST_IMAGE_TAG}" --tag-type FIXED \
         --deployment-instructions "docker run ${TEST_IMAGE_REPO}:${TEST_IMAGE_TAG}"
 
       # Get the list of container images
-      mkpcli container-image list --debug --debug-request-payloads \
-        --product "${PRODUCT_SLUG}" --product-version "${VERSION}" | grep "${TEST_IMAGE_REPO} *${TEST_IMAGE_TAG}"
+      mkpcli container-image list --product "${PRODUCT_SLUG}" --product-version "${VERSION}" | grep "${TEST_IMAGE_REPO} *${TEST_IMAGE_TAG}"

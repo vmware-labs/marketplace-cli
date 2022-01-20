@@ -17,7 +17,6 @@ import (
 	. "github.com/onsi/gomega/gbytes"
 	"github.com/vmware-labs/marketplace-cli/v2/cmd"
 	"github.com/vmware-labs/marketplace-cli/v2/cmd/output/outputfakes"
-	"github.com/vmware-labs/marketplace-cli/v2/internal/models"
 	"github.com/vmware-labs/marketplace-cli/v2/pkg"
 	"github.com/vmware-labs/marketplace-cli/v2/pkg/pkgfakes"
 	"github.com/vmware-labs/marketplace-cli/v2/test"
@@ -201,14 +200,10 @@ var _ = Describe("ContainerImage", func() {
 				Expect(output.RenderContainerImageCallCount()).To(Equal(1))
 				containerImage := output.RenderContainerImageArgsForCall(0)
 				Expect(containerImage.Url).To(Equal("myId"))
-				Expect(containerImage.ImageTags).To(ContainElement(&models.DockerImageTag{
-					Tag:  "0.0.1",
-					Type: "FIXED",
-				}))
-				Expect(containerImage.ImageTags).To(ContainElement(&models.DockerImageTag{
-					Tag:  "latest",
-					Type: "FLOATING",
-				}))
+				Expect(containerImage.ImageTags[0].Tag).To(Equal("0.0.1"))
+				Expect(containerImage.ImageTags[0].Type).To(Equal("FIXED"))
+				Expect(containerImage.ImageTags[1].Tag).To(Equal("latest"))
+				Expect(containerImage.ImageTags[1].Type).To(Equal("FLOATING"))
 			})
 		})
 

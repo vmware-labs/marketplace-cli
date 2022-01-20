@@ -9,6 +9,7 @@ import (
 	"io"
 
 	"github.com/vmware-labs/marketplace-cli/v2/internal/models"
+	"github.com/vmware-labs/marketplace-cli/v2/pkg"
 	"gopkg.in/yaml.v2"
 )
 
@@ -79,6 +80,10 @@ func (o *EncodedOutput) RenderFile(file *models.ProductDeploymentFile) error {
 
 func (o *EncodedOutput) RenderFiles(files []*models.ProductDeploymentFile) error {
 	return o.Print(files)
+}
+
+func (o *EncodedOutput) RenderAssets(assets []*pkg.Asset) error {
+	return o.Print(assets)
 }
 
 func (o *EncodedOutput) RenderSubscriptions(subscriptions []*models.Subscription) error {

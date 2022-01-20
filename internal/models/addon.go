@@ -8,6 +8,7 @@ type AddOnFiles struct {
 	Name             string `json:"name"`
 	URL              string `json:"url"`
 	ImageType        string `json:"imagetype"`
+	Status           string `json:"status"`
 	DeploymentStatus string `json:"deploymentstatus"`
 	UploadedOn       int32  `json:"uploadedon"`
 	UploadedBy       string `json:"uploadedby"`

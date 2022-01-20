@@ -17,15 +17,18 @@ import (
 )
 
 type DownloadRequestPayload struct {
+	ProductId           string `json:"productid,omitempty"`
+	AppVersion          string `json:"appVersion,omitempty"`
+	EulaAccepted        bool   `json:"eulaAccepted"`
 	DockerlinkVersionID string `json:"dockerlinkVersionId,omitempty"`
 	DockerUrlId         string `json:"dockerUrlId,omitempty"`
 	ImageTagId          string `json:"imageTagId,omitempty"`
 	DeploymentFileId    string `json:"deploymentFileId,omitempty"`
-	AppVersion          string `json:"appVersion,omitempty"`
 	ChartVersion        string `json:"chartVersion,omitempty"`
 	IsAddonFile         string `json:"isAddonFile,omitempty"`
 	AddonFileId         string `json:"addonFileId,omitempty"`
-	EulaAccepted        bool   `json:"eulaAccepted"`
+	MetaFileID          string `json:"metafileid,omitempty"`
+	MetaFileObjectID    string `json:"metafileobjectid,omitempty"`
 }
 
 type DownloadResponse struct {

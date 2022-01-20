@@ -8,6 +8,8 @@ params:
   CSP_API_TOKEN: ((marketplace_api_token))
   MARKETPLACE_ENV:
   PRODUCT_SLUG:
+  MKPCLI_DEBUG: true
+  MKPCLI_DEBUG_REQUEST_PAYLOADS: true
 
 inputs:
   - name: version
@@ -22,14 +24,11 @@ run:
       VERSION=$(cat version/version)
 
       # Get the list of charts
-      mkpcli chart list --debug --debug-request-payloads \
-        --product "${PRODUCT_SLUG}" --product-version "${VERSION}"
+      mkpcli chart list --product "${PRODUCT_SLUG}" --product-version "${VERSION}"
 
       # Upload a chart
-      mkpcli chart attach --debug --debug-request-payloads \
-        --product "${PRODUCT_SLUG}" --product-version "${VERSION}" \
+      mkpcli chart attach --product "${PRODUCT_SLUG}" --product-version "${VERSION}" \
         --chart chart/*.tgz --readme "helm install it"
 
       # Get the list of charts
-      mkpcli chart list --debug --debug-request-payloads \
-        --product "${PRODUCT_SLUG}" --product-version "${VERSION}" | grep -v "Total count: 0"
+      mkpcli chart list --product "${PRODUCT_SLUG}" --product-version "${VERSION}" | grep -v "Total count: 0"

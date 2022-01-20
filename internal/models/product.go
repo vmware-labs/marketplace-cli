@@ -3,13 +3,6 @@
 
 package models
 
-import (
-	"sort"
-	"strings"
-
-	"github.com/coreos/go-semver/semver"
-)
-
 const (
 	DeploymentStatusActive          = "ACTIVE"
 	DeploymentStatusInactive        = "INACTIVE"
@@ -56,33 +49,6 @@ type ProductItemDetails struct {
 	Name  string             `json:"name,omitempty"`
 	Files []*ProductItemFile `json:"files,omitempty"`
 	Type  string             `json:"type"`
-}
-
-type ProductDeploymentFile struct {
-	Id              string   `json:"id,omitempty"` // uuid
-	Name            string   `json:"name,omitempty"`
-	Url             string   `json:"url,omitempty"`
-	ImageType       string   `json:"imagetype,omitempty"`
-	Status          string   `json:"status,omitempty"`
-	UploadedOn      int32    `json:"uploadedon,omitempty"`
-	UploadedBy      string   `json:"uploadedby,omitempty"`
-	UpdatedOn       int32    `json:"updatedon,omitempty"`
-	UpdatedBy       string   `json:"updatedby,omitempty"`
-	ItemJson        string   `json:"itemjson,omitempty"`
-	Itemkey         string   `json:"itemkey,omitempty"`
-	FileID          string   `json:"fileid,omitempty"`
-	IsSubscribed    bool     `json:"issubscribed,omitempty"`
-	AppVersion      string   `json:"appversion"` // Mandatory
-	HashDigest      string   `json:"hashdigest"`
-	IsThirdPartyUrl bool     `json:"isthirdpartyurl,omitempty"`
-	ThirdPartyUrl   string   `json:"thirdpartyurl,omitempty"`
-	IsRedirectUrl   bool     `json:"isredirecturl,omitempty"`
-	Comment         string   `json:"comment,omitempty"`
-	HashAlgo        string   `json:"hashalgo"`
-	DownloadCount   int64    `json:"downloadcount,omitempty"`
-	UniqueFileID    string   `json:"uniqueFileId,omitempty"`
-	VersionList     []string `json:"versionList"`
-	Size            int64    `json:"size,omitempty"`
 }
 
 const (
@@ -177,74 +143,6 @@ type Logo struct {
 	CreationDate int    `json:"createdon"`
 }
 
-type Version struct {
-	Number           string `json:"versionnumber"`
-	Details          string `json:"versiondetails"`
-	Status           string `json:"status,omitempty"`
-	Instructions     string `json:"versioninstruction"`
-	CreatedOn        int32  `json:"createdon,omitempty"`
-	HasLimitedAccess bool   `json:"haslimitedaccess,omitempty"`
-	Tag              string `json:"tag,omitempty"`
-}
-
-type DockerImageTag struct {
-	ID                             string `json:"id,omitempty"`
-	Tag                            string `json:"tag,omitempty"`
-	Type                           string `json:"type,omitempty"`
-	IsUpdatedInMarketplaceRegistry bool   `json:"isupdatedinmarketplaceregistry"`
-	MarketplaceS3Link              string `json:"marketplaces3link"`
-	AppCheckReportLink             string `json:"appcheckreportlink"`
-	AppCheckSummaryPdfLink         string `json:"appchecksummarypdflink"`
-	S3TarBackupUrl                 string `json:"s3tarbackupurl"`
-	ProcessingError                string `json:"processingerror"`
-	DownloadCount                  int64  `json:"downloadcount"`
-	DownloadURL                    string `json:"downloadurl"`
-	HashAlgo                       int    `json:"hashalgo"`
-	HashDigest                     string `json:"hashdigest"`
-	Size                           int64  `json:"size,omitempty"`
-}
-
-type DockerURLDetails struct {
-	ID                    string            `json:"id,omitempty"`
-	Key                   string            `json:"key,omitempty"`
-	Url                   string            `json:"url,omitempty"`
-	MarketplaceUpdatedUrl string            `json:"marketplaceupdatedurl"`
-	ImageTags             []*DockerImageTag `json:"imagetagsList"`
-	ImageTagsAsJson       string            `json:"imagetagsasjson"`
-	DeploymentInstruction string            `json:"deploymentinstruction"`
-}
-
-func (d *DockerURLDetails) GetTag(tagName string) *DockerImageTag {
-	for _, tag := range d.ImageTags {
-		if tag.Tag == tagName {
-			return tag
-		}
-	}
-	return nil
-}
-
-func (d *DockerURLDetails) HasTag(tagName string) bool {
-	return d.GetTag(tagName) != nil
-}
-
-type DockerVersionList struct {
-	ID                    string              `json:"id,omitempty"`
-	AppVersion            string              `json:"appversion"`
-	DeploymentInstruction string              `json:"deploymentinstruction"`
-	DockerURLs            []*DockerURLDetails `json:"dockerurlsList"`
-	Status                string              `json:"status,omitempty"`
-	ImageTags             []*DockerImageTag   `json:"imagetagsList"`
-}
-
-func (l *DockerVersionList) GetImage(imageURL string) *DockerURLDetails {
-	for _, image := range l.DockerURLs {
-		if image.Url == imageURL {
-			return image
-		}
-	}
-	return nil
-}
-
 type AppProductResources struct {
 	Type           string `json:"type"`
 	Name           string `json:"name"`
@@ -324,6 +222,7 @@ type Product struct {
 	LatestVersion                string                       `json:"latestversion"`
 	Version                      *Version                     `json:"version,omitempty"`
 	Versions                     []*Version                   `json:"versionsList"`
+	CurrentVersion               string                       `json:"currentVersion"`
 	DeploymentTypes              []string                     `json:"deploymenttypesList"`
 	SolutionType                 string                       `json:"solutiontype"`
 	FormFactor                   string                       `json:"formfactor"`
@@ -364,127 +263,28 @@ type Product struct {
 	MetaFiles                    []*MetaFile                  `json:"metafilesList"`
 }
 
-func (product *Product) GetVersion(version string) *Version {
-	if version == "" {
-		return product.GetLatestVersion()
-	}
-
-	for _, v := range product.AllVersions {
-		if v.Number == version {
-			return v
-		}
-	}
-	return nil
-}
-
-func (product *Product) GetLatestVersion() *Version {
-	if len(product.AllVersions) == 0 {
-		return &Version{Number: "N/A"}
-	}
-
-	// TODO: use the new product.latestversion field instead?
-
-	version, err := product.getLatestVersionSemver()
-	if err != nil {
-		version = product.getLatestVersionAlphanumeric()
-	}
-
-	return version
-}
-
-func (product *Product) getLatestVersionSemver() (*Version, error) {
-	latestVersion := product.AllVersions[0]
-	version, err := semver.NewVersion(latestVersion.Number)
-	if err != nil {
-		return nil, err
-	}
-	for _, v := range product.AllVersions {
-		otherVersion, err := semver.NewVersion(v.Number)
-		if err != nil {
-			return nil, err
-		}
-		if version.LessThan(*otherVersion) {
-			latestVersion = v
-			version = otherVersion
-		}
-	}
-
-	return latestVersion, nil
-}
-
-func (product *Product) getLatestVersionAlphanumeric() *Version {
-	latestVersion := product.AllVersions[0]
-	for _, v := range product.AllVersions {
-		if strings.Compare(latestVersion.Number, v.Number) < 0 {
-			latestVersion = v
-		}
-	}
-	return latestVersion
-}
-
-type Versions []*Version
-
-func (v Versions) Len() int {
-	return len(v)
-}
-
-func (v Versions) Swap(i, j int) {
-	v[i], v[j] = v[j], v[i]
-}
-
-func (v Versions) Less(i, j int) bool {
-	return v[i].LessThan(*v[j])
-}
-
-func (a Version) LessThan(b Version) bool {
-	semverA, errA := semver.NewVersion(a.Number)
-	semverB, errB := semver.NewVersion(b.Number)
-
-	if errA != nil || errB != nil {
-		return strings.Compare(a.Number, b.Number) < 0
-	}
-
-	return semverA.LessThan(*semverB)
-}
-
-func Sort(versions []*Version) {
-	sort.Sort(sort.Reverse(Versions(versions)))
-}
-
-func (product *Product) HasVersion(version string) bool {
-	return product.GetVersion(version) != nil
-}
-
-func (product *Product) GetContainerImagesForVersion(version string) *DockerVersionList {
-	for _, dockerVersionLink := range product.DockerLinkVersions {
-		if dockerVersionLink.AppVersion == product.GetVersion(version).Number {
-			return dockerVersionLink
-		}
-	}
-	return nil
-}
-
-func (product *Product) GetFilesForVersion(version string) []*ProductDeploymentFile {
-	var files []*ProductDeploymentFile
-	for _, file := range product.ProductDeploymentFiles {
-		if file.AppVersion == product.GetVersion(version).Number {
-			files = append(files, file)
-		}
-	}
-	return files
-}
-
-func (product *Product) GetFile(fileId string) *ProductDeploymentFile {
-	for _, file := range product.ProductDeploymentFiles {
-		if file.FileID == fileId {
-			return file
-		}
-	}
-	return nil
-}
-
-func (product *Product) AddFile(file *ProductDeploymentFile) {
-	product.ProductDeploymentFiles = append(product.ProductDeploymentFiles, file)
+type VersionSpecificProductDetails struct {
+	EncryptionDetails      *ProductEncryptionDetails  `json:"encryptiondetails"`
+	EulaDetails            *EULADetails               `json:"euladetails"`
+	EulaURL                string                     `json:"eulaurl"`
+	EulaTempURL            string                     `json:"eulatempurl"`
+	ExportCompliance       *ProductExportCompliance   `json:"exportcompliance"`
+	OpenSourceDisclosure   *OpenSourceDisclosureURLS  `json:"opensourcedisclosure"`
+	CertificationList      []*Certification           `json:"certificationList"`
+	CertificationType      []string                   `json:"certificationtypeList"`
+	ProductDeploymentFiles []*ProductDeploymentFile   `json:"productdeploymentfilesList"`
+	DockerLinkVersions     []*DockerVersionList       `json:"dockerlinkversionsList"`
+	ChartVersions          []*ChartVersion            `json:"chartversionsList"`
+	Blueprints             []*ProductBlueprintDetails `json:"blueprintsList"`
+	AddOnFiles             []*AddOnFiles              `json:"addonfilesList"`
+	CreationDate           int                        `json:"createdon"`
+	UpdatedDate            int                        `json:"updatedon"`
+	UpdatedBy              string                     `json:"updatedby"`
+	PublishedDate          int                        `json:"publishedon"`
+	CompatibilityMatrix    []*CompatibilityMatrix     `json:"compatibilitymatrixList"` // compatibility-matrix-supported-features needed for vsx.
+	HasLimitedAccess       bool                       `json:"haslimitedaccess"`
+	Tag                    string                     `json:"tag"`
+	MetaFiles              []*MetaFile                `json:"metafilesList"`
 }
 
 func (product *Product) PrepForUpdate() {
