@@ -8,6 +8,8 @@ params:
   CSP_API_TOKEN: ((marketplace_api_token))
   MARKETPLACE_ENV:
   PRODUCT_SLUG:
+  MKPCLI_DEBUG: true
+  MKPCLI_DEBUG_REQUEST_PAYLOADS: true
 
 inputs:
   - name: version
@@ -19,9 +21,9 @@ run:
     - |
       export VERSION=$(cat version/version)
 
-      mkpcli product list-versions --debug --debug-request-payloads --product "${PRODUCT_SLUG}" | grep "${VERSION}"
+      mkpcli product list-versions --product "${PRODUCT_SLUG}" | grep "${VERSION}"
       if [[ $? -ne 0 ]] ; then
         set -e
-        mkpcli product add-version --debug --debug-request-payloads --product "${PRODUCT_SLUG}" --product-version "${VERSION}"
-        mkpcli product list-versions --debug --debug-request-payloads --product "${PRODUCT_SLUG}" | grep "${VERSION}"
+        mkpcli product add-version --product "${PRODUCT_SLUG}" --product-version "${VERSION}"
+        mkpcli product list-versions --product "${PRODUCT_SLUG}" | grep "${VERSION}"
       fi

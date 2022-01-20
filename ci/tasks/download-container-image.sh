@@ -11,7 +11,7 @@ if [ -z "${PRODUCT_SLUG}" ] ; then
 fi
 
 # Get the ID for the first container image
-IMAGES=$(mkpcli container-image list --debug --debug-request-payloads --product "${PRODUCT_SLUG}" --product-version "${PRODUCT_VERSION}" --output json)
+IMAGES=$(mkpcli container-image list --product "${PRODUCT_SLUG}" --product-version "${PRODUCT_VERSION}" --output json)
 IMAGE_URL=$(echo "${IMAGES}" | jq -r .dockerurlsList[0].url)
 IMAGE_TAG=$(echo "${IMAGES}" | jq -r .dockerurlsList[0].imagetagsList[0].tag)
 IS_IN_MKP_REGISTRY=$(echo "${IMAGES}" | jq -r .dockerurlsList[0].imagetagsList[0].isupdatedinmarketplaceregistry)
@@ -23,9 +23,8 @@ done
 
 if [ "${IS_IN_MKP_REGISTRY}" == "true" ] && [ -z "${PROCESSING_ERROR}" ] ; then
   # Download the image
-  mkpcli container-image download --debug --debug-request-payloads \
-    --product "${PRODUCT_SLUG}" --product-version "${PRODUCT_VERSION}" \
-    --image-repository "${IMAGE_URL}" --tag "${IMAGE_TAG}" \
+  mkpcli download --product "${PRODUCT_SLUG}" --product-version "${PRODUCT_VERSION}" \
+    --filter "${IMAGE_URL}:${IMAGE_TAG}" \
     --filename my-container-image.tar
 
   # Downloaded file is a real docker image

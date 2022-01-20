@@ -13,19 +13,17 @@ import (
 )
 
 var (
-	ChartID                 string
-	ChartReadme             string
-	ChartProductSlug        string
-	ChartProductVersion     string
-	ChartURL                string
-	downloadedChartFilename string
+	ChartID             string
+	ChartReadme         string
+	ChartProductSlug    string
+	ChartProductVersion string
+	ChartURL            string
 )
 
 func init() {
 	rootCmd.AddCommand(ChartCmd)
 	ChartCmd.AddCommand(ListChartsCmd)
 	ChartCmd.AddCommand(GetChartCmd)
-	ChartCmd.AddCommand(DownloadChartCmd)
 	ChartCmd.AddCommand(AttachChartCmd)
 
 	ListChartsCmd.Flags().StringVarP(&ChartProductSlug, "product", "p", "", "Product slug (required)")
@@ -36,12 +34,6 @@ func init() {
 	_ = GetChartCmd.MarkFlagRequired("product")
 	GetChartCmd.Flags().StringVarP(&ChartProductVersion, "product-version", "v", "", "Product version (default to latest version)")
 	GetChartCmd.Flags().StringVar(&ChartID, "chart-id", "", "chart ID")
-
-	DownloadChartCmd.Flags().StringVarP(&ChartProductSlug, "product", "p", "", "Product slug (required)")
-	_ = DownloadChartCmd.MarkFlagRequired("product")
-	DownloadChartCmd.Flags().StringVarP(&ChartProductVersion, "product-version", "v", "", "Product version (default to latest version)")
-	DownloadChartCmd.Flags().StringVar(&ChartID, "chart-id", "", "The ID of the chart to download (required if product has multiple charts attached)")
-	DownloadChartCmd.Flags().StringVarP(&downloadedChartFilename, "filename", "f", "chart.tgz", "output file name")
 
 	AttachChartCmd.Flags().StringVarP(&ChartProductSlug, "product", "p", "", "Product slug (required)")
 	_ = AttachChartCmd.MarkFlagRequired("product")
@@ -64,7 +56,7 @@ var ChartCmd = &cobra.Command{
 	Short:     "List and manage Helm charts attached to a product",
 	Long:      "List and manage Helm charts attached to a product in the VMware Marketplace",
 	Args:      cobra.OnlyValidArgs,
-	ValidArgs: []string{ListChartsCmd.Use, GetChartCmd.Use, DownloadChartCmd.Use, AttachChartCmd.Use},
+	ValidArgs: []string{ListChartsCmd.Use, GetChartCmd.Use, AttachChartCmd.Use},
 }
 
 var ListChartsCmd = &cobra.Command{
@@ -116,47 +108,6 @@ var GetChartCmd = &cobra.Command{
 		}
 
 		return Output.RenderChart(chart)
-	},
-}
-
-var DownloadChartCmd = &cobra.Command{
-	Use:   "download",
-	Short: "Download a chart",
-	Long:  "Downloads a Helm chart attached to a product in the VMware Marketplace",
-	Args:  cobra.NoArgs,
-	RunE: func(cmd *cobra.Command, args []string) error {
-		cmd.SilenceUsage = true
-		product, version, err := Marketplace.GetProductWithVersion(ChartProductSlug, ChartProductVersion)
-		if err != nil {
-			return err
-		}
-
-		var chart *models.ChartVersion
-		if ChartID != "" {
-			chart = product.GetChart(ChartID)
-			if chart == nil {
-				return fmt.Errorf("product \"%s\" %s does not have the chart \"%s\"", ChartProductSlug, version.Number, ChartID)
-			}
-		} else {
-			charts := product.GetChartsForVersion(version.Number)
-			if len(charts) == 0 {
-				return fmt.Errorf("product \"%s\" does not have any charts for version %s", ChartProductSlug, version.Number)
-			} else if len(charts) == 1 {
-				chart = charts[0]
-			} else {
-				return fmt.Errorf("multiple charts found for %s %s, please use the --chart-id parameter", ChartProductSlug, version.Number)
-			}
-		}
-
-		if !chart.IsUpdatedInMarketplaceRegistry {
-			return fmt.Errorf("%s %s in %s %s is not downloadable: %s", chart.TarUrl, chart.Version, ChartProductSlug, version.Number, chart.ValidationStatus)
-		}
-
-		return Marketplace.Download(product.ProductId, downloadedChartFilename, &pkg.DownloadRequestPayload{
-			AppVersion:   chart.AppVersion,
-			ChartVersion: chart.Version,
-			EulaAccepted: true,
-		})
 	},
 }
 

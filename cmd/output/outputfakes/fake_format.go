@@ -6,6 +6,7 @@ import (
 
 	"github.com/vmware-labs/marketplace-cli/v2/cmd/output"
 	"github.com/vmware-labs/marketplace-cli/v2/internal/models"
+	"github.com/vmware-labs/marketplace-cli/v2/pkg"
 )
 
 type FakeFormat struct {
@@ -13,6 +14,17 @@ type FakeFormat struct {
 	printHeaderMutex       sync.RWMutex
 	printHeaderArgsForCall []struct {
 		arg1 string
+	}
+	RenderAssetsStub        func([]*pkg.Asset) error
+	renderAssetsMutex       sync.RWMutex
+	renderAssetsArgsForCall []struct {
+		arg1 []*pkg.Asset
+	}
+	renderAssetsReturns struct {
+		result1 error
+	}
+	renderAssetsReturnsOnCall map[int]struct {
+		result1 error
 	}
 	RenderChartStub        func(*models.ChartVersion) error
 	renderChartMutex       sync.RWMutex
@@ -157,6 +169,71 @@ func (fake *FakeFormat) PrintHeaderArgsForCall(i int) string {
 	defer fake.printHeaderMutex.RUnlock()
 	argsForCall := fake.printHeaderArgsForCall[i]
 	return argsForCall.arg1
+}
+
+func (fake *FakeFormat) RenderAssets(arg1 []*pkg.Asset) error {
+	var arg1Copy []*pkg.Asset
+	if arg1 != nil {
+		arg1Copy = make([]*pkg.Asset, len(arg1))
+		copy(arg1Copy, arg1)
+	}
+	fake.renderAssetsMutex.Lock()
+	ret, specificReturn := fake.renderAssetsReturnsOnCall[len(fake.renderAssetsArgsForCall)]
+	fake.renderAssetsArgsForCall = append(fake.renderAssetsArgsForCall, struct {
+		arg1 []*pkg.Asset
+	}{arg1Copy})
+	fake.recordInvocation("RenderAssets", []interface{}{arg1Copy})
+	fake.renderAssetsMutex.Unlock()
+	if fake.RenderAssetsStub != nil {
+		return fake.RenderAssetsStub(arg1)
+	}
+	if specificReturn {
+		return ret.result1
+	}
+	fakeReturns := fake.renderAssetsReturns
+	return fakeReturns.result1
+}
+
+func (fake *FakeFormat) RenderAssetsCallCount() int {
+	fake.renderAssetsMutex.RLock()
+	defer fake.renderAssetsMutex.RUnlock()
+	return len(fake.renderAssetsArgsForCall)
+}
+
+func (fake *FakeFormat) RenderAssetsCalls(stub func([]*pkg.Asset) error) {
+	fake.renderAssetsMutex.Lock()
+	defer fake.renderAssetsMutex.Unlock()
+	fake.RenderAssetsStub = stub
+}
+
+func (fake *FakeFormat) RenderAssetsArgsForCall(i int) []*pkg.Asset {
+	fake.renderAssetsMutex.RLock()
+	defer fake.renderAssetsMutex.RUnlock()
+	argsForCall := fake.renderAssetsArgsForCall[i]
+	return argsForCall.arg1
+}
+
+func (fake *FakeFormat) RenderAssetsReturns(result1 error) {
+	fake.renderAssetsMutex.Lock()
+	defer fake.renderAssetsMutex.Unlock()
+	fake.RenderAssetsStub = nil
+	fake.renderAssetsReturns = struct {
+		result1 error
+	}{result1}
+}
+
+func (fake *FakeFormat) RenderAssetsReturnsOnCall(i int, result1 error) {
+	fake.renderAssetsMutex.Lock()
+	defer fake.renderAssetsMutex.Unlock()
+	fake.RenderAssetsStub = nil
+	if fake.renderAssetsReturnsOnCall == nil {
+		fake.renderAssetsReturnsOnCall = make(map[int]struct {
+			result1 error
+		})
+	}
+	fake.renderAssetsReturnsOnCall[i] = struct {
+		result1 error
+	}{result1}
 }
 
 func (fake *FakeFormat) RenderChart(arg1 *models.ChartVersion) error {
@@ -784,6 +861,8 @@ func (fake *FakeFormat) Invocations() map[string][][]interface{} {
 	defer fake.invocationsMutex.RUnlock()
 	fake.printHeaderMutex.RLock()
 	defer fake.printHeaderMutex.RUnlock()
+	fake.renderAssetsMutex.RLock()
+	defer fake.renderAssetsMutex.RUnlock()
 	fake.renderChartMutex.RLock()
 	defer fake.renderChartMutex.RUnlock()
 	fake.renderChartsMutex.RLock()

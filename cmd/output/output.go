@@ -5,6 +5,7 @@ package output
 
 import (
 	"github.com/vmware-labs/marketplace-cli/v2/internal/models"
+	"github.com/vmware-labs/marketplace-cli/v2/pkg"
 )
 
 const (
@@ -28,6 +29,8 @@ type Format interface {
 	RenderContainerImages(images *models.DockerVersionList) error
 	RenderFile(file *models.ProductDeploymentFile) error
 	RenderFiles(files []*models.ProductDeploymentFile) error
+
+	RenderAssets(assets []*pkg.Asset) error
 
 	RenderSubscriptions(subscriptions []*models.Subscription) error
 }

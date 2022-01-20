@@ -9,6 +9,8 @@ params:
   MARKETPLACE_ENV:
   PRODUCT_SLUG:
   PRODUCT_VERSION:
+  MKPCLI_DEBUG: true
+  MKPCLI_DEBUG_REQUEST_PAYLOADS: true
 
 inputs:
   - name: source

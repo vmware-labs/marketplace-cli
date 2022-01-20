@@ -53,10 +53,13 @@ func CreateFakeOVA(name, version string) *models.ProductDeploymentFile {
 	Expect(err).ToNot(HaveOccurred())
 
 	return &models.ProductDeploymentFile{
-		AppVersion: version,
-		FileID:     uuid.New().String(),
-		Status:     "STORED",
-		ItemJson:   string(detailString),
+		FileID:        uuid.New().String(),
+		Name:          name,
+		Status:        models.DeploymentStatusActive,
+		ItemJson:      string(detailString),
+		AppVersion:    version,
+		Size:          1000100,
+		DownloadCount: 20,
 	}
 }
 
@@ -70,8 +73,12 @@ func CreateFakeContainerImage(url string, tags ...string) *models.DockerURLDetai
 		}
 
 		tagList = append(tagList, &models.DockerImageTag{
-			Tag:  tag,
-			Type: tagType,
+			ID:                             uuid.New().String(),
+			Tag:                            tag,
+			Type:                           tagType,
+			Size:                           12345,
+			DownloadCount:                  15,
+			IsUpdatedInMarketplaceRegistry: true,
 		})
 	}
 
@@ -79,6 +86,23 @@ func CreateFakeContainerImage(url string, tags ...string) *models.DockerURLDetai
 		ID:        uuid.New().String(),
 		Url:       url,
 		ImageTags: tagList,
+	}
+}
+
+func CreateFakeMetaFile(name, version, productVersion string) *models.MetaFile {
+	return &models.MetaFile{
+		ID:         uuid.New().String(),
+		FileType:   models.MetaFileTypeCLI,
+		Version:    version,
+		AppVersion: productVersion,
+		Objects: []*models.MetaFileObject{
+			{
+				FileName:       name,
+				Size:           123,
+				DownloadCount:  25,
+				IsFileBackedUp: true,
+			},
+		},
 	}
 }
 
@@ -101,7 +125,7 @@ func AddVerions(product *models.Product, versions ...string) *models.Product {
 
 func AddContainerImages(product *models.Product, version string, instructions string, images ...*models.DockerURLDetails) *models.Product {
 	imageList := &models.DockerVersionList{
-		ID:                    "",
+		ID:                    uuid.New().String(),
 		AppVersion:            version,
 		DeploymentInstruction: instructions,
 		DockerURLs:            []*models.DockerURLDetails{},

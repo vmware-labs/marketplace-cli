@@ -12,6 +12,7 @@ import (
 
 	"github.com/olekukonko/tablewriter"
 	"github.com/vmware-labs/marketplace-cli/v2/internal/models"
+	"github.com/vmware-labs/marketplace-cli/v2/pkg"
 	"jaytaylor.com/html2text"
 )
 
@@ -56,6 +57,8 @@ func (o *HumanOutput) NewTable(headers ...string) *tablewriter.Table {
 }
 
 func (o *HumanOutput) RenderProduct(product *models.Product) error {
+	latestVersion := product.GetLatestVersion().Number
+
 	o.Printf("Name:      %s\n", product.DisplayName)
 	o.Printf("Publisher: %s\n", product.PublisherDetails.OrgDisplayName)
 	o.Println()
@@ -64,8 +67,17 @@ func (o *HumanOutput) RenderProduct(product *models.Product) error {
 	o.Println()
 	o.Println("Product Details:")
 	table := o.NewTable("Product ID", "Slug", "Type", "Latest Version", "Status")
-	table.Append([]string{product.ProductId, product.Slug, product.SolutionType, product.GetLatestVersion().Number, product.Status})
+	table.Append([]string{product.ProductId, product.Slug, product.SolutionType, latestVersion, product.Status})
 	table.Render()
+
+	o.Println()
+	o.Printf("Assets for %s:\n", latestVersion)
+	assets := pkg.GetAssets(product, latestVersion)
+	err := o.RenderAssets(assets)
+	if err != nil {
+		return err
+	}
+
 	o.Println()
 	o.Println("Description:")
 	description, err := html2text.FromString(product.Description.Description, html2text.Options{
@@ -311,6 +323,20 @@ func (o *HumanOutput) RenderFiles(files []*models.ProductDeploymentFile) error {
 		o.Println()
 		o.Println(footnotes)
 	}
+	return nil
+}
+
+func (o *HumanOutput) RenderAssets(assets []*pkg.Asset) error {
+	if len(assets) == 0 {
+		o.Println("None")
+	} else {
+		table := o.NewTable("Name", "Type", "Version", "Size", "Downloads")
+		for _, asset := range assets {
+			table.Append([]string{asset.DisplayName, asset.Type, asset.Version, FormatSize(asset.Size), strconv.FormatInt(asset.Downloads, 10)})
+		}
+		table.Render()
+	}
+
 	return nil
 }
 
