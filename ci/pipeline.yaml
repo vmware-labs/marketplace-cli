@@ -342,6 +342,7 @@ jobs:
             type: registry-image
             source:
               repository: harbor-repo.vmware.com/dockerhub-proxy-cache/alpine/helm
+              tag: 3.7.2
               username: ((harbor.username))
               password: ((harbor.token))
           outputs:
@@ -357,6 +358,7 @@ jobs:
             type: registry-image
             source:
               repository: harbor-repo.vmware.com/dockerhub-proxy-cache/linuxserver/yq
+              tag: 2.13.0
               username: ((harbor.username))
               password: ((harbor.token))
           inputs:
@@ -379,6 +381,7 @@ jobs:
             type: registry-image
             source:
               repository: harbor-repo.vmware.com/dockerhub-proxy-cache/alpine/helm
+              tag: 3.7.2
               username: ((harbor.username))
               password: ((harbor.token))
           inputs:
