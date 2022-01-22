@@ -52,10 +52,10 @@ func DefineCommonSteps(define Definitions, marketplaceEnvironment string) {
 	})
 
 	define.Then(`^the command exits without error$`, func() {
-		Eventually(CommandSession, time.Minute).Should(gexec.Exit(0))
+		Eventually(CommandSession, 5*time.Minute).Should(gexec.Exit(0))
 	})
 
 	define.Then(`^the command exits with an error$`, func() {
-		Eventually(CommandSession, time.Minute).Should(gexec.Exit(1))
+		Eventually(CommandSession, 5*time.Minute).Should(gexec.Exit(1))
 	})
 }
