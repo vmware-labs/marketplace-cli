@@ -17,7 +17,7 @@ STATUS=$(echo "${FILES}" | jq -r .[0].status)
 
 if [ "${STATUS}" == "APPROVAL_PENDING" ] || [ "${STATUS}" == "ACTIVE" ] ; then
   # Download the file
-  mkpcli vm download --product "${PRODUCT_SLUG}" --product-version "${PRODUCT_VERSION}" \
+  mkpcli download --product "${PRODUCT_SLUG}" --product-version "${PRODUCT_VERSION}" \
     --filter "${FILE_NAME}" \
     --filename my-file
 
