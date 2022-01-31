@@ -15,7 +15,7 @@ type DockerImageTag struct {
 	ProcessingError                string `json:"processingerror"`
 	DownloadCount                  int64  `json:"downloadcount"`
 	DownloadURL                    string `json:"downloadurl"`
-	HashAlgo                       int    `json:"hashalgo"`
+	HashAlgo                       string `json:"hashalgo"`
 	HashDigest                     string `json:"hashdigest"`
 	Size                           int64  `json:"size,omitempty"`
 }
