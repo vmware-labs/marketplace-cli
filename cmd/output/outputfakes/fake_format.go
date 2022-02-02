@@ -114,17 +114,6 @@ type FakeFormat struct {
 	renderProductsReturnsOnCall map[int]struct {
 		result1 error
 	}
-	RenderSubscriptionsStub        func([]*models.Subscription) error
-	renderSubscriptionsMutex       sync.RWMutex
-	renderSubscriptionsArgsForCall []struct {
-		arg1 []*models.Subscription
-	}
-	renderSubscriptionsReturns struct {
-		result1 error
-	}
-	renderSubscriptionsReturnsOnCall map[int]struct {
-		result1 error
-	}
 	RenderVersionsStub        func(*models.Product) error
 	renderVersionsMutex       sync.RWMutex
 	renderVersionsArgsForCall []struct {
@@ -731,71 +720,6 @@ func (fake *FakeFormat) RenderProductsReturnsOnCall(i int, result1 error) {
 	}{result1}
 }
 
-func (fake *FakeFormat) RenderSubscriptions(arg1 []*models.Subscription) error {
-	var arg1Copy []*models.Subscription
-	if arg1 != nil {
-		arg1Copy = make([]*models.Subscription, len(arg1))
-		copy(arg1Copy, arg1)
-	}
-	fake.renderSubscriptionsMutex.Lock()
-	ret, specificReturn := fake.renderSubscriptionsReturnsOnCall[len(fake.renderSubscriptionsArgsForCall)]
-	fake.renderSubscriptionsArgsForCall = append(fake.renderSubscriptionsArgsForCall, struct {
-		arg1 []*models.Subscription
-	}{arg1Copy})
-	fake.recordInvocation("RenderSubscriptions", []interface{}{arg1Copy})
-	fake.renderSubscriptionsMutex.Unlock()
-	if fake.RenderSubscriptionsStub != nil {
-		return fake.RenderSubscriptionsStub(arg1)
-	}
-	if specificReturn {
-		return ret.result1
-	}
-	fakeReturns := fake.renderSubscriptionsReturns
-	return fakeReturns.result1
-}
-
-func (fake *FakeFormat) RenderSubscriptionsCallCount() int {
-	fake.renderSubscriptionsMutex.RLock()
-	defer fake.renderSubscriptionsMutex.RUnlock()
-	return len(fake.renderSubscriptionsArgsForCall)
-}
-
-func (fake *FakeFormat) RenderSubscriptionsCalls(stub func([]*models.Subscription) error) {
-	fake.renderSubscriptionsMutex.Lock()
-	defer fake.renderSubscriptionsMutex.Unlock()
-	fake.RenderSubscriptionsStub = stub
-}
-
-func (fake *FakeFormat) RenderSubscriptionsArgsForCall(i int) []*models.Subscription {
-	fake.renderSubscriptionsMutex.RLock()
-	defer fake.renderSubscriptionsMutex.RUnlock()
-	argsForCall := fake.renderSubscriptionsArgsForCall[i]
-	return argsForCall.arg1
-}
-
-func (fake *FakeFormat) RenderSubscriptionsReturns(result1 error) {
-	fake.renderSubscriptionsMutex.Lock()
-	defer fake.renderSubscriptionsMutex.Unlock()
-	fake.RenderSubscriptionsStub = nil
-	fake.renderSubscriptionsReturns = struct {
-		result1 error
-	}{result1}
-}
-
-func (fake *FakeFormat) RenderSubscriptionsReturnsOnCall(i int, result1 error) {
-	fake.renderSubscriptionsMutex.Lock()
-	defer fake.renderSubscriptionsMutex.Unlock()
-	fake.RenderSubscriptionsStub = nil
-	if fake.renderSubscriptionsReturnsOnCall == nil {
-		fake.renderSubscriptionsReturnsOnCall = make(map[int]struct {
-			result1 error
-		})
-	}
-	fake.renderSubscriptionsReturnsOnCall[i] = struct {
-		result1 error
-	}{result1}
-}
-
 func (fake *FakeFormat) RenderVersions(arg1 *models.Product) error {
 	fake.renderVersionsMutex.Lock()
 	ret, specificReturn := fake.renderVersionsReturnsOnCall[len(fake.renderVersionsArgsForCall)]
@@ -879,8 +803,6 @@ func (fake *FakeFormat) Invocations() map[string][][]interface{} {
 	defer fake.renderProductMutex.RUnlock()
 	fake.renderProductsMutex.RLock()
 	defer fake.renderProductsMutex.RUnlock()
-	fake.renderSubscriptionsMutex.RLock()
-	defer fake.renderSubscriptionsMutex.RUnlock()
 	fake.renderVersionsMutex.RLock()
 	defer fake.renderVersionsMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}

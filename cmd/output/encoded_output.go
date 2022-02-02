@@ -85,7 +85,3 @@ func (o *EncodedOutput) RenderFiles(files []*models.ProductDeploymentFile) error
 func (o *EncodedOutput) RenderAssets(assets []*pkg.Asset) error {
 	return o.Print(assets)
 }
-
-func (o *EncodedOutput) RenderSubscriptions(subscriptions []*models.Subscription) error {
-	return o.Print(subscriptions)
-}

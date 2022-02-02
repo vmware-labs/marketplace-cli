@@ -31,6 +31,4 @@ type Format interface {
 	RenderFiles(files []*models.ProductDeploymentFile) error
 
 	RenderAssets(assets []*pkg.Asset) error
-
-	RenderSubscriptions(subscriptions []*models.Subscription) error
 }

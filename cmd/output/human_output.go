@@ -339,13 +339,3 @@ func (o *HumanOutput) RenderAssets(assets []*pkg.Asset) error {
 
 	return nil
 }
-
-func (o *HumanOutput) RenderSubscriptions(subscriptions []*models.Subscription) error {
-	table := o.NewTable("ID", "Product ID", "Product Name", "Status")
-	for _, subscription := range subscriptions {
-		table.Append([]string{strconv.Itoa(subscription.ID), subscription.ProductID, subscription.ProductName, subscription.StatusText})
-	}
-	table.Render()
-	o.Printf("Total count: %d\n", len(subscriptions))
-	return nil
-}
