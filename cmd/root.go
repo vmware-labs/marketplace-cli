@@ -28,7 +28,7 @@ func RunSerially(funcs ...func(cmd *cobra.Command, args []string) error) func(cm
 
 func EnableDebugging(command *cobra.Command, _ []string) error {
 	if viper.GetBool("debugging.enabled") {
-		Marketplace.Client = pkg.EnableDebugging(viper.GetBool("debugging.print-request-payloads"), Marketplace.Client, command.ErrOrStderr())
+		Marketplace.EnableDebugging(viper.GetBool("debugging.print-request-payloads"), command.ErrOrStderr())
 	}
 	return nil
 }
@@ -36,7 +36,7 @@ func EnableDebugging(command *cobra.Command, _ []string) error {
 func ValidateOutputFormatFlag(command *cobra.Command, _ []string) error {
 	outputFormat := viper.GetString("output_format")
 	if outputFormat == output.FormatHuman {
-		Output = output.NewHumanOutput(command.OutOrStdout(), Marketplace.UIHost)
+		Output = output.NewHumanOutput(command.OutOrStdout(), Marketplace.GetUIHost())
 	} else if outputFormat == output.FormatJSON {
 		Output = output.NewJSONOutput(command.OutOrStdout())
 	} else if outputFormat == output.FormatYAML {
@@ -79,21 +79,26 @@ func init() {
 	_ = rootCmd.PersistentFlags().MarkHidden("csp-host")
 	_ = viper.BindPFlag("csp.host", rootCmd.PersistentFlags().Lookup("csp-host"))
 
-	Marketplace = &pkg.Marketplace{
-		Host:          "gtw.marketplace.cloud.vmware.com",
-		APIHost:       "api.marketplace.cloud.vmware.com",
-		UIHost:        "marketplace.cloud.vmware.com",
-		StorageBucket: "cspmarketplaceprd",
-		StorageRegion: "us-west-2",
-		Client:        pkg.NewClient(),
-		Output:        os.Stderr,
-	}
 	if os.Getenv("MARKETPLACE_ENV") == "staging" {
-		Marketplace.Host = "gtwstg.market.csp.vmware.com"
-		Marketplace.APIHost = "apistg.market.csp.vmware.com"
-		Marketplace.UIHost = "stg.market.csp.vmware.com"
-		Marketplace.StorageBucket = "cspmarketplacestage"
-		Marketplace.StorageRegion = "us-east-2"
+		Marketplace = &pkg.Marketplace{
+			Host:          "gtwstg.market.csp.vmware.com",
+			APIHost:       "apistg.market.csp.vmware.com",
+			UIHost:        "stg.market.csp.vmware.com",
+			StorageBucket: "cspmarketplacestage",
+			StorageRegion: "us-east-2",
+			Client:        pkg.NewClient(),
+			Output:        os.Stderr,
+		}
+	} else {
+		Marketplace = &pkg.Marketplace{
+			Host:          "gtw.marketplace.cloud.vmware.com",
+			APIHost:       "api.marketplace.cloud.vmware.com",
+			UIHost:        "marketplace.cloud.vmware.com",
+			StorageBucket: "cspmarketplaceprd",
+			StorageRegion: "us-west-2",
+			Client:        pkg.NewClient(),
+			Output:        os.Stderr,
+		}
 	}
 
 	viper.SetDefault("marketplace.strict-decoding", false)

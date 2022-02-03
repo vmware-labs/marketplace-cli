@@ -7,7 +7,6 @@ import (
 	"fmt"
 
 	"github.com/spf13/cobra"
-	"github.com/vmware-labs/marketplace-cli/v2/internal"
 	"github.com/vmware-labs/marketplace-cli/v2/internal/models"
 )
 
@@ -116,7 +115,7 @@ var AttachVMCmd = &cobra.Command{
 			return err
 		}
 
-		uploader := internal.NewS3Uploader(Marketplace.StorageBucket, Marketplace.StorageRegion, models.HashAlgoSHA1, product.PublisherDetails.OrgId, UploadCredentials)
+		uploader := Marketplace.GetUploader(product.PublisherDetails.OrgId, models.HashAlgoSHA1, UploadCredentials)
 		file, err := uploader.UploadFile(vmFile)
 		if err != nil {
 			return err

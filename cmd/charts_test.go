@@ -4,19 +4,12 @@
 package cmd_test
 
 import (
-	"bytes"
-	"encoding/json"
 	"fmt"
-	"io/ioutil"
-	"net/http"
 	"os"
-	"strings"
-	"time"
 
 	"github.com/google/uuid"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	. "github.com/onsi/gomega/gbytes"
 	"github.com/vmware-labs/marketplace-cli/v2/cmd"
 	"github.com/vmware-labs/marketplace-cli/v2/cmd/output/outputfakes"
 	"github.com/vmware-labs/marketplace-cli/v2/internal/internalfakes"
@@ -46,34 +39,29 @@ func createChart(name string) (string, string) {
 
 var _ = Describe("Charts", func() {
 	var (
-		stdout     *Buffer
-		stderr     *Buffer
-		httpClient *pkgfakes.FakeHTTPClient
-		output     *outputfakes.FakeFormat
-		uploader   *internalfakes.FakeUploader
+		marketplace *pkgfakes.FakeMarketplaceInterface
+		output      *outputfakes.FakeFormat
+		product     *models.Product
 	)
 
 	BeforeEach(func() {
-		httpClient = &pkgfakes.FakeHTTPClient{}
-		output = &outputfakes.FakeFormat{}
-		uploader = &internalfakes.FakeUploader{}
-		cmd.Output = output
-		cmd.Marketplace = &pkg.Marketplace{
-			Client:   httpClient,
-			Uploader: uploader,
+		marketplace = &pkgfakes.FakeMarketplaceInterface{}
+		cmd.Marketplace = marketplace
+
+		marketplace.GetProductWithVersionStub = func(slug string, version string) (*models.Product, *models.Version, error) {
+			Expect(slug).To(Equal("my-super-product"))
+			Expect(version).To(Equal("1.2.3"))
+			return product, &models.Version{Number: "1.2.3"}, nil
 		}
-		stdout = NewBuffer()
-		stderr = NewBuffer()
+
+		output = &outputfakes.FakeFormat{}
+		cmd.Output = output
 	})
 
 	Describe("ListChartsCmd", func() {
 		BeforeEach(func() {
-			product := test.CreateFakeProduct(
-				"",
-				"My Super Product",
-				"my-super-product",
-				"PENDING")
-			test.AddVerions(product, "1.2.3", "2.3.4")
+			product = test.CreateFakeProduct("", "My Super Product", "my-super-product", "PENDING")
+			test.AddVerions(product, "1.2.3")
 			product.ChartVersions = []*models.ChartVersion{
 				{
 					Id:         uuid.New().String(),
@@ -87,24 +75,6 @@ var _ = Describe("Charts", func() {
 					TarUrl:     "https://charts.bitnami.com/bitnami/kube-prometheus-5.0.0.tgz",
 				},
 			}
-			response := &pkg.GetProductResponse{
-				Response: &pkg.GetProductResponsePayload{
-					Data:       product,
-					StatusCode: http.StatusOK,
-					Message:    "testing",
-				},
-			}
-
-			responseBytes, err := json.Marshal(response)
-			Expect(err).ToNot(HaveOccurred())
-
-			httpClient.DoReturns(&http.Response{
-				StatusCode: http.StatusOK,
-				Body:       ioutil.NopCloser(bytes.NewReader(responseBytes)),
-			}, nil)
-
-			cmd.ListChartsCmd.SetOut(stdout)
-			cmd.ListChartsCmd.SetErr(stderr)
 		})
 
 		It("outputs the charts", func() {
@@ -113,13 +83,8 @@ var _ = Describe("Charts", func() {
 			err := cmd.ListChartsCmd.RunE(cmd.ListChartsCmd, []string{""})
 			Expect(err).ToNot(HaveOccurred())
 
-			By("sending the correct request", func() {
-				Expect(httpClient.DoCallCount()).To(Equal(1))
-				request := httpClient.DoArgsForCall(0)
-				Expect(request.Method).To(Equal("GET"))
-				Expect(request.URL.Path).To(Equal("/api/v1/products/my-super-product"))
-				Expect(request.URL.Query().Get("increaseViewCount")).To(Equal("false"))
-				Expect(request.URL.Query().Get("isSlug")).To(Equal("true"))
+			By("getting the product details", func() {
+				Expect(marketplace.GetProductWithVersionCallCount()).To(Equal(1))
 			})
 
 			By("outputting the response", func() {
@@ -135,25 +100,9 @@ var _ = Describe("Charts", func() {
 			})
 		})
 
-		Context("No product found", func() {
-			BeforeEach(func() {
-				httpClient.DoReturns(&http.Response{
-					StatusCode: http.StatusNotFound,
-				}, nil)
-			})
-
-			It("says there are no products", func() {
-				cmd.ChartProductSlug = "my-super-product"
-				cmd.ChartProductVersion = "1.2.3"
-				err := cmd.ListChartsCmd.RunE(cmd.ListChartsCmd, []string{""})
-				Expect(err).To(HaveOccurred())
-				Expect(err.Error()).To(Equal("product \"my-super-product\" not found"))
-			})
-		})
-
 		Context("Error fetching products", func() {
 			BeforeEach(func() {
-				httpClient.DoReturnsOnCall(0, nil, fmt.Errorf("request failed"))
+				marketplace.GetProductWithVersionReturns(nil, nil, fmt.Errorf("get product failed"))
 			})
 
 			It("prints the error", func() {
@@ -161,17 +110,7 @@ var _ = Describe("Charts", func() {
 				cmd.ChartProductVersion = "1.2.3"
 				err := cmd.ListChartsCmd.RunE(cmd.ListChartsCmd, []string{""})
 				Expect(err).To(HaveOccurred())
-				Expect(err.Error()).To(Equal("sending the request for product \"my-super-product\" failed: marketplace request failed: request failed"))
-			})
-		})
-
-		Context("No product version found", func() {
-			It("says that the version does not exist", func() {
-				cmd.ChartProductSlug = "my-super-product"
-				cmd.ChartProductVersion = "9.9.9"
-				err := cmd.ListChartsCmd.RunE(cmd.ListChartsCmd, []string{""})
-				Expect(err).To(HaveOccurred())
-				Expect(err.Error()).To(Equal("product \"my-super-product\" does not have a version 9.9.9"))
+				Expect(err.Error()).To(Equal("get product failed"))
 			})
 		})
 	})
@@ -179,12 +118,8 @@ var _ = Describe("Charts", func() {
 	Describe("GetChartCmd", func() {
 		var chartId string
 		BeforeEach(func() {
-			product := test.CreateFakeProduct(
-				"",
-				"My Super Product",
-				"my-super-product",
-				"PENDING")
-			test.AddVerions(product, "1.2.3", "2.3.4")
+			product = test.CreateFakeProduct("", "My Super Product", "my-super-product", "PENDING")
+			test.AddVerions(product, "1.2.3")
 			chartId = uuid.New().String()
 			product.ChartVersions = []*models.ChartVersion{
 				{
@@ -199,24 +134,6 @@ var _ = Describe("Charts", func() {
 					TarUrl:     "https://charts.bitnami.com/bitnami/kube-prometheus-5.0.0.tgz",
 				},
 			}
-			response := &pkg.GetProductResponse{
-				Response: &pkg.GetProductResponsePayload{
-					Data:       product,
-					StatusCode: http.StatusOK,
-					Message:    "testing",
-				},
-			}
-
-			responseBytes, err := json.Marshal(response)
-			Expect(err).ToNot(HaveOccurred())
-
-			httpClient.DoReturns(&http.Response{
-				StatusCode: http.StatusOK,
-				Body:       ioutil.NopCloser(bytes.NewReader(responseBytes)),
-			}, nil)
-
-			cmd.GetChartCmd.SetOut(stdout)
-			cmd.GetChartCmd.SetErr(stderr)
 		})
 
 		It("sends the right request", func() {
@@ -226,13 +143,8 @@ var _ = Describe("Charts", func() {
 			err := cmd.GetChartCmd.RunE(cmd.GetChartCmd, []string{""})
 			Expect(err).ToNot(HaveOccurred())
 
-			By("sending the correct request", func() {
-				Expect(httpClient.DoCallCount()).To(Equal(1))
-				request := httpClient.DoArgsForCall(0)
-				Expect(request.Method).To(Equal("GET"))
-				Expect(request.URL.Path).To(Equal("/api/v1/products/my-super-product"))
-				Expect(request.URL.Query().Get("increaseViewCount")).To(Equal("false"))
-				Expect(request.URL.Query().Get("isSlug")).To(Equal("true"))
+			By("getting the product details", func() {
+				Expect(marketplace.GetProductWithVersionCallCount()).To(Equal(1))
 			})
 
 			By("outputting the response", func() {
@@ -248,31 +160,18 @@ var _ = Describe("Charts", func() {
 			})
 		})
 
-		Context("No product found", func() {
+		Context("Error fetching product", func() {
 			BeforeEach(func() {
-				httpClient.DoReturns(&http.Response{
-					StatusCode: http.StatusNotFound,
-				}, nil)
+				marketplace.GetProductWithVersionReturns(nil, nil, fmt.Errorf("get product failed"))
 			})
 
-			It("says that the product was not found", func() {
+			It("prints the error", func() {
 				cmd.ChartProductSlug = "my-super-product"
 				cmd.ChartProductVersion = "1.2.3"
 				cmd.ChartID = chartId
 				err := cmd.GetChartCmd.RunE(cmd.GetChartCmd, []string{""})
 				Expect(err).To(HaveOccurred())
-				Expect(err.Error()).To(Equal("product \"my-super-product\" not found"))
-			})
-		})
-
-		Context("No version found", func() {
-			It("says that the version does not exist", func() {
-				cmd.ChartProductSlug = "my-super-product"
-				cmd.ChartProductVersion = "9.9.9"
-				cmd.ChartID = chartId
-				err := cmd.GetChartCmd.RunE(cmd.GetChartCmd, []string{""})
-				Expect(err).To(HaveOccurred())
-				Expect(err.Error()).To(Equal("product \"my-super-product\" does not have a version 9.9.9"))
+				Expect(err.Error()).To(Equal("get product failed"))
 			})
 		})
 
@@ -284,21 +183,6 @@ var _ = Describe("Charts", func() {
 				err := cmd.GetChartCmd.RunE(cmd.GetChartCmd, []string{""})
 				Expect(err).To(HaveOccurred())
 				Expect(err.Error()).To(Equal("my-super-product 1.2.3 does not have the chart \"this-chart-id-does-not-exist\""))
-			})
-		})
-
-		Context("Error fetching product", func() {
-			BeforeEach(func() {
-				httpClient.DoReturns(nil, fmt.Errorf("request failed"))
-			})
-
-			It("prints the error", func() {
-				cmd.ChartProductSlug = "my-super-product"
-				cmd.ChartProductVersion = "1.2.3"
-				cmd.ChartID = chartId
-				err := cmd.GetChartCmd.RunE(cmd.GetChartCmd, []string{""})
-				Expect(err).To(HaveOccurred())
-				Expect(err.Error()).To(Equal("sending the request for product \"my-super-product\" failed: marketplace request failed: request failed"))
 			})
 		})
 	})
@@ -321,82 +205,32 @@ var _ = Describe("Charts", func() {
 			}
 
 			productID = uuid.New().String()
-			product := test.CreateFakeProduct(
-				productID,
-				"My Super Product",
-				"my-super-product",
-				"PENDING")
+			product = test.CreateFakeProduct(productID, "My Super Product", "my-super-product", "PENDING")
 			test.AddVerions(product, "1.2.3")
 			product.ChartVersions = []*models.ChartVersion{existingChart}
-			response := &pkg.GetProductResponse{
-				Response: &pkg.GetProductResponsePayload{
-					Data:       product,
-					StatusCode: http.StatusOK,
-					Message:    "testing",
-				},
-			}
-			responseBytes, err := json.Marshal(response)
-			Expect(err).ToNot(HaveOccurred())
-
-			httpClient.DoReturnsOnCall(0, &http.Response{
-				StatusCode: http.StatusOK,
-				Body:       ioutil.NopCloser(bytes.NewReader(responseBytes)),
-			}, nil)
-
-			cmd.AttachChartCmd.SetOut(stdout)
-			cmd.AttachChartCmd.SetErr(stderr)
 		})
 
 		Context("chart in public URL", func() {
-			var chartDir string
-
 			BeforeEach(func() {
-				var chartPath string
-				chartPath, chartDir = createChart("mydatabase")
-				chartData, err := ioutil.ReadFile(chartPath)
-				Expect(err).ToNot(HaveOccurred())
-				httpClient.DoReturnsOnCall(1, &http.Response{
-					StatusCode: http.StatusOK,
-					Body:       ioutil.NopCloser(bytes.NewReader(chartData)),
-				}, nil)
-
 				newChart := &models.ChartVersion{
 					Id:         uuid.New().String(),
 					HelmTarUrl: "https://charts.nitbami.com/nitbami/charts/mydatabase-0.1.0.tgz",
 					Version:    "0.1.0",
-					AppVersion: "1.2.3",
 					Repo: &models.Repo{
 						Name: "mydatabase",
 					},
 					IsExternalUrl: true,
 				}
+				marketplace.DownloadChartReturns(newChart, nil)
 
-				product := test.CreateFakeProduct(
+				updatedProduct := test.CreateFakeProduct(
 					productID,
 					"My Super Product",
 					"my-super-product",
 					"PENDING")
-				test.AddVerions(product, "1.2.3")
-				product.ChartVersions = []*models.ChartVersion{existingChart, newChart}
-				response := &pkg.GetProductResponse{
-					Response: &pkg.GetProductResponsePayload{
-						Data:       product,
-						StatusCode: http.StatusOK,
-						Message:    "testing",
-					},
-				}
-				responseBytes, err := json.Marshal(response)
-				Expect(err).ToNot(HaveOccurred())
-
-				httpClient.DoReturnsOnCall(2, &http.Response{
-					StatusCode: http.StatusOK,
-					Body:       ioutil.NopCloser(bytes.NewReader(responseBytes)),
-				}, nil)
-			})
-
-			AfterEach(func() {
-				err := os.RemoveAll(chartDir)
-				Expect(err).ToNot(HaveOccurred())
+				test.AddVerions(updatedProduct, "1.2.3")
+				updatedProduct.ChartVersions = []*models.ChartVersion{existingChart, newChart}
+				marketplace.PutProductReturns(updatedProduct, nil)
 			})
 
 			It("sends the right requests", func() {
@@ -407,30 +241,20 @@ var _ = Describe("Charts", func() {
 				err := cmd.AttachChartCmd.RunE(cmd.AttachChartCmd, []string{""})
 				Expect(err).ToNot(HaveOccurred())
 
-				Expect(httpClient.DoCallCount()).To(Equal(3))
-				By("first, getting the product", func() {
-					request := httpClient.DoArgsForCall(0)
-					Expect(request.Method).To(Equal("GET"))
-					Expect(request.URL.Path).To(Equal("/api/v1/products/my-super-product"))
-					Expect(request.URL.Query().Get("increaseViewCount")).To(Equal("false"))
-					Expect(request.URL.Query().Get("isSlug")).To(Equal("true"))
+				By("getting the product details", func() {
+					Expect(marketplace.GetProductWithVersionCallCount()).To(Equal(1))
 				})
 
-				By("second, downloading the chart", func() {
-					request := httpClient.DoArgsForCall(1)
-					Expect(request.Method).To(Equal("GET"))
-					Expect(request.URL.String()).To(Equal("https://charts.nitbami.com/nitbami/charts/mydatabase-0.1.0.tgz"))
+				By("downloading the public chart", func() {
+					Expect(marketplace.DownloadChartCallCount()).To(Equal(1))
+					chartUrl := marketplace.DownloadChartArgsForCall(0)
+					Expect(chartUrl.String()).To(Equal("https://charts.nitbami.com/nitbami/charts/mydatabase-0.1.0.tgz"))
 				})
 
-				By("third, attaching the chart", func() {
-					request := httpClient.DoArgsForCall(2)
-					Expect(request.Method).To(Equal("PUT"))
-					Expect(request.URL.Path).To(Equal(fmt.Sprintf("/api/v1/products/%s", productID)))
-					updatedProduct := &models.Product{}
-					requestBody, err := ioutil.ReadAll(request.Body)
-					Expect(err).ToNot(HaveOccurred())
-					err = json.Unmarshal(requestBody, updatedProduct)
-					Expect(err).ToNot(HaveOccurred())
+				By("updating the product with the new chart object", func() {
+					Expect(marketplace.PutProductCallCount()).To(Equal(1))
+					updatedProduct, versionUpdate := marketplace.PutProductArgsForCall(0)
+					Expect(versionUpdate).To(BeFalse())
 
 					Expect(updatedProduct.DeploymentTypes).To(ContainElement("HELM"))
 					Expect(updatedProduct.ChartVersions).To(HaveLen(1))
@@ -450,37 +274,15 @@ var _ = Describe("Charts", func() {
 
 			Context("Error putting product", func() {
 				BeforeEach(func() {
-					httpClient.DoReturnsOnCall(2,
-						&http.Response{
-							StatusCode: http.StatusTeapot,
-							Body:       ioutil.NopCloser(strings.NewReader("Teapots all the way down")),
-						}, nil)
+					marketplace.PutProductReturns(nil, fmt.Errorf("put product failed"))
 				})
-				It("prints the error", func() {
+				It("returns an error", func() {
 					cmd.ChartProductSlug = "my-super-product"
 					cmd.ChartProductVersion = "1.2.3"
 					cmd.ChartURL = "https://charts.nitbami.com/nitbami/charts/mydatabase-0.1.0.tgz"
 					err := cmd.AttachChartCmd.RunE(cmd.AttachChartCmd, []string{""})
 					Expect(err).To(HaveOccurred())
-					Expect(err.Error()).To(Equal("updating product \"my-super-product\" failed: (418)\nTeapots all the way down"))
-				})
-			})
-
-			Context("No permission to update product", func() {
-				BeforeEach(func() {
-					httpClient.DoReturnsOnCall(2,
-						&http.Response{
-							StatusCode: http.StatusForbidden,
-							Body:       ioutil.NopCloser(strings.NewReader("{\"response\":{\"message\":\"User is not authorized to perform this action\"}}\n")),
-						}, nil)
-				})
-				It("prints the error", func() {
-					cmd.ChartProductSlug = "my-super-product"
-					cmd.ChartProductVersion = "1.2.3"
-					cmd.ChartURL = "https://charts.nitbami.com/nitbami/charts/mydatabase-0.1.0.tgz"
-					err := cmd.AttachChartCmd.RunE(cmd.AttachChartCmd, []string{""})
-					Expect(err).To(HaveOccurred())
-					Expect(err.Error()).To(Equal("you do not have permission to modify the product \"my-super-product\""))
+					Expect(err.Error()).To(Equal("put product failed"))
 				})
 			})
 		})
@@ -489,6 +291,7 @@ var _ = Describe("Charts", func() {
 			var (
 				chartDir  string
 				chartPath string
+				uploader  *internalfakes.FakeUploader
 			)
 
 			BeforeEach(func() {
@@ -505,29 +308,14 @@ var _ = Describe("Charts", func() {
 					IsExternalUrl: true,
 				}
 
-				product := test.CreateFakeProduct(
-					productID,
-					"My Super Product",
-					"my-super-product",
-					"PENDING")
-				test.AddVerions(product, "1.2.3")
-				product.ChartVersions = []*models.ChartVersion{existingChart, newChart}
-
-				uploader.UploadReturns("https://www.example.com/storage/mydatabase-0.1.0.tgz", nil)
-				httpClient.DoReturnsOnCall(1, ResponseWithPayload(&pkg.CredentialsResponse{
-					AccessID:     "access_id",
-					AccessKey:    "access_key",
-					SessionToken: "session_token",
-					Expiration:   time.Now(),
-				}), nil)
-
-				httpClient.DoReturnsOnCall(2, ResponseWithPayload(&pkg.GetProductResponse{
-					Response: &pkg.GetProductResponsePayload{
-						Data:       product,
-						StatusCode: http.StatusOK,
-						Message:    "testing",
-					},
-				}), nil)
+				updatedProduct := test.CreateFakeProduct(productID, "My Super Product", "my-super-product", "PENDING")
+				test.AddVerions(updatedProduct, "1.2.3")
+				updatedProduct.ChartVersions = []*models.ChartVersion{existingChart, newChart}
+				marketplace.PutProductReturns(updatedProduct, nil)
+				marketplace.GetUploadCredentialsReturns(&pkg.CredentialsResponse{}, nil)
+				uploader = &internalfakes.FakeUploader{}
+				uploader.UploadReturns("https://marketplace.example.vmware.com/uploader/mydatabase-0.1.0.tgz", nil)
+				marketplace.GetUploaderReturns(uploader)
 			})
 
 			AfterEach(func() {
@@ -543,41 +331,27 @@ var _ = Describe("Charts", func() {
 				err := cmd.AttachChartCmd.RunE(cmd.AttachChartCmd, []string{""})
 				Expect(err).ToNot(HaveOccurred())
 
-				Expect(httpClient.DoCallCount()).To(Equal(3))
-				By("first, getting the product", func() {
-					request := httpClient.DoArgsForCall(0)
-					Expect(request.Method).To(Equal("GET"))
-					Expect(request.URL.Path).To(Equal("/api/v1/products/my-super-product"))
-					Expect(request.URL.Query().Get("increaseViewCount")).To(Equal("false"))
-					Expect(request.URL.Query().Get("isSlug")).To(Equal("true"))
+				By("getting the product details", func() {
+					Expect(marketplace.GetProductWithVersionCallCount()).To(Equal(1))
 				})
 
-				By("second, uploading the chart", func() {
-					request := httpClient.DoArgsForCall(1)
-					Expect(request.Method).To(Equal("GET"))
-					Expect(request.URL.Path).To(Equal("/aws/credentials/generate"))
-
+				By("uploadeding the chart", func() {
 					Expect(uploader.UploadCallCount()).To(Equal(1))
-					uploadedFile := uploader.UploadArgsForCall(0)
-					Expect(uploadedFile).To(Equal(chartPath))
+					uploadedChartURL := uploader.UploadArgsForCall(0)
+					Expect(uploadedChartURL).To(Equal(chartPath))
 				})
 
-				By("third, attaching the chart", func() {
-					request := httpClient.DoArgsForCall(2)
-					Expect(request.Method).To(Equal("PUT"))
-					Expect(request.URL.Path).To(Equal(fmt.Sprintf("/api/v1/products/%s", productID)))
-					updatedProduct := &models.Product{}
-					requestBody, err := ioutil.ReadAll(request.Body)
-					Expect(err).ToNot(HaveOccurred())
-					err = json.Unmarshal(requestBody, updatedProduct)
-					Expect(err).ToNot(HaveOccurred())
+				By("updating the product with the new chart object", func() {
+					Expect(marketplace.PutProductCallCount()).To(Equal(1))
+					updatedProduct, versionUpdate := marketplace.PutProductArgsForCall(0)
+					Expect(versionUpdate).To(BeFalse())
 
 					Expect(updatedProduct.DeploymentTypes).To(ContainElement("HELM"))
 					Expect(updatedProduct.ChartVersions).To(HaveLen(1))
 					newChart := updatedProduct.ChartVersions[0]
 					Expect(newChart.AppVersion).To(Equal("1.2.3"))
 					Expect(newChart.Version).To(Equal("0.1.0"))
-					Expect(newChart.HelmTarUrl).To(Equal("https://www.example.com/storage/mydatabase-0.1.0.tgz"))
+					Expect(newChart.HelmTarUrl).To(Equal("https://marketplace.example.vmware.com/uploader/mydatabase-0.1.0.tgz"))
 					Expect(newChart.Repo.Name).To(Equal("mydatabase"))
 				})
 
@@ -589,32 +363,18 @@ var _ = Describe("Charts", func() {
 			})
 		})
 
-		Context("No product found", func() {
+		Context("Error fetching product", func() {
 			BeforeEach(func() {
-				httpClient.DoReturnsOnCall(0,
-					&http.Response{
-						StatusCode: http.StatusNotFound,
-					}, nil)
+				marketplace.GetProductWithVersionReturns(nil, nil, fmt.Errorf("get product failed"))
 			})
 
-			It("says that the product was not found", func() {
+			It("returns an error", func() {
 				cmd.ChartProductSlug = "my-super-product"
 				cmd.ChartProductVersion = "1.2.3"
 				cmd.ChartURL = "https://charts.nitbami.com/nitbami/charts/mydatabase-0.1.0.tgz"
 				err := cmd.AttachChartCmd.RunE(cmd.AttachChartCmd, []string{""})
 				Expect(err).To(HaveOccurred())
-				Expect(err.Error()).To(Equal("product \"my-super-product\" not found"))
-			})
-		})
-
-		Context("No product version found", func() {
-			It("says there are no versions", func() {
-				cmd.ChartProductSlug = "my-super-product"
-				cmd.ChartProductVersion = "0.0.0"
-				cmd.ChartURL = "https://charts.nitbami.com/nitbami/charts/mydatabase-0.1.0.tgz"
-				err := cmd.AttachChartCmd.RunE(cmd.AttachChartCmd, []string{""})
-				Expect(err).To(HaveOccurred())
-				Expect(err.Error()).To(Equal("product \"my-super-product\" does not have a version 0.0.0"))
+				Expect(err.Error()).To(Equal("get product failed"))
 			})
 		})
 	})

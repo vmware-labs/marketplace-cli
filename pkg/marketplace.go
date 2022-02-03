@@ -7,12 +7,43 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"net/url"
 
+	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/spf13/viper"
 	"github.com/vmware-labs/marketplace-cli/v2/internal"
+	"github.com/vmware-labs/marketplace-cli/v2/internal/models"
 )
+
+//go:generate counterfeiter . MarketplaceInterface
+type MarketplaceInterface interface {
+	EnableDebugging(printRequestPayloads bool, writer io.Writer)
+	EnableStrictDecoding()
+	DecodeJson(input io.Reader, output interface{}) error
+
+	MakeURL(path string, params url.Values) *url.URL
+	SendRequest(method string, requestURL *url.URL, headers map[string]string, content io.Reader) (*http.Response, error)
+
+	GetAPIHost() string
+	GetUIHost() string
+
+	ListProducts(allOrgs bool, searchTerm string) ([]*models.Product, error)
+	Get(requestURL *url.URL) (*http.Response, error)
+	GetProduct(slug string) (*models.Product, error)
+	GetProductWithVersion(slug, version string) (*models.Product, *models.Version, error)
+
+	Post(requestURL *url.URL, content io.Reader, contentType string) (*http.Response, error)
+
+	Put(requestURL *url.URL, content io.Reader, contentType string) (*http.Response, error)
+	PutProduct(product *models.Product, versionUpdate bool) (*models.Product, error)
+
+	GetUploadCredentials() (*CredentialsResponse, error)
+	GetUploader(orgID, hashAlgorithm string, credentials aws.Credentials) internal.Uploader
+	Download(productId string, filename string, payload *DownloadRequestPayload) error
+	DownloadChart(chartURL *url.URL) (*models.ChartVersion, error)
+}
 
 type Marketplace struct {
 	Host           string
@@ -22,12 +53,30 @@ type Marketplace struct {
 	StorageRegion  string
 	Client         HTTPClient
 	Output         io.Writer
-	Uploader       internal.Uploader
+	uploader       internal.Uploader
 	strictDecoding bool
 }
 
 func (m *Marketplace) EnableStrictDecoding() {
 	m.strictDecoding = true
+}
+
+func (m *Marketplace) EnableDebugging(printRequestPayloads bool, writer io.Writer) {
+	m.Client = &DebuggingClient{
+		client:               m.Client,
+		logger:               log.New(writer, "", log.LstdFlags),
+		printRequestPayloads: printRequestPayloads,
+		printResposePayloads: false,
+		requestID:            0,
+	}
+}
+
+func (m *Marketplace) GetAPIHost() string {
+	return m.APIHost
+}
+
+func (m *Marketplace) GetUIHost() string {
+	return m.UIHost
 }
 
 func (m *Marketplace) DecodeJson(input io.Reader, output interface{}) error {

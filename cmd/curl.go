@@ -43,7 +43,7 @@ var curlCmd = &cobra.Command{
 
 		requestURL := Marketplace.MakeURL(inputURL.Path, inputURL.Query())
 		if useAPIHost {
-			requestURL.Host = Marketplace.APIHost
+			requestURL.Host = Marketplace.GetAPIHost()
 		}
 
 		cmd.PrintErrf("Sending %s request to %s...\n", method, requestURL.String())
