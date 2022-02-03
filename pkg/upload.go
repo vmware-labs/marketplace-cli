@@ -46,8 +46,8 @@ func (m *Marketplace) GetUploadCredentials() (*CredentialsResponse, error) {
 }
 
 func (m *Marketplace) GetUploader(orgID, hashAlgorithm string, credentials aws.Credentials) internal.Uploader {
-	if m.Uploader == nil {
+	if m.uploader == nil {
 		return internal.NewS3Uploader(m.StorageBucket, m.StorageRegion, hashAlgorithm, orgID, credentials)
 	}
-	return m.Uploader
+	return m.uploader
 }

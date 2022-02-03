@@ -55,13 +55,3 @@ func (c *DebuggingClient) printPayload(name string, payload io.ReadCloser) io.Re
 
 	return io.NopCloser(bytes.NewReader(content))
 }
-
-func EnableDebugging(printRequestPayloads bool, existingClient HTTPClient, writer io.Writer) HTTPClient {
-	return &DebuggingClient{
-		client:               existingClient,
-		logger:               log.New(writer, "", log.LstdFlags),
-		printRequestPayloads: printRequestPayloads,
-		printResposePayloads: false,
-		requestID:            0,
-	}
-}

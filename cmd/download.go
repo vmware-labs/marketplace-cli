@@ -29,6 +29,16 @@ func init() {
 
 }
 
+func filterAssets(filter string, assets []*pkg.Asset) []*pkg.Asset {
+	var filteredAssets []*pkg.Asset
+	for _, asset := range assets {
+		if strings.Contains(asset.Filename, filter) {
+			filteredAssets = append(filteredAssets, asset)
+		}
+	}
+	return filteredAssets
+}
+
 var DownloadCmd = &cobra.Command{
 	Use:   "download",
 	Short: "Download an asset from a product",
@@ -45,25 +55,23 @@ var DownloadCmd = &cobra.Command{
 		assets := pkg.GetAssets(product, version.Number)
 		if len(assets) == 0 {
 			return fmt.Errorf("product %s %s does not have any downloadable assets", product.Slug, version.Number)
-		} else if len(assets) > 1 {
-			if DownloadFilter == "" {
+		}
+
+		if DownloadFilter == "" {
+			asset = assets[0]
+			if len(assets) > 1 {
 				return fmt.Errorf("product %s %s has multiple downloadable assets, please use the --filter parameter", product.Slug, version.Number)
-			} else {
-				for _, potentialAsset := range assets {
-					if strings.Contains(potentialAsset.Filename, DownloadFilter) {
-						if asset == nil {
-							asset = potentialAsset
-						} else {
-							return fmt.Errorf("product %s %s has multiple downloadable assets that match the filter \"%s\", please adjust the --filter parameter", product.Slug, version.Number, DownloadFilter)
-						}
-					}
-				}
-				if asset == nil {
-					return fmt.Errorf("product %s %s does not have any downloadable assets that match the filter \"%s\", please adjust the --filter parameter", product.Slug, version.Number, DownloadFilter)
-				}
 			}
 		} else {
-			asset = assets[0]
+			filterAssets := filterAssets(DownloadFilter, assets)
+			if len(filterAssets) == 0 {
+				return fmt.Errorf("product %s %s does not have any downloadable assets that match the filter \"%s\", please adjust the --filter parameter", product.Slug, version.Number, DownloadFilter)
+			}
+
+			asset = filterAssets[0]
+			if len(filterAssets) > 1 {
+				return fmt.Errorf("product %s %s has multiple downloadable assets that match the filter \"%s\", please adjust the --filter parameter", product.Slug, version.Number, DownloadFilter)
+			}
 		}
 
 		filename := asset.Filename

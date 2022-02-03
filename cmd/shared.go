@@ -10,7 +10,7 @@ import (
 )
 
 var (
-	Marketplace       *pkg.Marketplace
+	Marketplace       pkg.MarketplaceInterface
 	Output            output.Format
 	UploadCredentials = aws.Credentials{}
 )
