@@ -231,7 +231,6 @@ jobs:
                 - name: image
               params:
                 BUILD_ARGS_FILE: args-file/args.env
-                REGISTRY_MIRRORS: mirror.kokoni.info
               run:
                 path: build
           - put: mkpcli
@@ -626,7 +625,6 @@ jobs:
                 - name: image
               params:
                 BUILD_ARGS_FILE: args-file/args.env
-                REGISTRY_MIRRORS: mirror.kokoni.info
               run:
                 path: build
         - do:
