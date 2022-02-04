@@ -28,8 +28,9 @@ var _ = Describe("Asset", func() {
 					Id:         uuid.New().String(),
 					Version:    "1.0.0",
 					AppVersion: "1",
+					HelmTarUrl: "https://mychart.registry.examle.com/hyperspace-database-1.0.0.tgz",
 					Repo: &models.Repo{
-						Name: "hyperspace-database",
+						Name: "My registry",
 					},
 					Size:                           5000,
 					DownloadCount:                  10,
@@ -38,11 +39,11 @@ var _ = Describe("Asset", func() {
 				product.AddChart(chart)
 			})
 
-			It("returns the container image", func() {
+			It("returns the chart", func() {
 				assets := pkg.GetAssets(product, "1")
 				Expect(assets).To(HaveLen(1))
 
-				Expect(assets[0].DisplayName).To(Equal("hyperspace-database"))
+				Expect(assets[0].DisplayName).To(Equal("https://mychart.registry.examle.com/hyperspace-database-1.0.0.tgz"))
 				Expect(assets[0].Filename).To(Equal("chart.tgz"))
 				Expect(assets[0].Version).To(Equal("1.0.0"))
 				Expect(assets[0].Type).To(Equal("Chart"))

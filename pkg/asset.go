@@ -53,7 +53,7 @@ func GetAssets(product *models.Product, version string) []*Asset {
 
 	for _, chart := range product.GetChartsForVersion(version) {
 		assets = append(assets, &Asset{
-			DisplayName:  chart.Repo.Name,
+			DisplayName:  chart.HelmTarUrl,
 			Filename:     "chart.tgz",
 			Version:      chart.Version,
 			Type:         AssetTypeChart,

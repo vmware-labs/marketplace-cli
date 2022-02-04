@@ -12,17 +12,12 @@ fi
 
 # Get the name for the first vm
 FILES=$(mkpcli vm list --product "${PRODUCT_SLUG}" --product-version "${PRODUCT_VERSION}" --output json)
-FILE_NAME=$(echo "${FILES}" | jq -r .[0].filename)
+NAME=$(echo "${FILES}" | jq -r .[0].name)
 STATUS=$(echo "${FILES}" | jq -r .[0].status)
 
 if [ "${STATUS}" == "APPROVAL_PENDING" ] || [ "${STATUS}" == "ACTIVE" ] ; then
-  # Download the file
-  mkpcli download --product "${PRODUCT_SLUG}" --product-version "${PRODUCT_VERSION}" \
-    --filter "${FILE_NAME}" \
-    --filename my-file
-
-  # Downloaded virtual machine file is a real file
-  test -f my-file
+  mkpcli download --product "${PRODUCT_SLUG}" --product-version "${PRODUCT_VERSION}" --filter "${NAME}" --filename my-file
+  test -f my-file  # Downloaded virtual machine file is a real file
 elif [ "${STATUS}" == "INACTIVE" ] ; then
   echo "VM file is not downloadable"
   echo "${FILES}" | jq -r .[0].comment

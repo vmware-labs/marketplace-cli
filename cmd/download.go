@@ -32,7 +32,7 @@ func init() {
 func filterAssets(filter string, assets []*pkg.Asset) []*pkg.Asset {
 	var filteredAssets []*pkg.Asset
 	for _, asset := range assets {
-		if strings.Contains(asset.Filename, filter) {
+		if strings.Contains(asset.DisplayName, filter) {
 			filteredAssets = append(filteredAssets, asset)
 		}
 	}
