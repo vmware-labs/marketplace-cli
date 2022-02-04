@@ -10,14 +10,6 @@ resource_types:
       repository: harbor-repo.vmware.com/dockerhub-proxy-cache/concourse/github-release-resource
       tag: 1.6.4
 
-  - name: helm-chart
-    type: registry-image
-    source:
-      repository: harbor-repo.vmware.com/dockerhub-proxy-cache/jghiloni/helm-chart-resource
-      tag: v0.1.1
-      username: ((harbor.username))
-      password: ((harbor.token))
-
   - name: pull-request
     type: docker-image
     source:
