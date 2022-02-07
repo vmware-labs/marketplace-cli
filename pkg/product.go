@@ -172,6 +172,7 @@ func (m *Marketplace) GetProductWithVersion(slug, version string) (*models.Produ
 		return nil, nil, fmt.Errorf("product \"%s\" does not have a version %s", slug, version)
 	}
 
+	product.CurrentVersion = product.GetVersion(version).Number
 	return product, product.GetVersion(version), nil
 }
 

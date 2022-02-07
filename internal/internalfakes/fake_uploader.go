@@ -5,256 +5,182 @@ import (
 	"sync"
 
 	"github.com/vmware-labs/marketplace-cli/v2/internal"
-	"github.com/vmware-labs/marketplace-cli/v2/internal/models"
 )
 
 type FakeUploader struct {
-	HashStub        func(string) (string, string, error)
-	hashMutex       sync.RWMutex
-	hashArgsForCall []struct {
+	UploadMediaFileStub        func(string) (string, string, error)
+	uploadMediaFileMutex       sync.RWMutex
+	uploadMediaFileArgsForCall []struct {
 		arg1 string
 	}
-	hashReturns struct {
+	uploadMediaFileReturns struct {
 		result1 string
 		result2 string
 		result3 error
 	}
-	hashReturnsOnCall map[int]struct {
+	uploadMediaFileReturnsOnCall map[int]struct {
 		result1 string
 		result2 string
 		result3 error
 	}
-	UploadStub        func(string) (string, error)
-	uploadMutex       sync.RWMutex
-	uploadArgsForCall []struct {
+	UploadProductFileStub        func(string) (string, string, error)
+	uploadProductFileMutex       sync.RWMutex
+	uploadProductFileArgsForCall []struct {
 		arg1 string
 	}
-	uploadReturns struct {
+	uploadProductFileReturns struct {
 		result1 string
-		result2 error
+		result2 string
+		result3 error
 	}
-	uploadReturnsOnCall map[int]struct {
+	uploadProductFileReturnsOnCall map[int]struct {
 		result1 string
-		result2 error
-	}
-	UploadFileStub        func(string) (*models.ProductDeploymentFile, error)
-	uploadFileMutex       sync.RWMutex
-	uploadFileArgsForCall []struct {
-		arg1 string
-	}
-	uploadFileReturns struct {
-		result1 *models.ProductDeploymentFile
-		result2 error
-	}
-	uploadFileReturnsOnCall map[int]struct {
-		result1 *models.ProductDeploymentFile
-		result2 error
+		result2 string
+		result3 error
 	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
 }
 
-func (fake *FakeUploader) Hash(arg1 string) (string, string, error) {
-	fake.hashMutex.Lock()
-	ret, specificReturn := fake.hashReturnsOnCall[len(fake.hashArgsForCall)]
-	fake.hashArgsForCall = append(fake.hashArgsForCall, struct {
+func (fake *FakeUploader) UploadMediaFile(arg1 string) (string, string, error) {
+	fake.uploadMediaFileMutex.Lock()
+	ret, specificReturn := fake.uploadMediaFileReturnsOnCall[len(fake.uploadMediaFileArgsForCall)]
+	fake.uploadMediaFileArgsForCall = append(fake.uploadMediaFileArgsForCall, struct {
 		arg1 string
 	}{arg1})
-	fake.recordInvocation("Hash", []interface{}{arg1})
-	fake.hashMutex.Unlock()
-	if fake.HashStub != nil {
-		return fake.HashStub(arg1)
+	fake.recordInvocation("UploadMediaFile", []interface{}{arg1})
+	fake.uploadMediaFileMutex.Unlock()
+	if fake.UploadMediaFileStub != nil {
+		return fake.UploadMediaFileStub(arg1)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2, ret.result3
 	}
-	fakeReturns := fake.hashReturns
+	fakeReturns := fake.uploadMediaFileReturns
 	return fakeReturns.result1, fakeReturns.result2, fakeReturns.result3
 }
 
-func (fake *FakeUploader) HashCallCount() int {
-	fake.hashMutex.RLock()
-	defer fake.hashMutex.RUnlock()
-	return len(fake.hashArgsForCall)
+func (fake *FakeUploader) UploadMediaFileCallCount() int {
+	fake.uploadMediaFileMutex.RLock()
+	defer fake.uploadMediaFileMutex.RUnlock()
+	return len(fake.uploadMediaFileArgsForCall)
 }
 
-func (fake *FakeUploader) HashCalls(stub func(string) (string, string, error)) {
-	fake.hashMutex.Lock()
-	defer fake.hashMutex.Unlock()
-	fake.HashStub = stub
+func (fake *FakeUploader) UploadMediaFileCalls(stub func(string) (string, string, error)) {
+	fake.uploadMediaFileMutex.Lock()
+	defer fake.uploadMediaFileMutex.Unlock()
+	fake.UploadMediaFileStub = stub
 }
 
-func (fake *FakeUploader) HashArgsForCall(i int) string {
-	fake.hashMutex.RLock()
-	defer fake.hashMutex.RUnlock()
-	argsForCall := fake.hashArgsForCall[i]
+func (fake *FakeUploader) UploadMediaFileArgsForCall(i int) string {
+	fake.uploadMediaFileMutex.RLock()
+	defer fake.uploadMediaFileMutex.RUnlock()
+	argsForCall := fake.uploadMediaFileArgsForCall[i]
 	return argsForCall.arg1
 }
 
-func (fake *FakeUploader) HashReturns(result1 string, result2 string, result3 error) {
-	fake.hashMutex.Lock()
-	defer fake.hashMutex.Unlock()
-	fake.HashStub = nil
-	fake.hashReturns = struct {
+func (fake *FakeUploader) UploadMediaFileReturns(result1 string, result2 string, result3 error) {
+	fake.uploadMediaFileMutex.Lock()
+	defer fake.uploadMediaFileMutex.Unlock()
+	fake.UploadMediaFileStub = nil
+	fake.uploadMediaFileReturns = struct {
 		result1 string
 		result2 string
 		result3 error
 	}{result1, result2, result3}
 }
 
-func (fake *FakeUploader) HashReturnsOnCall(i int, result1 string, result2 string, result3 error) {
-	fake.hashMutex.Lock()
-	defer fake.hashMutex.Unlock()
-	fake.HashStub = nil
-	if fake.hashReturnsOnCall == nil {
-		fake.hashReturnsOnCall = make(map[int]struct {
+func (fake *FakeUploader) UploadMediaFileReturnsOnCall(i int, result1 string, result2 string, result3 error) {
+	fake.uploadMediaFileMutex.Lock()
+	defer fake.uploadMediaFileMutex.Unlock()
+	fake.UploadMediaFileStub = nil
+	if fake.uploadMediaFileReturnsOnCall == nil {
+		fake.uploadMediaFileReturnsOnCall = make(map[int]struct {
 			result1 string
 			result2 string
 			result3 error
 		})
 	}
-	fake.hashReturnsOnCall[i] = struct {
+	fake.uploadMediaFileReturnsOnCall[i] = struct {
 		result1 string
 		result2 string
 		result3 error
 	}{result1, result2, result3}
 }
 
-func (fake *FakeUploader) Upload(arg1 string) (string, error) {
-	fake.uploadMutex.Lock()
-	ret, specificReturn := fake.uploadReturnsOnCall[len(fake.uploadArgsForCall)]
-	fake.uploadArgsForCall = append(fake.uploadArgsForCall, struct {
+func (fake *FakeUploader) UploadProductFile(arg1 string) (string, string, error) {
+	fake.uploadProductFileMutex.Lock()
+	ret, specificReturn := fake.uploadProductFileReturnsOnCall[len(fake.uploadProductFileArgsForCall)]
+	fake.uploadProductFileArgsForCall = append(fake.uploadProductFileArgsForCall, struct {
 		arg1 string
 	}{arg1})
-	fake.recordInvocation("Upload", []interface{}{arg1})
-	fake.uploadMutex.Unlock()
-	if fake.UploadStub != nil {
-		return fake.UploadStub(arg1)
+	fake.recordInvocation("UploadProductFile", []interface{}{arg1})
+	fake.uploadProductFileMutex.Unlock()
+	if fake.UploadProductFileStub != nil {
+		return fake.UploadProductFileStub(arg1)
 	}
 	if specificReturn {
-		return ret.result1, ret.result2
+		return ret.result1, ret.result2, ret.result3
 	}
-	fakeReturns := fake.uploadReturns
-	return fakeReturns.result1, fakeReturns.result2
+	fakeReturns := fake.uploadProductFileReturns
+	return fakeReturns.result1, fakeReturns.result2, fakeReturns.result3
 }
 
-func (fake *FakeUploader) UploadCallCount() int {
-	fake.uploadMutex.RLock()
-	defer fake.uploadMutex.RUnlock()
-	return len(fake.uploadArgsForCall)
+func (fake *FakeUploader) UploadProductFileCallCount() int {
+	fake.uploadProductFileMutex.RLock()
+	defer fake.uploadProductFileMutex.RUnlock()
+	return len(fake.uploadProductFileArgsForCall)
 }
 
-func (fake *FakeUploader) UploadCalls(stub func(string) (string, error)) {
-	fake.uploadMutex.Lock()
-	defer fake.uploadMutex.Unlock()
-	fake.UploadStub = stub
+func (fake *FakeUploader) UploadProductFileCalls(stub func(string) (string, string, error)) {
+	fake.uploadProductFileMutex.Lock()
+	defer fake.uploadProductFileMutex.Unlock()
+	fake.UploadProductFileStub = stub
 }
 
-func (fake *FakeUploader) UploadArgsForCall(i int) string {
-	fake.uploadMutex.RLock()
-	defer fake.uploadMutex.RUnlock()
-	argsForCall := fake.uploadArgsForCall[i]
+func (fake *FakeUploader) UploadProductFileArgsForCall(i int) string {
+	fake.uploadProductFileMutex.RLock()
+	defer fake.uploadProductFileMutex.RUnlock()
+	argsForCall := fake.uploadProductFileArgsForCall[i]
 	return argsForCall.arg1
 }
 
-func (fake *FakeUploader) UploadReturns(result1 string, result2 error) {
-	fake.uploadMutex.Lock()
-	defer fake.uploadMutex.Unlock()
-	fake.UploadStub = nil
-	fake.uploadReturns = struct {
+func (fake *FakeUploader) UploadProductFileReturns(result1 string, result2 string, result3 error) {
+	fake.uploadProductFileMutex.Lock()
+	defer fake.uploadProductFileMutex.Unlock()
+	fake.UploadProductFileStub = nil
+	fake.uploadProductFileReturns = struct {
 		result1 string
-		result2 error
-	}{result1, result2}
+		result2 string
+		result3 error
+	}{result1, result2, result3}
 }
 
-func (fake *FakeUploader) UploadReturnsOnCall(i int, result1 string, result2 error) {
-	fake.uploadMutex.Lock()
-	defer fake.uploadMutex.Unlock()
-	fake.UploadStub = nil
-	if fake.uploadReturnsOnCall == nil {
-		fake.uploadReturnsOnCall = make(map[int]struct {
+func (fake *FakeUploader) UploadProductFileReturnsOnCall(i int, result1 string, result2 string, result3 error) {
+	fake.uploadProductFileMutex.Lock()
+	defer fake.uploadProductFileMutex.Unlock()
+	fake.UploadProductFileStub = nil
+	if fake.uploadProductFileReturnsOnCall == nil {
+		fake.uploadProductFileReturnsOnCall = make(map[int]struct {
 			result1 string
-			result2 error
+			result2 string
+			result3 error
 		})
 	}
-	fake.uploadReturnsOnCall[i] = struct {
+	fake.uploadProductFileReturnsOnCall[i] = struct {
 		result1 string
-		result2 error
-	}{result1, result2}
-}
-
-func (fake *FakeUploader) UploadFile(arg1 string) (*models.ProductDeploymentFile, error) {
-	fake.uploadFileMutex.Lock()
-	ret, specificReturn := fake.uploadFileReturnsOnCall[len(fake.uploadFileArgsForCall)]
-	fake.uploadFileArgsForCall = append(fake.uploadFileArgsForCall, struct {
-		arg1 string
-	}{arg1})
-	fake.recordInvocation("UploadFile", []interface{}{arg1})
-	fake.uploadFileMutex.Unlock()
-	if fake.UploadFileStub != nil {
-		return fake.UploadFileStub(arg1)
-	}
-	if specificReturn {
-		return ret.result1, ret.result2
-	}
-	fakeReturns := fake.uploadFileReturns
-	return fakeReturns.result1, fakeReturns.result2
-}
-
-func (fake *FakeUploader) UploadFileCallCount() int {
-	fake.uploadFileMutex.RLock()
-	defer fake.uploadFileMutex.RUnlock()
-	return len(fake.uploadFileArgsForCall)
-}
-
-func (fake *FakeUploader) UploadFileCalls(stub func(string) (*models.ProductDeploymentFile, error)) {
-	fake.uploadFileMutex.Lock()
-	defer fake.uploadFileMutex.Unlock()
-	fake.UploadFileStub = stub
-}
-
-func (fake *FakeUploader) UploadFileArgsForCall(i int) string {
-	fake.uploadFileMutex.RLock()
-	defer fake.uploadFileMutex.RUnlock()
-	argsForCall := fake.uploadFileArgsForCall[i]
-	return argsForCall.arg1
-}
-
-func (fake *FakeUploader) UploadFileReturns(result1 *models.ProductDeploymentFile, result2 error) {
-	fake.uploadFileMutex.Lock()
-	defer fake.uploadFileMutex.Unlock()
-	fake.UploadFileStub = nil
-	fake.uploadFileReturns = struct {
-		result1 *models.ProductDeploymentFile
-		result2 error
-	}{result1, result2}
-}
-
-func (fake *FakeUploader) UploadFileReturnsOnCall(i int, result1 *models.ProductDeploymentFile, result2 error) {
-	fake.uploadFileMutex.Lock()
-	defer fake.uploadFileMutex.Unlock()
-	fake.UploadFileStub = nil
-	if fake.uploadFileReturnsOnCall == nil {
-		fake.uploadFileReturnsOnCall = make(map[int]struct {
-			result1 *models.ProductDeploymentFile
-			result2 error
-		})
-	}
-	fake.uploadFileReturnsOnCall[i] = struct {
-		result1 *models.ProductDeploymentFile
-		result2 error
-	}{result1, result2}
+		result2 string
+		result3 error
+	}{result1, result2, result3}
 }
 
 func (fake *FakeUploader) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
-	fake.hashMutex.RLock()
-	defer fake.hashMutex.RUnlock()
-	fake.uploadMutex.RLock()
-	defer fake.uploadMutex.RUnlock()
-	fake.uploadFileMutex.RLock()
-	defer fake.uploadFileMutex.RUnlock()
+	fake.uploadMediaFileMutex.RLock()
+	defer fake.uploadMediaFileMutex.RUnlock()
+	fake.uploadProductFileMutex.RLock()
+	defer fake.uploadProductFileMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value

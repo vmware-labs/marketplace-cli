@@ -100,7 +100,7 @@ var _ = Describe("Charts", func() {
 			})
 		})
 
-		Context("Error fetching products", func() {
+		Context("Error fetching product", func() {
 			BeforeEach(func() {
 				marketplace.GetProductWithVersionReturns(nil, nil, fmt.Errorf("get product failed"))
 			})
@@ -136,7 +136,7 @@ var _ = Describe("Charts", func() {
 			}
 		})
 
-		It("sends the right request", func() {
+		It("outputs the chart", func() {
 			cmd.ChartProductSlug = "my-super-product"
 			cmd.ChartProductVersion = "1.2.3"
 			cmd.ChartID = chartId
@@ -233,7 +233,7 @@ var _ = Describe("Charts", func() {
 				marketplace.PutProductReturns(updatedProduct, nil)
 			})
 
-			It("sends the right requests", func() {
+			It("outputs the new chart", func() {
 				cmd.ChartProductSlug = "my-super-product"
 				cmd.ChartProductVersion = "1.2.3"
 				cmd.ChartURL = "https://charts.nitbami.com/nitbami/charts/mydatabase-0.1.0.tgz"
@@ -276,6 +276,7 @@ var _ = Describe("Charts", func() {
 				BeforeEach(func() {
 					marketplace.PutProductReturns(nil, fmt.Errorf("put product failed"))
 				})
+
 				It("returns an error", func() {
 					cmd.ChartProductSlug = "my-super-product"
 					cmd.ChartProductVersion = "1.2.3"
@@ -314,7 +315,7 @@ var _ = Describe("Charts", func() {
 				marketplace.PutProductReturns(updatedProduct, nil)
 				marketplace.GetUploadCredentialsReturns(&pkg.CredentialsResponse{}, nil)
 				uploader = &internalfakes.FakeUploader{}
-				uploader.UploadReturns("https://marketplace.example.vmware.com/uploader/mydatabase-0.1.0.tgz", nil)
+				uploader.UploadProductFileReturns("mydatabase-0.1.0.tgz", "https://marketplace.example.vmware.com/uploader/mydatabase-0.1.0.tgz", nil)
 				marketplace.GetUploaderReturns(uploader)
 			})
 
@@ -336,8 +337,8 @@ var _ = Describe("Charts", func() {
 				})
 
 				By("uploadeding the chart", func() {
-					Expect(uploader.UploadCallCount()).To(Equal(1))
-					uploadedChartURL := uploader.UploadArgsForCall(0)
+					Expect(uploader.UploadProductFileCallCount()).To(Equal(1))
+					uploadedChartURL := uploader.UploadProductFileArgsForCall(0)
 					Expect(uploadedChartURL).To(Equal(chartPath))
 				})
 

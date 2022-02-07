@@ -136,12 +136,11 @@ type FakeMarketplaceInterface struct {
 		result1 *pkg.CredentialsResponse
 		result2 error
 	}
-	GetUploaderStub        func(string, string, aws.Credentials) internal.Uploader
+	GetUploaderStub        func(string, aws.Credentials) internal.Uploader
 	getUploaderMutex       sync.RWMutex
 	getUploaderArgsForCall []struct {
 		arg1 string
-		arg2 string
-		arg3 aws.Credentials
+		arg2 aws.Credentials
 	}
 	getUploaderReturns struct {
 		result1 internal.Uploader
@@ -832,18 +831,17 @@ func (fake *FakeMarketplaceInterface) GetUploadCredentialsReturnsOnCall(i int, r
 	}{result1, result2}
 }
 
-func (fake *FakeMarketplaceInterface) GetUploader(arg1 string, arg2 string, arg3 aws.Credentials) internal.Uploader {
+func (fake *FakeMarketplaceInterface) GetUploader(arg1 string, arg2 aws.Credentials) internal.Uploader {
 	fake.getUploaderMutex.Lock()
 	ret, specificReturn := fake.getUploaderReturnsOnCall[len(fake.getUploaderArgsForCall)]
 	fake.getUploaderArgsForCall = append(fake.getUploaderArgsForCall, struct {
 		arg1 string
-		arg2 string
-		arg3 aws.Credentials
-	}{arg1, arg2, arg3})
-	fake.recordInvocation("GetUploader", []interface{}{arg1, arg2, arg3})
+		arg2 aws.Credentials
+	}{arg1, arg2})
+	fake.recordInvocation("GetUploader", []interface{}{arg1, arg2})
 	fake.getUploaderMutex.Unlock()
 	if fake.GetUploaderStub != nil {
-		return fake.GetUploaderStub(arg1, arg2, arg3)
+		return fake.GetUploaderStub(arg1, arg2)
 	}
 	if specificReturn {
 		return ret.result1
@@ -858,17 +856,17 @@ func (fake *FakeMarketplaceInterface) GetUploaderCallCount() int {
 	return len(fake.getUploaderArgsForCall)
 }
 
-func (fake *FakeMarketplaceInterface) GetUploaderCalls(stub func(string, string, aws.Credentials) internal.Uploader) {
+func (fake *FakeMarketplaceInterface) GetUploaderCalls(stub func(string, aws.Credentials) internal.Uploader) {
 	fake.getUploaderMutex.Lock()
 	defer fake.getUploaderMutex.Unlock()
 	fake.GetUploaderStub = stub
 }
 
-func (fake *FakeMarketplaceInterface) GetUploaderArgsForCall(i int) (string, string, aws.Credentials) {
+func (fake *FakeMarketplaceInterface) GetUploaderArgsForCall(i int) (string, aws.Credentials) {
 	fake.getUploaderMutex.RLock()
 	defer fake.getUploaderMutex.RUnlock()
 	argsForCall := fake.getUploaderArgsForCall[i]
-	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3
+	return argsForCall.arg1, argsForCall.arg2
 }
 
 func (fake *FakeMarketplaceInterface) GetUploaderReturns(result1 internal.Uploader) {

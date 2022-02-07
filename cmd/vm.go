@@ -5,9 +5,11 @@ package cmd
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/spf13/cobra"
 	"github.com/vmware-labs/marketplace-cli/v2/internal/models"
+	"github.com/vmware-labs/marketplace-cli/v2/pkg"
 )
 
 var (
@@ -101,6 +103,11 @@ var GetVMCmd = &cobra.Command{
 	},
 }
 
+func makeUniqueFileID() string {
+	now := time.Now().UnixNano() / int64(time.Millisecond)
+	return fmt.Sprintf("fileuploader%d.url", now)
+}
+
 var AttachVMCmd = &cobra.Command{
 	Use:     "attach",
 	Short:   "Upload and attach a virtual machine file (ISO or OVA)",
@@ -115,15 +122,28 @@ var AttachVMCmd = &cobra.Command{
 			return err
 		}
 
-		uploader := Marketplace.GetUploader(product.PublisherDetails.OrgId, models.HashAlgoSHA1, UploadCredentials)
-		file, err := uploader.UploadFile(vmFile)
+		hashString, err := pkg.Hash(vmFile, models.HashAlgoSHA1)
 		if err != nil {
 			return err
 		}
 
-		file.AppVersion = version.Number
+		uploader := Marketplace.GetUploader(product.PublisherDetails.OrgId, UploadCredentials)
+		filename, fileUrl, err := uploader.UploadProductFile(vmFile)
+		if err != nil {
+			return err
+		}
+
 		product.PrepForUpdate()
-		product.AddFile(file)
+		product.AddFile(&models.ProductDeploymentFile{
+			Name:          filename,
+			AppVersion:    version.Number,
+			Url:           fileUrl,
+			HashAlgo:      models.HashAlgoSHA1,
+			HashDigest:    hashString,
+			IsRedirectUrl: false,
+			UniqueFileID:  makeUniqueFileID(),
+			VersionList:   []string{},
+		})
 
 		updatedProduct, err := Marketplace.PutProduct(product, false)
 		if err != nil {
