@@ -159,14 +159,11 @@ jobs:
                 path: source
                 context: merge-conflict
                 status: failure
-      - do:
-        - task: run-tests
-          file: source/ci/tasks/test.yaml
-          params:
-            CSP_API_TOKEN: ((marketplace_api_token))
-            MARKETPLACE_ENV: staging
-        - task: build-binaries
-          file: source/ci/tasks/build.yaml
+      - task: run-tests
+        file: source/ci/tasks/test.yaml
+        params:
+          CSP_API_TOKEN: ((marketplace_api_token))
+          MARKETPLACE_ENV: staging
         on_failure:
           put: pull-requests
           inputs: detect
@@ -285,6 +282,12 @@ jobs:
         params:
           MARKETPLACE_ENV: staging
           PRODUCT_SLUG: test-container-product-41
+      - task: set-osl
+        image: mkpcli
+        file: source/ci/tasks/set-osl-file.yaml
+        params:
+          MARKETPLACE_ENV: staging
+          PRODUCT_SLUG: test-container-product-41
       - task: download-attached-container-image
         image: mkpcli
         file: source/ci/tasks/download-container-image.yaml
@@ -397,6 +400,12 @@ jobs:
         params:
           MARKETPLACE_ENV: staging
           PRODUCT_SLUG: test-chart-product-42
+      - task: set-osl
+        image: mkpcli
+        file: source/ci/tasks/set-osl-file.yaml
+        params:
+          MARKETPLACE_ENV: staging
+          PRODUCT_SLUG: test-chart-product-42
       - task: download-attached-chart
         image: mkpcli
         file: source/ci/tasks/download-chart.yaml
@@ -462,6 +471,12 @@ jobs:
         params:
           MARKETPLACE_ENV: staging
           PRODUCT_SLUG: test-iso-product1
+      - task: set-osl
+        image: mkpcli
+        file: source/ci/tasks/set-osl-file.yaml
+        params:
+          MARKETPLACE_ENV: staging
+          PRODUCT_SLUG: test-iso-product1
       - task: download-attached-file
         image: mkpcli
         file: source/ci/tasks/download-vm.yaml
@@ -524,6 +539,12 @@ jobs:
         image: mkpcli
         file: source/ci/tasks/test-vm-product.yaml
         input_mapping: {version: test-ova-product-version}
+        params:
+          MARKETPLACE_ENV: staging
+          PRODUCT_SLUG: test-ova-product-201
+      - task: set-osl
+        image: mkpcli
+        file: source/ci/tasks/set-osl-file.yaml
         params:
           MARKETPLACE_ENV: staging
           PRODUCT_SLUG: test-ova-product-201

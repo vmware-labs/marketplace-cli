@@ -1,0 +1,29 @@
+# Copyright 2022 VMware, Inc.
+# SPDX-License-Identifier: BSD-2-Clause
+
+---
+platform: linux
+
+params:
+  CSP_API_TOKEN: ((marketplace_api_token))
+  MARKETPLACE_ENV:
+  PRODUCT_SLUG:
+  MKPCLI_DEBUG: true
+  MKPCLI_DEBUG_REQUEST_PAYLOADS: true
+
+inputs:
+  - name: version
+
+run:
+  path: bash
+  args:
+    - -exc
+    - |
+      export VERSION=$(cat version/version)
+      echo "OSL for ${PRODUCT_SLUG} ${VERSION}" > "osl-${VERSION}.txt"
+
+      mkpcli product set --product "${PRODUCT_SLUG}" --product-verison "${VERSION}" --osl-file "osl-${VERSION}.txt"
+
+      OSL_URL=$(./build/mkpcli product get --product test-iso-product1 --output json | jq -r .opensourcedisclosure.licensedisclosureurl)
+      OSL_CONTENT=$(curl "${OSL_URL}")
+      test "${OSL_CONTENT}" == "OSL for ${PRODUCT_SLUG} ${VERSION}"

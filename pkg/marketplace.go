@@ -40,7 +40,8 @@ type MarketplaceInterface interface {
 	PutProduct(product *models.Product, versionUpdate bool) (*models.Product, error)
 
 	GetUploadCredentials() (*CredentialsResponse, error)
-	GetUploader(orgID, hashAlgorithm string, credentials aws.Credentials) internal.Uploader
+	GetUploader(orgID string, credentials aws.Credentials) internal.Uploader
+
 	Download(productId string, filename string, payload *DownloadRequestPayload) error
 	DownloadChart(chartURL *url.URL) (*models.ChartVersion, error)
 }

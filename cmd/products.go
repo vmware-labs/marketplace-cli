@@ -15,6 +15,7 @@ var (
 	searchTerm     string
 	ProductSlug    string
 	ProductVersion string
+	SetOSLFile     string
 )
 
 func init() {
@@ -23,6 +24,7 @@ func init() {
 	ProductCmd.AddCommand(GetProductCmd)
 	ProductCmd.AddCommand(AddProductVersionCmd)
 	ProductCmd.AddCommand(ListProductVersionsCmd)
+	ProductCmd.AddCommand(SetCmd)
 
 	ListProductsCmd.Flags().StringVar(&searchTerm, "search-text", "", "Filter product list by text")
 	ListProductsCmd.Flags().BoolVarP(&allOrgs, "all-orgs", "a", false, "Show published products from all organizations")
@@ -37,6 +39,12 @@ func init() {
 
 	ListProductVersionsCmd.Flags().StringVarP(&ProductSlug, "product", "p", "", "Product slug (required)")
 	_ = ListProductVersionsCmd.MarkFlagRequired("product")
+
+	SetCmd.Flags().StringVarP(&ProductSlug, "product", "p", "", "Product slug (required)")
+	_ = SetCmd.MarkFlagRequired("product")
+	SetCmd.Flags().StringVarP(&ProductVersion, "product-version", "v", "", "Product version (required)")
+	_ = SetCmd.MarkFlagRequired("product-version")
+	SetCmd.Flags().StringVar(&SetOSLFile, "osl-file", "", "File with OSL disclosures")
 }
 
 var ProductCmd = &cobra.Command{
@@ -137,5 +145,48 @@ var ListProductVersionsCmd = &cobra.Command{
 
 		Output.PrintHeader(fmt.Sprintf("Versions for %s:", product.DisplayName))
 		return Output.RenderVersions(product)
+	},
+}
+
+var SetCmd = &cobra.Command{
+	Use:   "set",
+	Short: "Modify the product",
+	Long:  "Modify the product",
+	Args:  cobra.NoArgs,
+	RunE: func(cmd *cobra.Command, args []string) error {
+		if SetOSLFile == "" {
+			return fmt.Errorf("nothing specified to set")
+		}
+		cmd.SilenceUsage = true
+
+		product, _, err := Marketplace.GetProductWithVersion(ProductSlug, ProductVersion)
+		if err != nil {
+			return err
+		}
+		product.PrepForUpdate()
+
+		if SetOSLFile != "" {
+			err = GetUploadCredentials(cmd, args)
+			if err != nil {
+				return err
+			}
+
+			uploader := Marketplace.GetUploader(product.PublisherDetails.OrgId, UploadCredentials)
+			_, oslUrl, err := uploader.UploadMediaFile(SetOSLFile)
+			if err != nil {
+				return err
+			}
+
+			product.OpenSourceDisclosure.LicenseDisclosureURL = oslUrl
+		}
+
+		_, err = Marketplace.PutProduct(product, false)
+		if err != nil {
+			return err
+		}
+
+		// TODO: what do we render?
+
+		return nil
 	},
 }

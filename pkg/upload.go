@@ -45,9 +45,10 @@ func (m *Marketplace) GetUploadCredentials() (*CredentialsResponse, error) {
 	return credsResponse, nil
 }
 
-func (m *Marketplace) GetUploader(orgID, hashAlgorithm string, credentials aws.Credentials) internal.Uploader {
+func (m *Marketplace) GetUploader(orgID string, credentials aws.Credentials) internal.Uploader {
 	if m.uploader == nil {
-		return internal.NewS3Uploader(m.StorageBucket, m.StorageRegion, hashAlgorithm, orgID, credentials)
+		client := internal.NewS3Client(m.StorageRegion, credentials)
+		return internal.NewS3Uploader(m.StorageBucket, m.StorageRegion, orgID, client)
 	}
 	return m.uploader
 }

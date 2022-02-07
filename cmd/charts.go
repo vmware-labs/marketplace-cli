@@ -143,13 +143,13 @@ var AttachChartCmd = &cobra.Command{
 				return err
 			}
 
-			uploader := Marketplace.GetUploader(product.PublisherDetails.OrgId, models.HashAlgoSHA1, UploadCredentials)
-			uploadedChart, err := uploader.Upload(ChartURL)
+			uploader := Marketplace.GetUploader(product.PublisherDetails.OrgId, UploadCredentials)
+			_, uploadedChartUrl, err := uploader.UploadProductFile(ChartURL)
 			if err != nil {
 				return err
 			}
 
-			chart.HelmTarUrl = uploadedChart
+			chart.HelmTarUrl = uploadedChartUrl
 		} else if chartURL.Scheme == "http" || chartURL.Scheme == "https" {
 			chart, err = Marketplace.DownloadChart(chartURL)
 			if err != nil {
