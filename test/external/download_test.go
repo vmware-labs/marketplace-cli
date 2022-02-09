@@ -17,13 +17,13 @@ var _ = Describe("Download", func() {
 	steps := NewSteps()
 
 	Scenario("Downloading an asset", func() {
-		steps.When("running mkpcli download --product tanzu-kubenetes-grid-1-111 --product-version 1.4.0 --filter yq_linux_amd64 --filename yq")
+		steps.When("running mkpcli download --product tanzu-kubenetes-grid-1-111 --product-version 1.4.0 --filter yq_linux_amd64 --filename yq --accept-eula")
 		steps.Then("the command exits without error")
 		steps.And("yq is downloaded")
 	})
 
 	Scenario("Download fails when there are multiple files", func() {
-		steps.When("running mkpcli download --product tanzu-kubenetes-grid-1-111 --product-version 1.4.0")
+		steps.When("running mkpcli download --product tanzu-kubenetes-grid-1-111 --product-version 1.4.0 --accept-eula")
 		steps.Then("the command exits with an error")
 		steps.And("a message saying that there are multiple assets available to download")
 	})

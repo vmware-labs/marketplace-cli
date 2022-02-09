@@ -40,7 +40,7 @@ var _ = Describe("Debugging", func() {
 	Scenario("Debugging enabled with request payloads with environment variables", func() {
 		steps.When("The environment variable MKPCLI_DEBUG is set to true")
 		steps.And("The environment variable MKPCLI_DEBUG_REQUEST_PAYLOADS is set to true")
-		steps.And("running mkpcli download -p vmware-tanzu-rabbitmq1 -v 1.0.0")
+		steps.And("running mkpcli download -p vmware-tanzu-rabbitmq1 -v 1.0.0 --accept-eula")
 		steps.Then("the command exits without error")
 		steps.And("the container image is downloaded")
 		steps.And("the requests are printed with request payloads")

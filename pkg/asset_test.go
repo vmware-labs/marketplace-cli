@@ -53,7 +53,6 @@ var _ = Describe("Asset", func() {
 
 				Expect(assets[0].DownloadRequestPayload.ProductId).To(Equal(product.ProductId))
 				Expect(assets[0].DownloadRequestPayload.AppVersion).To(Equal("1"))
-				Expect(assets[0].DownloadRequestPayload.EulaAccepted).To(BeTrue())
 				Expect(assets[0].DownloadRequestPayload.ChartVersion).To(Equal("1.0.0"))
 			})
 		})
@@ -85,7 +84,6 @@ var _ = Describe("Asset", func() {
 
 					Expect(assets[0].DownloadRequestPayload.ProductId).To(Equal(product.ProductId))
 					Expect(assets[0].DownloadRequestPayload.AppVersion).To(Equal("1"))
-					Expect(assets[0].DownloadRequestPayload.EulaAccepted).To(BeTrue())
 					Expect(assets[0].DownloadRequestPayload.DockerlinkVersionID).To(Equal(product.DockerLinkVersions[0].ID))
 					Expect(assets[0].DownloadRequestPayload.DockerUrlId).To(Equal(containerImage.ID))
 					Expect(assets[0].DownloadRequestPayload.ImageTagId).To(Equal(containerImage.ImageTags[0].ID))
@@ -100,7 +98,6 @@ var _ = Describe("Asset", func() {
 
 					Expect(assets[1].DownloadRequestPayload.ProductId).To(Equal(product.ProductId))
 					Expect(assets[1].DownloadRequestPayload.AppVersion).To(Equal("1"))
-					Expect(assets[1].DownloadRequestPayload.EulaAccepted).To(BeTrue())
 					Expect(assets[1].DownloadRequestPayload.DockerlinkVersionID).To(Equal(product.DockerLinkVersions[0].ID))
 					Expect(assets[1].DownloadRequestPayload.DockerUrlId).To(Equal(containerImage.ID))
 					Expect(assets[1].DownloadRequestPayload.ImageTagId).To(Equal(containerImage.ImageTags[1].ID))
@@ -139,7 +136,6 @@ var _ = Describe("Asset", func() {
 
 					Expect(assets[0].DownloadRequestPayload.ProductId).To(Equal(product.ProductId))
 					Expect(assets[0].DownloadRequestPayload.AppVersion).To(Equal("1"))
-					Expect(assets[0].DownloadRequestPayload.EulaAccepted).To(BeTrue())
 					Expect(assets[0].DownloadRequestPayload.DeploymentFileId).To(Equal(vm.FileID))
 				})
 
@@ -154,7 +150,6 @@ var _ = Describe("Asset", func() {
 
 					Expect(assets[1].DownloadRequestPayload.ProductId).To(Equal(product.ProductId))
 					Expect(assets[1].DownloadRequestPayload.AppVersion).To(Equal("1"))
-					Expect(assets[1].DownloadRequestPayload.EulaAccepted).To(BeTrue())
 					Expect(assets[1].DownloadRequestPayload.MetaFileID).To(Equal(metafile.ID))
 					Expect(assets[1].DownloadRequestPayload.MetaFileObjectID).To(Equal(metafile.Objects[0].FileID))
 				})

@@ -16,8 +16,13 @@ NAME=$(echo "${FILES}" | jq -r .[0].name)
 STATUS=$(echo "${FILES}" | jq -r .[0].status)
 
 if [ "${STATUS}" == "APPROVAL_PENDING" ] || [ "${STATUS}" == "ACTIVE" ] ; then
-  mkpcli download --product "${PRODUCT_SLUG}" --product-version "${PRODUCT_VERSION}" --filter "${NAME}" --filename my-file
-  test -f my-file  # Downloaded virtual machine file is a real file
+  mkpcli download --product "${PRODUCT_SLUG}" --product-version "${PRODUCT_VERSION}" \
+    --filter "${NAME}" \
+    --filename my-file \
+    --accept-eula
+
+  # Downloaded virtual machine file is a real file
+  test -f my-file
 elif [ "${STATUS}" == "INACTIVE" ] ; then
   echo "VM file is not downloadable"
   echo "${FILES}" | jq -r .[0].comment

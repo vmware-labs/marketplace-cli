@@ -45,7 +45,6 @@ func GetAssets(product *models.Product, version string) []*Asset {
 			DownloadRequestPayload: &DownloadRequestPayload{
 				ProductId:        product.ProductId,
 				AppVersion:       version,
-				EulaAccepted:     true,
 				DeploymentFileId: file.FileID,
 			},
 		})
@@ -63,7 +62,6 @@ func GetAssets(product *models.Product, version string) []*Asset {
 			DownloadRequestPayload: &DownloadRequestPayload{
 				ProductId:    product.ProductId,
 				AppVersion:   version,
-				EulaAccepted: true,
 				ChartVersion: chart.Version,
 			},
 		})
@@ -84,7 +82,6 @@ func GetAssets(product *models.Product, version string) []*Asset {
 					DownloadRequestPayload: &DownloadRequestPayload{
 						ProductId:           product.ProductId,
 						AppVersion:          version,
-						EulaAccepted:        true,
 						DockerlinkVersionID: containerImages.ID,
 						DockerUrlId:         containerImage.ID,
 						ImageTagId:          tag.ID,
@@ -107,7 +104,6 @@ func GetAssets(product *models.Product, version string) []*Asset {
 				DownloadRequestPayload: &DownloadRequestPayload{
 					ProductId:        product.ProductId,
 					AppVersion:       version,
-					EulaAccepted:     true,
 					MetaFileID:       metafile.ID,
 					MetaFileObjectID: object.FileID,
 				},

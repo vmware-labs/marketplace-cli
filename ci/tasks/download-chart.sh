@@ -21,7 +21,10 @@ while [ "${IS_IN_MKP_REGISTRY}" == "false" ] && [ -z "${PROCESSING_ERROR}" ] ; d
 done
 
 if [ "${IS_IN_MKP_REGISTRY}" == "true" ] ; then
-  mkpcli download --product "${PRODUCT_SLUG}" --product-version "${PRODUCT_VERSION}" --filter "${CHART_NAME}" --filename my-chart.tgz
+  mkpcli download --product "${PRODUCT_SLUG}" --product-version "${PRODUCT_VERSION}" \
+    --filter "${CHART_NAME}" \
+    --filename my-chart.tgz \
+    --accept-eula
 
   # Downloaded file is a real Helm chart
   test -f my-chart.tgz

@@ -25,7 +25,8 @@ if [ "${IS_IN_MKP_REGISTRY}" == "true" ] && [ -z "${PROCESSING_ERROR}" ] ; then
   # Download the image
   mkpcli download --product "${PRODUCT_SLUG}" --product-version "${PRODUCT_VERSION}" \
     --filter "${IMAGE_URL}:${IMAGE_TAG}" \
-    --filename my-container-image.tar
+    --filename my-container-image.tar \
+    --accept-eula
 
   # Downloaded file is a real docker image
   test -f my-container-image.tar

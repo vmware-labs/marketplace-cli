@@ -31,6 +31,9 @@ func CreateFakeProduct(id, name, slug, status string) *models.Product {
 			OrgName:        "my-org",
 			OrgDisplayName: "my-org",
 		},
+		EulaDetails: &models.EULADetails{
+			Text: "This is the EULA text",
+		},
 	}
 }
 

@@ -16,6 +16,7 @@ var (
 	DownloadProductVersion string
 	DownloadFilter         string
 	DownloadFilename       string
+	DownloadAcceptEULA     bool
 )
 
 func init() {
@@ -24,9 +25,9 @@ func init() {
 	DownloadCmd.Flags().StringVarP(&DownloadProductSlug, "product", "p", "", "Product slug (required)")
 	_ = DownloadCmd.MarkFlagRequired("product")
 	DownloadCmd.Flags().StringVarP(&DownloadProductVersion, "product-version", "v", "", "Product version (default to latest version)")
-	DownloadCmd.Flags().StringVar(&DownloadFilter, "filter", "", "filter to select from multiple files")
-	DownloadCmd.Flags().StringVarP(&DownloadFilename, "filename", "f", "", "output file name")
-
+	DownloadCmd.Flags().StringVar(&DownloadFilter, "filter", "", "Filter to select from multiple files")
+	DownloadCmd.Flags().StringVarP(&DownloadFilename, "filename", "f", "", "Output file name")
+	DownloadCmd.Flags().BoolVar(&DownloadAcceptEULA, "accept-eula", false, "Accept the product EULA")
 }
 
 func filterAssets(filter string, assets []*pkg.Asset) []*pkg.Asset {
@@ -78,6 +79,18 @@ var DownloadCmd = &cobra.Command{
 		if DownloadFilename != "" {
 			filename = DownloadFilename
 		}
+
+		if !DownloadAcceptEULA && !product.EulaDetails.Signed {
+			cmd.PrintErrln("The EULA must be accepted before downloading")
+			if product.EulaDetails.Text != "" {
+				cmd.PrintErrf("EULA: %s\n\n", product.EulaDetails.Text)
+			} else if product.EulaDetails.Url != "" {
+				cmd.PrintErrf("EULA: %s\n\n", product.EulaDetails.Url)
+			}
+			return fmt.Errorf("please review the EULA and re-run with --accept-eula")
+		}
+
+		asset.DownloadRequestPayload.EulaAccepted = DownloadAcceptEULA
 		return Marketplace.Download(product.ProductId, filename, asset.DownloadRequestPayload)
 	},
 }

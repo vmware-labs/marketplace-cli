@@ -9,6 +9,7 @@ import (
 	"github.com/google/uuid"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	. "github.com/onsi/gomega/gbytes"
 	"github.com/vmware-labs/marketplace-cli/v2/cmd"
 	"github.com/vmware-labs/marketplace-cli/v2/internal/models"
 	"github.com/vmware-labs/marketplace-cli/v2/pkg/pkgfakes"
@@ -50,6 +51,7 @@ var _ = Describe("DownloadCmd", func() {
 	It("downloads the asset", func() {
 		cmd.DownloadProductSlug = "my-super-product"
 		cmd.DownloadProductVersion = "1.1.1"
+		cmd.DownloadAcceptEULA = true
 		err := cmd.DownloadCmd.RunE(cmd.DownloadCmd, []string{""})
 		Expect(err).ToNot(HaveOccurred())
 
@@ -69,11 +71,40 @@ var _ = Describe("DownloadCmd", func() {
 		})
 	})
 
+	Context("EULA not accepted", func() {
+		var stderr *Buffer
+
+		BeforeEach(func() {
+			stderr = NewBuffer()
+			cmd.DownloadCmd.SetErr(stderr)
+		})
+
+		It("returns an error", func() {
+			cmd.DownloadProductSlug = "my-super-product"
+			cmd.DownloadProductVersion = "1.1.1"
+			cmd.DownloadAcceptEULA = false
+			err := cmd.DownloadCmd.RunE(cmd.DownloadCmd, []string{""})
+			Expect(err).To(HaveOccurred())
+			Expect(err.Error()).To(Equal("please review the EULA and re-run with --accept-eula"))
+
+			By("getting the product details", func() {
+				Expect(marketplace.GetProductWithVersionCallCount()).To(Equal(1))
+			})
+
+			By("printing the EULA", func() {
+				Expect(stderr).To(Say("The EULA must be accepted before downloading"))
+				Expect(stderr).To(Say("EULA: This is the EULA text"))
+				Expect(marketplace.DownloadCallCount()).To(Equal(0))
+			})
+		})
+	})
+
 	Context("Filename parameter used", func() {
 		It("downloads the asset using the given filename", func() {
 			cmd.DownloadProductSlug = "my-super-product"
 			cmd.DownloadProductVersion = "1.1.1"
 			cmd.DownloadFilename = "overridden-filename.ova"
+			cmd.DownloadAcceptEULA = true
 			err := cmd.DownloadCmd.RunE(cmd.DownloadCmd, []string{""})
 			Expect(err).ToNot(HaveOccurred())
 
@@ -88,6 +119,9 @@ var _ = Describe("DownloadCmd", func() {
 			marketplace.GetProductWithVersionReturns(nil, nil, fmt.Errorf("get product failed"))
 		})
 		It("returns an error", func() {
+			cmd.DownloadProductSlug = "my-super-product"
+			cmd.DownloadProductVersion = "1.1.1"
+			cmd.DownloadAcceptEULA = true
 			err := cmd.DownloadCmd.RunE(cmd.DownloadCmd, []string{""})
 			Expect(err).To(HaveOccurred())
 			Expect(err.Error()).To(Equal("get product failed"))
@@ -99,6 +133,9 @@ var _ = Describe("DownloadCmd", func() {
 			marketplace.DownloadReturns(fmt.Errorf("download failed"))
 		})
 		It("returns an error", func() {
+			cmd.DownloadProductSlug = "my-super-product"
+			cmd.DownloadProductVersion = "1.1.1"
+			cmd.DownloadAcceptEULA = true
 			err := cmd.DownloadCmd.RunE(cmd.DownloadCmd, []string{""})
 			Expect(err).To(HaveOccurred())
 			Expect(err.Error()).To(Equal("download failed"))
@@ -109,6 +146,7 @@ var _ = Describe("DownloadCmd", func() {
 		It("returns an error", func() {
 			cmd.DownloadProductSlug = "my-super-product"
 			cmd.DownloadProductVersion = "0.0.0"
+			cmd.DownloadAcceptEULA = true
 			err := cmd.DownloadCmd.RunE(cmd.DownloadCmd, []string{""})
 			Expect(err).To(HaveOccurred())
 			Expect(err.Error()).To(Equal("product my-super-product 0.0.0 does not have any downloadable assets"))
@@ -119,6 +157,7 @@ var _ = Describe("DownloadCmd", func() {
 		It("returns an error", func() {
 			cmd.DownloadProductSlug = "my-super-product"
 			cmd.DownloadProductVersion = "3.3.3"
+			cmd.DownloadAcceptEULA = true
 			err := cmd.DownloadCmd.RunE(cmd.DownloadCmd, []string{""})
 			Expect(err).To(HaveOccurred())
 			Expect(err.Error()).To(Equal("product my-super-product 3.3.3 has multiple downloadable assets, please use the --filter parameter"))
@@ -130,6 +169,7 @@ var _ = Describe("DownloadCmd", func() {
 			cmd.DownloadProductSlug = "my-super-product"
 			cmd.DownloadProductVersion = "3.3.3"
 			cmd.DownloadFilter = "bbb"
+			cmd.DownloadAcceptEULA = true
 			err := cmd.DownloadCmd.RunE(cmd.DownloadCmd, []string{""})
 			Expect(err).ToNot(HaveOccurred())
 
@@ -161,6 +201,7 @@ var _ = Describe("DownloadCmd", func() {
 				cmd.DownloadProductSlug = "my-super-product"
 				cmd.DownloadProductVersion = "3.3.3"
 				cmd.DownloadFilter = "txt"
+				cmd.DownloadAcceptEULA = true
 				err := cmd.DownloadCmd.RunE(cmd.DownloadCmd, []string{""})
 				Expect(err).To(HaveOccurred())
 				Expect(err.Error()).To(Equal("product my-super-product 3.3.3 has multiple downloadable assets that match the filter \"txt\", please adjust the --filter parameter"))
