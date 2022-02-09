@@ -230,7 +230,7 @@ func (m *Marketplace) GetProductWithVersion(slug, version string) (*models.Produ
 	}
 	versionObject := product.GetVersion(version)
 
-	if product.LatestVersion != versionObject.Number {
+	if product.LatestVersion != "" && product.LatestVersion != versionObject.Number {
 		versionDetails, err := m.GetVersionDetails(product, versionObject.Number)
 		if err != nil {
 			return nil, nil, err
