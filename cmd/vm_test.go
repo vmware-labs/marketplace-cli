@@ -4,68 +4,47 @@
 package cmd_test
 
 import (
-	"bytes"
-	"encoding/json"
 	"fmt"
-	"io/ioutil"
-	"net/http"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	. "github.com/onsi/gomega/gbytes"
 	"github.com/vmware-labs/marketplace-cli/v2/cmd"
 	"github.com/vmware-labs/marketplace-cli/v2/cmd/output/outputfakes"
-	"github.com/vmware-labs/marketplace-cli/v2/pkg"
+	"github.com/vmware-labs/marketplace-cli/v2/internal/models"
 	"github.com/vmware-labs/marketplace-cli/v2/pkg/pkgfakes"
 	"github.com/vmware-labs/marketplace-cli/v2/test"
 )
 
 var _ = Describe("Virtual Machines", func() {
 	var (
-		stdout     *Buffer
-		stderr     *Buffer
-		httpClient *pkgfakes.FakeHTTPClient
-		output     *outputfakes.FakeFormat
+		marketplace *pkgfakes.FakeMarketplaceInterface
+		output      *outputfakes.FakeFormat
+		product     *models.Product
 	)
 
 	BeforeEach(func() {
-		httpClient = &pkgfakes.FakeHTTPClient{}
+		marketplace = &pkgfakes.FakeMarketplaceInterface{}
+		cmd.Marketplace = marketplace
+
+		marketplace.GetProductWithVersionStub = func(slug string, version string) (*models.Product, *models.Version, error) {
+			Expect(slug).To(Equal("my-super-product"))
+			Expect(version).To(Equal("1.2.3"))
+			return product, &models.Version{Number: "1.2.3"}, nil
+		}
+
 		output = &outputfakes.FakeFormat{}
 		cmd.Output = output
-		cmd.Marketplace = &pkg.Marketplace{
-			Client: httpClient,
-		}
-		stdout = NewBuffer()
-		stderr = NewBuffer()
 	})
 
 	Describe("ListVMCmd", func() {
 		BeforeEach(func() {
-			product := test.CreateFakeProduct(
+			product = test.CreateFakeProduct(
 				"",
 				"My Super Product",
 				"my-super-product",
 				"PENDING")
 			test.AddVerions(product, "1.2.3", "2.3.4")
 			product.ProductDeploymentFiles = append(product.ProductDeploymentFiles, test.CreateFakeOVA("fake-ova", "1.2.3"))
-			response := &pkg.GetProductResponse{
-				Response: &pkg.GetProductResponsePayload{
-					Data:       product,
-					StatusCode: http.StatusOK,
-					Message:    "testing",
-				},
-			}
-
-			responseBytes, err := json.Marshal(response)
-			Expect(err).ToNot(HaveOccurred())
-
-			httpClient.DoReturns(&http.Response{
-				StatusCode: http.StatusOK,
-				Body:       ioutil.NopCloser(bytes.NewReader(responseBytes)),
-			}, nil)
-
-			cmd.ListVMCmd.SetOut(stdout)
-			cmd.ListVMCmd.SetErr(stderr)
 		})
 
 		It("outputs the vm files", func() {
@@ -74,13 +53,8 @@ var _ = Describe("Virtual Machines", func() {
 			err := cmd.ListVMCmd.RunE(cmd.ListVMCmd, []string{""})
 			Expect(err).ToNot(HaveOccurred())
 
-			By("sending the correct request", func() {
-				Expect(httpClient.DoCallCount()).To(Equal(1))
-				request := httpClient.DoArgsForCall(0)
-				Expect(request.Method).To(Equal("GET"))
-				Expect(request.URL.Path).To(Equal("/api/v1/products/my-super-product"))
-				Expect(request.URL.Query().Get("increaseViewCount")).To(Equal("false"))
-				Expect(request.URL.Query().Get("isSlug")).To(Equal("true"))
+			By("getting the product details", func() {
+				Expect(marketplace.GetProductWithVersionCallCount()).To(Equal(1))
 			})
 
 			By("outputting the response", func() {
@@ -91,25 +65,9 @@ var _ = Describe("Virtual Machines", func() {
 			})
 		})
 
-		Context("No product found", func() {
-			BeforeEach(func() {
-				httpClient.DoReturns(&http.Response{
-					StatusCode: http.StatusNotFound,
-				}, nil)
-			})
-
-			It("says there are no products", func() {
-				cmd.VMProductSlug = "my-super-product"
-				cmd.VMProductVersion = "1.2.3"
-				err := cmd.ListVMCmd.RunE(cmd.ListVMCmd, []string{""})
-				Expect(err).To(HaveOccurred())
-				Expect(err.Error()).To(Equal("product \"my-super-product\" not found"))
-			})
-		})
-
 		Context("Error fetching products", func() {
 			BeforeEach(func() {
-				httpClient.DoReturnsOnCall(0, nil, fmt.Errorf("request failed"))
+				marketplace.GetProductWithVersionReturns(nil, nil, fmt.Errorf("get product failed"))
 			})
 
 			It("prints the error", func() {
@@ -117,17 +75,7 @@ var _ = Describe("Virtual Machines", func() {
 				cmd.VMProductVersion = "1.2.3"
 				err := cmd.ListVMCmd.RunE(cmd.ListVMCmd, []string{""})
 				Expect(err).To(HaveOccurred())
-				Expect(err.Error()).To(Equal("sending the request for product \"my-super-product\" failed: marketplace request failed: request failed"))
-			})
-		})
-
-		Context("No product version found", func() {
-			It("says that the version does not exist", func() {
-				cmd.VMProductSlug = "my-super-product"
-				cmd.VMProductVersion = "9.9.9"
-				err := cmd.ListVMCmd.RunE(cmd.ListVMCmd, []string{""})
-				Expect(err).To(HaveOccurred())
-				Expect(err.Error()).To(Equal("product \"my-super-product\" does not have a version 9.9.9"))
+				Expect(err.Error()).To(Equal("get product failed"))
 			})
 		})
 	})

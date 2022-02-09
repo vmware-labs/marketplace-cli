@@ -126,6 +126,21 @@ type GetProductResponsePayload struct {
 	Data       *models.Product `json:"data"`
 }
 
+type VersionSpecificDetailsRequestPayload struct {
+	ProductId     string `json:"productId"`
+	VersionNumber string `json:"versionNumber"`
+}
+
+type VersionSpecificDetailsPayloadResponse struct {
+	Response *VersionSpecificDetailsPayload `json:"response"`
+}
+
+type VersionSpecificDetailsPayload struct {
+	Message    string                                `json:"message"`
+	StatusCode int                                   `json:"statuscode"`
+	Data       *models.VersionSpecificProductDetails `json:"data"`
+}
+
 func (m *Marketplace) GetProduct(slug string) (*models.Product, error) {
 	isSlug := true
 	_, err := uuid.Parse(slug)
@@ -143,21 +158,63 @@ func (m *Marketplace) GetProduct(slug string) (*models.Product, error) {
 
 	resp, err := m.Get(requestURL)
 	if err != nil {
-		return nil, fmt.Errorf("sending the request for product \"%s\" failed: %w", slug, err)
+		return nil, fmt.Errorf("sending the request for product %s failed: %w", slug, err)
 	}
 
 	if resp.StatusCode == http.StatusNotFound {
-		return nil, fmt.Errorf("product \"%s\" not found", slug)
+		return nil, fmt.Errorf("product %s not found", slug)
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("getting product \"%s\" failed: (%d)", slug, resp.StatusCode)
+		body, err := ioutil.ReadAll(resp.Body)
+		if err == nil {
+			return nil, fmt.Errorf("getting product %s failed: (%d)\n%s", slug, resp.StatusCode, string(body))
+		}
+		return nil, fmt.Errorf("getting product %s failed: (%d)", slug, resp.StatusCode)
 	}
 
 	response := &GetProductResponse{}
 	err = m.DecodeJson(resp.Body, response)
 	if err != nil {
-		return nil, fmt.Errorf("failed to parse the response for product \"%s\": %w", slug, err)
+		return nil, fmt.Errorf("failed to parse the response for product %s: %w", slug, err)
+	}
+	return response.Response.Data, nil
+}
+
+func (m *Marketplace) GetVersionDetails(product *models.Product, version string) (*models.VersionSpecificProductDetails, error) {
+	requestURL := m.MakeURL(
+		fmt.Sprintf("/api/v1/products/%s/version-details", product.ProductId),
+		url.Values{
+			"versionNumber": []string{version},
+		},
+	)
+
+	payload := &VersionSpecificDetailsRequestPayload{
+		ProductId:     product.ProductId,
+		VersionNumber: version,
+	}
+
+	resp, err := m.PostJSON(requestURL, payload)
+	if err != nil {
+		return nil, fmt.Errorf("sending the request for product %s %s failed: %w", product.Slug, version, err)
+	}
+
+	if resp.StatusCode == http.StatusNotFound {
+		return nil, fmt.Errorf("product version details %s %s not found", product.Slug, version)
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		body, err := ioutil.ReadAll(resp.Body)
+		if err == nil {
+			return nil, fmt.Errorf("getting product version details %s %s failed: (%d)\n%s", product.Slug, version, resp.StatusCode, string(body))
+		}
+		return nil, fmt.Errorf("getting product version details %s %s failed: (%d)", product.Slug, version, resp.StatusCode)
+	}
+
+	response := &VersionSpecificDetailsPayloadResponse{}
+	err = m.DecodeJson(resp.Body, response)
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse the response for product %s %s: %w", product.Slug, version, err)
 	}
 	return response.Response.Data, nil
 }
@@ -171,9 +228,19 @@ func (m *Marketplace) GetProductWithVersion(slug, version string) (*models.Produ
 	if !product.HasVersion(version) {
 		return nil, nil, fmt.Errorf("product \"%s\" does not have a version %s", slug, version)
 	}
+	versionObject := product.GetVersion(version)
 
-	product.CurrentVersion = product.GetVersion(version).Number
-	return product, product.GetVersion(version), nil
+	if product.LatestVersion != versionObject.Number {
+		versionDetails, err := m.GetVersionDetails(product, versionObject.Number)
+		if err != nil {
+			return nil, nil, err
+		}
+
+		product.UpdateWithVersionSpecificDetails(versionObject.Number, versionDetails)
+	}
+
+	product.CurrentVersion = versionObject.Number
+	return product, versionObject, nil
 }
 
 func (m *Marketplace) PutProduct(product *models.Product, versionUpdate bool) (*models.Product, error) {

@@ -287,6 +287,30 @@ type VersionSpecificProductDetails struct {
 	MetaFiles              []*MetaFile                `json:"metafilesList"`
 }
 
+func (product *Product) UpdateWithVersionSpecificDetails(version string, details *VersionSpecificProductDetails) {
+	product.EncryptionDetails = details.EncryptionDetails
+	product.EulaDetails = details.EulaDetails
+	product.EulaURL = details.EulaURL
+	product.EulaTempURL = details.EulaTempURL
+	product.ExportCompliance = details.ExportCompliance
+	product.OpenSourceDisclosure = details.OpenSourceDisclosure
+	product.CertificationList = details.CertificationList
+	product.CertificationType = details.CertificationType
+	product.ProductDeploymentFiles = details.ProductDeploymentFiles
+	product.DockerLinkVersions = details.DockerLinkVersions
+	product.ChartVersions = details.ChartVersions
+	product.Blueprints = details.Blueprints
+	product.AddOnFiles = details.AddOnFiles
+	product.CreationDate = details.CreationDate
+	product.UpdatedDate = details.UpdatedDate
+	product.UpdatedBy = details.UpdatedBy
+	product.PublishedDate = details.PublishedDate
+	product.CompatibilityMatrix = details.CompatibilityMatrix
+	product.GetVersion(version).HasLimitedAccess = details.HasLimitedAccess
+	product.GetVersion(version).Tag = details.Tag
+	product.MetaFiles = details.MetaFiles
+}
+
 func (product *Product) PrepForUpdate() {
 	// Send an empty compatibility matrix, any entries in here will multiply
 	product.CompatibilityMatrix = []*CompatibilityMatrix{}

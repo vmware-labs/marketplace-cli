@@ -31,7 +31,7 @@ var _ = Describe("Debugging", func() {
 	})
 
 	Scenario("Debugging enabled with request payloads", func() {
-		steps.When("running mkpcli --debug --debug-request-payloads download -p vmware-tanzu-rabbitmq1 -v 1.0.0")
+		steps.When("running mkpcli --debug --debug-request-payloads download -p vmware-tanzu-rabbitmq1 -v 1.0.0 --accept-eula")
 		steps.Then("the command exits without error")
 		steps.And("the container image is downloaded")
 		steps.And("the requests are printed with request payloads")

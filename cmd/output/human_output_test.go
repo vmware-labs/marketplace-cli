@@ -44,7 +44,7 @@ var _ = Describe("HumanOutput", func() {
 				},
 			}
 
-			err := humanOutput.RenderProduct(product)
+			err := humanOutput.RenderProduct(product, &models.Version{Number: "1.0.0"})
 			Expect(err).ToNot(HaveOccurred())
 			Expect(writer).To(Say("Name:      Hyperspace Database"))
 			Expect(writer).To(Say("Publisher: Astronomical Widgets"))
@@ -63,6 +63,9 @@ var _ = Describe("HumanOutput", func() {
 			Expect(writer).To(Say("HELMCHARTS"))
 			Expect(writer).To(Say("1.2.3"))
 			Expect(writer).To(Say("theoretical"))
+
+			Expect(writer).To(Say("Assets for 1.0.0:"))
+			Expect(writer).To(Say("None"))
 
 			Expect(writer).To(Say("Description:"))
 			Expect(writer).To(Say(regexp.QuoteMeta("Connecting to a database should be:\n\n* Instant\n* Robust\n* Break the laws of causality\n\nOur database does just that!")))

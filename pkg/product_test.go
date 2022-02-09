@@ -283,7 +283,7 @@ var _ = Describe("Product", func() {
 			It("says there are no products", func() {
 				_, err := marketplace.GetProduct("my-super-product")
 				Expect(err).To(HaveOccurred())
-				Expect(err.Error()).To(Equal("product \"my-super-product\" not found"))
+				Expect(err.Error()).To(Equal("product my-super-product not found"))
 			})
 		})
 
@@ -295,7 +295,7 @@ var _ = Describe("Product", func() {
 			It("prints the error", func() {
 				_, err := marketplace.GetProduct("my-super-product")
 				Expect(err).To(HaveOccurred())
-				Expect(err.Error()).To(Equal("sending the request for product \"my-super-product\" failed: marketplace request failed: request failed"))
+				Expect(err.Error()).To(Equal("sending the request for product my-super-product failed: marketplace request failed: request failed"))
 			})
 		})
 
@@ -304,13 +304,14 @@ var _ = Describe("Product", func() {
 				httpClient.DoReturns(&http.Response{
 					StatusCode: http.StatusTeapot,
 					Status:     http.StatusText(http.StatusTeapot),
+					Body:       ioutil.NopCloser(strings.NewReader("Teapots all the way down")),
 				}, nil)
 			})
 
 			It("prints the error", func() {
 				_, err := marketplace.GetProduct("my-super-product")
 				Expect(err).To(HaveOccurred())
-				Expect(err.Error()).To(Equal("getting product \"my-super-product\" failed: (418)"))
+				Expect(err.Error()).To(Equal("getting product my-super-product failed: (418)\nTeapots all the way down"))
 			})
 		})
 
@@ -325,7 +326,7 @@ var _ = Describe("Product", func() {
 			It("prints the error", func() {
 				_, err := marketplace.GetProduct("my-super-product")
 				Expect(err).To(HaveOccurred())
-				Expect(err.Error()).To(Equal("failed to parse the response for product \"my-super-product\": invalid character 'T' looking for beginning of value"))
+				Expect(err.Error()).To(Equal("failed to parse the response for product my-super-product: invalid character 'T' looking for beginning of value"))
 			})
 		})
 	})

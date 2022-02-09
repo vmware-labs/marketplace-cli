@@ -87,10 +87,16 @@ var _ = Describe("Products", func() {
 				"PENDING")
 			test.AddVerions(product, "1.2.3", "2.3.4")
 			marketplace.GetProductReturns(product, nil)
+			marketplace.GetProductWithVersionStub = func(slug string, version string) (*models.Product, *models.Version, error) {
+				Expect(slug).To(Equal("my-super-product"))
+				Expect(version).To(Equal("1.2.3"))
+				return product, &models.Version{Number: "1.2.3"}, nil
+			}
 		})
 
 		It("outputs the product", func() {
 			cmd.ProductSlug = "my-super-product"
+			cmd.ProductVersion = ""
 			err := cmd.GetProductCmd.RunE(cmd.GetProductCmd, []string{""})
 			Expect(err).ToNot(HaveOccurred())
 
@@ -100,9 +106,31 @@ var _ = Describe("Products", func() {
 
 			By("outputting the response", func() {
 				Expect(output.RenderProductCallCount()).To(Equal(1))
-				product := output.RenderProductArgsForCall(0)
+				product, version := output.RenderProductArgsForCall(0)
 				Expect(product.Slug).To(Equal("my-super-product"))
 				Expect(product.DisplayName).To(Equal("My Super Product"))
+				Expect(version.Number).To(Equal("2.3.4"))
+			})
+		})
+
+		Context("Version number given", func() {
+			It("outputs the product", func() {
+				cmd.ProductSlug = "my-super-product"
+				cmd.ProductVersion = "1.2.3"
+				err := cmd.GetProductCmd.RunE(cmd.GetProductCmd, []string{""})
+				Expect(err).ToNot(HaveOccurred())
+
+				By("getting the product from the Marketplace", func() {
+					Expect(marketplace.GetProductWithVersionCallCount()).To(Equal(1))
+				})
+
+				By("outputting the response", func() {
+					Expect(output.RenderProductCallCount()).To(Equal(1))
+					product, version := output.RenderProductArgsForCall(0)
+					Expect(product.Slug).To(Equal("my-super-product"))
+					Expect(product.DisplayName).To(Equal("My Super Product"))
+					Expect(version.Number).To(Equal("1.2.3"))
+				})
 			})
 		})
 
@@ -113,6 +141,7 @@ var _ = Describe("Products", func() {
 
 			It("prints the error", func() {
 				cmd.ProductSlug = "my-super-product"
+				cmd.ProductVersion = ""
 				err := cmd.GetProductCmd.RunE(cmd.GetProductCmd, []string{""})
 				Expect(err).To(HaveOccurred())
 				Expect(err.Error()).To(Equal("get product failed"))

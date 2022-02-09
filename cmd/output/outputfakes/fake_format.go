@@ -92,10 +92,11 @@ type FakeFormat struct {
 	renderFilesReturnsOnCall map[int]struct {
 		result1 error
 	}
-	RenderProductStub        func(*models.Product) error
+	RenderProductStub        func(*models.Product, *models.Version) error
 	renderProductMutex       sync.RWMutex
 	renderProductArgsForCall []struct {
 		arg1 *models.Product
+		arg2 *models.Version
 	}
 	renderProductReturns struct {
 		result1 error
@@ -595,16 +596,17 @@ func (fake *FakeFormat) RenderFilesReturnsOnCall(i int, result1 error) {
 	}{result1}
 }
 
-func (fake *FakeFormat) RenderProduct(arg1 *models.Product) error {
+func (fake *FakeFormat) RenderProduct(arg1 *models.Product, arg2 *models.Version) error {
 	fake.renderProductMutex.Lock()
 	ret, specificReturn := fake.renderProductReturnsOnCall[len(fake.renderProductArgsForCall)]
 	fake.renderProductArgsForCall = append(fake.renderProductArgsForCall, struct {
 		arg1 *models.Product
-	}{arg1})
-	fake.recordInvocation("RenderProduct", []interface{}{arg1})
+		arg2 *models.Version
+	}{arg1, arg2})
+	fake.recordInvocation("RenderProduct", []interface{}{arg1, arg2})
 	fake.renderProductMutex.Unlock()
 	if fake.RenderProductStub != nil {
-		return fake.RenderProductStub(arg1)
+		return fake.RenderProductStub(arg1, arg2)
 	}
 	if specificReturn {
 		return ret.result1
@@ -619,17 +621,17 @@ func (fake *FakeFormat) RenderProductCallCount() int {
 	return len(fake.renderProductArgsForCall)
 }
 
-func (fake *FakeFormat) RenderProductCalls(stub func(*models.Product) error) {
+func (fake *FakeFormat) RenderProductCalls(stub func(*models.Product, *models.Version) error) {
 	fake.renderProductMutex.Lock()
 	defer fake.renderProductMutex.Unlock()
 	fake.RenderProductStub = stub
 }
 
-func (fake *FakeFormat) RenderProductArgsForCall(i int) *models.Product {
+func (fake *FakeFormat) RenderProductArgsForCall(i int) (*models.Product, *models.Version) {
 	fake.renderProductMutex.RLock()
 	defer fake.renderProductMutex.RUnlock()
 	argsForCall := fake.renderProductArgsForCall[i]
-	return argsForCall.arg1
+	return argsForCall.arg1, argsForCall.arg2
 }
 
 func (fake *FakeFormat) RenderProductReturns(result1 error) {

@@ -4,8 +4,6 @@
 package pkg
 
 import (
-	"bytes"
-	"encoding/json"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -41,9 +39,7 @@ type DownloadResponse struct {
 
 func (m *Marketplace) Download(productId string, filename string, payload *DownloadRequestPayload) error {
 	requestURL := m.MakeURL(fmt.Sprintf("/api/v1/products/%s/download", productId), nil)
-	encoded, _ := json.Marshal(payload)
-
-	resp, err := m.Post(requestURL, bytes.NewReader(encoded), "application/json")
+	resp, err := m.PostJSON(requestURL, payload)
 	if err != nil {
 		return err
 	}

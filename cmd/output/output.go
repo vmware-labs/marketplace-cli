@@ -20,7 +20,7 @@ var SupportedOutputs = []string{FormatHuman, FormatJSON, FormatYAML}
 type Format interface {
 	PrintHeader(message string)
 
-	RenderProduct(product *models.Product) error
+	RenderProduct(product *models.Product, version *models.Version) error
 	RenderProducts(products []*models.Product) error
 	RenderVersions(product *models.Product) error
 	RenderChart(chart *models.ChartVersion) error

@@ -56,9 +56,7 @@ func (o *HumanOutput) NewTable(headers ...string) *tablewriter.Table {
 	return table
 }
 
-func (o *HumanOutput) RenderProduct(product *models.Product) error {
-	latestVersion := product.GetLatestVersion().Number
-
+func (o *HumanOutput) RenderProduct(product *models.Product, version *models.Version) error {
 	o.Printf("Name:      %s\n", product.DisplayName)
 	o.Printf("Publisher: %s\n", product.PublisherDetails.OrgDisplayName)
 	o.Println()
@@ -67,12 +65,12 @@ func (o *HumanOutput) RenderProduct(product *models.Product) error {
 	o.Println()
 	o.Println("Product Details:")
 	table := o.NewTable("Product ID", "Slug", "Type", "Latest Version", "Status")
-	table.Append([]string{product.ProductId, product.Slug, product.SolutionType, latestVersion, product.Status})
+	table.Append([]string{product.ProductId, product.Slug, product.SolutionType, product.GetLatestVersion().Number, product.Status})
 	table.Render()
 
 	o.Println()
-	o.Printf("Assets for %s:\n", latestVersion)
-	assets := pkg.GetAssets(product, latestVersion)
+	o.Printf("Assets for %s:\n", version.Number)
+	assets := pkg.GetAssets(product, version.Number)
 	err := o.RenderAssets(assets)
 	if err != nil {
 		return err

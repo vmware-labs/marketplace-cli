@@ -46,7 +46,7 @@ func (o *EncodedOutput) Print(object interface{}) error {
 // PrintHeader is a no-op for encoded output. This output only prints the data
 func (o *EncodedOutput) PrintHeader(message string) {}
 
-func (o *EncodedOutput) RenderProduct(product *models.Product) error {
+func (o *EncodedOutput) RenderProduct(product *models.Product, _ *models.Version) error {
 	return o.Print(product)
 }
 

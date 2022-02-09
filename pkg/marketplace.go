@@ -4,6 +4,7 @@
 package pkg
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -101,6 +102,15 @@ func (m *Marketplace) Get(requestURL *url.URL) (*http.Response, error) {
 	return m.SendRequest("GET", requestURL, map[string]string{}, nil)
 }
 
+func (m *Marketplace) PostJSON(requestURL *url.URL, content interface{}) (*http.Response, error) {
+	encoded, err := json.Marshal(content)
+	if err != nil {
+		return nil, fmt.Errorf("failed to encode request payload: %w", err)
+	}
+
+	return m.Post(requestURL, bytes.NewReader(encoded), "application/json")
+}
+
 func (m *Marketplace) Post(requestURL *url.URL, content io.Reader, contentType string) (*http.Response, error) {
 	headers := map[string]string{
 		"Content-Type": contentType,
@@ -109,8 +119,9 @@ func (m *Marketplace) Post(requestURL *url.URL, content io.Reader, contentType s
 }
 
 func (m *Marketplace) Put(requestURL *url.URL, content io.Reader, contentType string) (*http.Response, error) {
-	headers := map[string]string{
-		"Content-Type": contentType,
+	headers := map[string]string{}
+	if contentType != "" {
+		headers["Content-Type"] = contentType
 	}
 	return m.SendRequest("PUT", requestURL, headers, content)
 }

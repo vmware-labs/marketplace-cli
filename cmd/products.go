@@ -31,6 +31,7 @@ func init() {
 
 	GetProductCmd.Flags().StringVarP(&ProductSlug, "product", "p", "", "Product slug (required)")
 	_ = GetProductCmd.MarkFlagRequired("product")
+	GetProductCmd.Flags().StringVarP(&ProductVersion, "product-version", "v", "", "Product version")
 
 	AddProductVersionCmd.Flags().StringVarP(&ProductSlug, "product", "p", "", "Product slug (required)")
 	_ = AddProductVersionCmd.MarkFlagRequired("product")
@@ -91,12 +92,20 @@ var GetProductCmd = &cobra.Command{
 	Args:  cobra.NoArgs,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		cmd.SilenceUsage = true
-		product, err := Marketplace.GetProduct(ProductSlug)
-		if err != nil {
-			return err
-		}
 
-		return Output.RenderProduct(product)
+		if ProductVersion == "" {
+			product, err := Marketplace.GetProduct(ProductSlug)
+			if err != nil {
+				return err
+			}
+			return Output.RenderProduct(product, product.GetLatestVersion())
+		} else {
+			product, version, err := Marketplace.GetProductWithVersion(ProductSlug, ProductVersion)
+			if err != nil {
+				return err
+			}
+			return Output.RenderProduct(product, version)
+		}
 	},
 }
 
