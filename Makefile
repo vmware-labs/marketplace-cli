@@ -91,7 +91,7 @@ build/mkpcli-linux-amd64: $(SRC)
 	GOARCH=amd64 GOOS=linux go build -o build/mkpcli-linux-amd64 -ldflags ${LDFLAGS} ./main.go
 
 build/mkpcli-windows-amd64: $(SRC)
-	GOARCH=amd64 GOOS=windows go build -o build/mkpcli-windows-amd64 -ldflags ${LDFLAGS} ./main.go
+	GOARCH=amd64 GOOS=windows go build -o build/mkpcli-windows-amd64.exe -ldflags ${LDFLAGS} ./main.go
 
 build: deps build/mkpcli
 
