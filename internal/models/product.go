@@ -240,7 +240,7 @@ type Product struct {
 	CompatiblePlatformIDList     []string                     `json:"compatibleplatformidList"`
 	CompatiblePlatformNameList   []string                     `json:"compatibleplatformnameList"`
 	CertificationList            []*Certification             `json:"certificationList"`
-	CertificationType            []string                     `json:"certificationtypeList"`
+	CertificationTypes           []string                     `json:"certificationtypeList"`
 	SolutionAreaId               []string                     `json:"solutionareaidList"`
 	SolutionAreaName             []string                     `json:"solutionareanameList"`
 	SolutionAreaTypeId           []string                     `json:"solutionareatypeidList"`
@@ -271,7 +271,7 @@ type VersionSpecificProductDetails struct {
 	ExportCompliance       *ProductExportCompliance   `json:"exportcompliance"`
 	OpenSourceDisclosure   *OpenSourceDisclosureURLS  `json:"opensourcedisclosure"`
 	CertificationList      []*Certification           `json:"certificationList"`
-	CertificationType      []string                   `json:"certificationtypeList"`
+	CertificationTypes     []string                   `json:"certificationtypesList"`
 	ProductDeploymentFiles []*ProductDeploymentFile   `json:"productdeploymentfilesList"`
 	DockerLinkVersions     []*DockerVersionList       `json:"dockerlinkversionsList"`
 	ChartVersions          []*ChartVersion            `json:"chartversionsList"`
@@ -295,7 +295,7 @@ func (product *Product) UpdateWithVersionSpecificDetails(version string, details
 	product.ExportCompliance = details.ExportCompliance
 	product.OpenSourceDisclosure = details.OpenSourceDisclosure
 	product.CertificationList = details.CertificationList
-	product.CertificationType = details.CertificationType
+	product.CertificationTypes = details.CertificationTypes
 	product.ProductDeploymentFiles = details.ProductDeploymentFiles
 	product.DockerLinkVersions = details.DockerLinkVersions
 	product.ChartVersions = details.ChartVersions
