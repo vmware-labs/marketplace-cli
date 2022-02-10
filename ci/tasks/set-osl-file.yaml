@@ -24,6 +24,6 @@ run:
 
       mkpcli product set --product "${PRODUCT_SLUG}" --product-version "${VERSION}" --osl-file "osl-${VERSION}.txt"
 
-      OSL_URL=$(./build/mkpcli product get --product test-iso-product1 --output json | jq -r .opensourcedisclosure.licensedisclosureurl)
+      OSL_URL=$(mkpcli product get --product "${PRODUCT_SLUG}" --output json | jq -r .opensourcedisclosure.licensedisclosureurl)
       OSL_CONTENT=$(curl "${OSL_URL}")
       test "${OSL_CONTENT}" == "OSL for ${PRODUCT_SLUG} ${VERSION}"

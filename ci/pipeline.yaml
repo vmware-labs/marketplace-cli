@@ -285,6 +285,7 @@ jobs:
       - task: set-osl
         image: mkpcli
         file: source/ci/tasks/set-osl-file.yaml
+        input_mapping: {version: test-container-product-version}
         params:
           MARKETPLACE_ENV: staging
           PRODUCT_SLUG: test-container-product-41
@@ -403,6 +404,7 @@ jobs:
       - task: set-osl
         image: mkpcli
         file: source/ci/tasks/set-osl-file.yaml
+        input_mapping: {version: test-chart-product-version}
         params:
           MARKETPLACE_ENV: staging
           PRODUCT_SLUG: test-chart-product-42
@@ -474,6 +476,7 @@ jobs:
       - task: set-osl
         image: mkpcli
         file: source/ci/tasks/set-osl-file.yaml
+        input_mapping: {version: test-iso-product-version}
         params:
           MARKETPLACE_ENV: staging
           PRODUCT_SLUG: test-iso-product1
@@ -545,6 +548,7 @@ jobs:
       - task: set-osl
         image: mkpcli
         file: source/ci/tasks/set-osl-file.yaml
+        input_mapping: {version: test-ova-product-version}
         params:
           MARKETPLACE_ENV: staging
           PRODUCT_SLUG: test-ova-product-201
