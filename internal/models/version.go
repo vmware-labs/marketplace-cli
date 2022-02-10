@@ -35,10 +35,8 @@ func (product *Product) GetVersion(version string) *Version {
 
 func (product *Product) GetLatestVersion() *Version {
 	if len(product.AllVersions) == 0 {
-		return &Version{Number: "N/A"}
+		return nil
 	}
-
-	// TODO: use the new product.latestversion field instead?
 
 	version, err := product.getLatestVersionSemver()
 	if err != nil {

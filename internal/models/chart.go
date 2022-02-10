@@ -34,9 +34,13 @@ type ChartVersion struct {
 
 func (product *Product) GetChartsForVersion(version string) []*ChartVersion {
 	var charts []*ChartVersion
-	for _, chart := range product.ChartVersions {
-		if chart.AppVersion == product.GetVersion(version).Number {
-			charts = append(charts, chart)
+	versionObj := product.GetVersion(version)
+
+	if versionObj != nil {
+		for _, chart := range product.ChartVersions {
+			if chart.AppVersion == versionObj.Number {
+				charts = append(charts, chart)
+			}
 		}
 	}
 	return charts

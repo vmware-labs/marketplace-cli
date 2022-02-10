@@ -40,9 +40,13 @@ type MetaFile struct {
 
 func (product *Product) GetMetaFilesForVersion(version string) []*MetaFile {
 	var metafiles []*MetaFile
-	for _, metafile := range product.MetaFiles {
-		if metafile.AppVersion == product.GetVersion(version).Number {
-			metafiles = append(metafiles, metafile)
+	versionObj := product.GetVersion(version)
+
+	if versionObj != nil {
+		for _, metafile := range product.MetaFiles {
+			if metafile.AppVersion == versionObj.Number {
+				metafiles = append(metafiles, metafile)
+			}
 		}
 	}
 

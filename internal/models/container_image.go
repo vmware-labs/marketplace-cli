@@ -62,8 +62,13 @@ func (l *DockerVersionList) GetImage(imageURL string) *DockerURLDetails {
 }
 
 func (product *Product) GetContainerImagesForVersion(version string) *DockerVersionList {
+	versionObj := product.GetVersion(version)
+	if versionObj == nil {
+		return nil
+	}
+
 	for _, dockerVersionLink := range product.DockerLinkVersions {
-		if dockerVersionLink.AppVersion == product.GetVersion(version).Number {
+		if dockerVersionLink.AppVersion == versionObj.Number {
 			return dockerVersionLink
 		}
 	}

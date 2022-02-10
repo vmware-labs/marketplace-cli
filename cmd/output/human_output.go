@@ -65,15 +65,17 @@ func (o *HumanOutput) RenderProduct(product *models.Product, version *models.Ver
 	o.Println()
 	o.Println("Product Details:")
 	table := o.NewTable("Product ID", "Slug", "Type", "Latest Version", "Status")
-	table.Append([]string{product.ProductId, product.Slug, product.SolutionType, product.GetLatestVersion().Number, product.Status})
+	table.Append([]string{product.ProductId, product.Slug, product.SolutionType, LatestVersionString(product), product.Status})
 	table.Render()
 
-	o.Println()
-	o.Printf("Assets for %s:\n", version.Number)
-	assets := pkg.GetAssets(product, version.Number)
-	err := o.RenderAssets(assets)
-	if err != nil {
-		return err
+	if version != nil {
+		o.Println()
+		o.Printf("Assets for %s:\n", version.Number)
+		assets := pkg.GetAssets(product, version.Number)
+		err := o.RenderAssets(assets)
+		if err != nil {
+			return err
+		}
 	}
 
 	o.Println()
@@ -93,7 +95,7 @@ func (o *HumanOutput) RenderProduct(product *models.Product, version *models.Ver
 func (o *HumanOutput) RenderProducts(products []*models.Product) error {
 	table := o.NewTable("Slug", "Name", "Publisher", "Type", "Latest Version", "Status")
 	for _, product := range products {
-		table.Append([]string{product.Slug, product.DisplayName, product.PublisherDetails.OrgDisplayName, product.SolutionType, product.GetLatestVersion().Number, product.Status})
+		table.Append([]string{product.Slug, product.DisplayName, product.PublisherDetails.OrgDisplayName, product.SolutionType, LatestVersionString(product), product.Status})
 	}
 	table.Render()
 	o.Printf("Total count: %d\n", len(products))
@@ -336,4 +338,12 @@ func (o *HumanOutput) RenderAssets(assets []*pkg.Asset) error {
 	}
 
 	return nil
+}
+
+func LatestVersionString(product *models.Product) string {
+	if version := product.GetLatestVersion(); version != nil {
+		return version.Number
+	} else {
+		return "N/A"
+	}
 }

@@ -14,17 +14,21 @@ import (
 )
 
 var _ = Describe("HumanOutput", func() {
-	var writer *Buffer
+	var (
+		humanOutput *output.HumanOutput
+		writer      *Buffer
+	)
 
 	BeforeEach(func() {
 		writer = NewBuffer()
+		humanOutput = output.NewHumanOutput(writer, "marketplace.example.com")
 	})
 
 	Describe("RenderProduct", func() {
-		It("renders the product", func() {
-			humanOutput := output.NewHumanOutput(writer, "marketplace.example.com")
+		var product *models.Product
 
-			product := &models.Product{
+		BeforeEach(func() {
+			product = &models.Product{
 				ProductId:    "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee",
 				Slug:         "hyperspace-database",
 				DisplayName:  "Hyperspace Database",
@@ -43,7 +47,9 @@ var _ = Describe("HumanOutput", func() {
 					{Number: "0.0.1"},
 				},
 			}
+		})
 
+		It("renders the product", func() {
 			err := humanOutput.RenderProduct(product, &models.Version{Number: "1.0.0"})
 			Expect(err).ToNot(HaveOccurred())
 			Expect(writer).To(Say("Name:      Hyperspace Database"))
@@ -69,6 +75,14 @@ var _ = Describe("HumanOutput", func() {
 
 			Expect(writer).To(Say("Description:"))
 			Expect(writer).To(Say(regexp.QuoteMeta("Connecting to a database should be:\n\n* Instant\n* Robust\n* Break the laws of causality\n\nOur database does just that!")))
+		})
+
+		Context("Nil version given", func() {
+			It("does not print the list of assets", func() {
+				err := humanOutput.RenderProduct(product, nil)
+				Expect(err).ToNot(HaveOccurred())
+				Expect(writer).ToNot(Say("Assets for"))
+			})
 		})
 	})
 })

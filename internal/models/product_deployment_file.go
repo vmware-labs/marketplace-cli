@@ -32,9 +32,13 @@ type ProductDeploymentFile struct {
 
 func (product *Product) GetFilesForVersion(version string) []*ProductDeploymentFile {
 	var files []*ProductDeploymentFile
-	for _, file := range product.ProductDeploymentFiles {
-		if file.AppVersion == product.GetVersion(version).Number {
-			files = append(files, file)
+	versionObj := product.GetVersion(version)
+
+	if versionObj != nil {
+		for _, file := range product.ProductDeploymentFiles {
+			if file.AppVersion == versionObj.Number {
+				files = append(files, file)
+			}
 		}
 	}
 	return files
