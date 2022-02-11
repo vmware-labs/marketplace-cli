@@ -105,7 +105,6 @@ func (o *HumanOutput) RenderProducts(products []*models.Product) error {
 func (o *HumanOutput) RenderVersions(product *models.Product) error {
 	table := o.NewTable("Number", "Status")
 
-	models.Sort(product.AllVersions)
 	for _, version := range product.AllVersions {
 		table.Append([]string{version.Number, version.Status})
 	}

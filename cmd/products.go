@@ -152,6 +152,7 @@ var ListProductVersionsCmd = &cobra.Command{
 			return err
 		}
 
+		models.Sort(product.AllVersions)
 		Output.PrintHeader(fmt.Sprintf("Versions for %s:", product.DisplayName))
 		return Output.RenderVersions(product)
 	},
