@@ -264,6 +264,13 @@ jobs:
             passed: [build]
           - get: version
             passed: [build]
+      - task: get-current-product
+        image: mkpcli
+        params:
+          MARKETPLACE_ENV: staging
+          PRODUCT_SLUG: test-container-product-41
+        file: source/ci/tasks/get-current-product.yaml
+        output_mapping: {output: previous}
       - task: add-version-to-marketplace
         image: mkpcli
         file: source/ci/tasks/add-version.yaml
@@ -383,6 +390,13 @@ jobs:
             path: helm
             dir: chart
             args: [package, mkpcli-test-chart]
+      - task: get-current-product
+        image: mkpcli
+        params:
+          MARKETPLACE_ENV: staging
+          PRODUCT_SLUG: test-chart-product-42
+        file: source/ci/tasks/get-current-product.yaml
+        output_mapping: {output: previous}
       - task: add-version-to-marketplace
         image: mkpcli
         file: source/ci/tasks/add-version.yaml
@@ -455,6 +469,13 @@ jobs:
             path: curl
             dir: vm
             args: [ -O, https://packages.vmware.com/photon/4.0/GA/iso/photon-minimal-4.0-1526e30ba.iso ]
+      - task: get-current-product
+        image: mkpcli
+        params:
+          MARKETPLACE_ENV: staging
+          PRODUCT_SLUG: test-iso-product1
+        file: source/ci/tasks/get-current-product.yaml
+        output_mapping: {output: previous}
       - task: add-version-to-marketplace
         image: mkpcli
         file: source/ci/tasks/add-version.yaml
@@ -527,6 +548,13 @@ jobs:
             path: curl
             dir: vm
             args: [ -O, https://packages.vmware.com/photon/4.0/GA/ova/photon-hw13-uefi-4.0-1526e30ba0.ova ]
+      - task: get-current-product
+        image: mkpcli
+        params:
+          MARKETPLACE_ENV: staging
+          PRODUCT_SLUG: test-ova-product-201
+        file: source/ci/tasks/get-current-product.yaml
+        output_mapping: {output: previous}
       - task: add-version-to-marketplace
         image: mkpcli
         file: source/ci/tasks/add-version.yaml

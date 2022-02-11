@@ -1,0 +1,24 @@
+# Copyright 2022 VMware, Inc.
+# SPDX-License-Identifier: BSD-2-Clause
+
+---
+platform: linux
+
+params:
+  CSP_API_TOKEN: ((marketplace_api_token))
+  MARKETPLACE_ENV:
+  PRODUCT_SLUG:
+  MKPCLI_DEBUG: true
+  MKPCLI_DEBUG_REQUEST_PAYLOADS: true
+
+outputs:
+  - name: output
+
+run:
+  path: bash
+  dir: output
+  args:
+    - -exc
+    - |
+      mkpcli product get --product "${PRODUCT_SLUG}" --output json > product.json
+      mkpcli product list-versions --product "${PRODUCT_SLUG}" --output json | jq -r .[0].versionnumber > version.txt

@@ -12,6 +12,7 @@ params:
   MKPCLI_DEBUG_REQUEST_PAYLOADS: true
 
 inputs:
+  - name: previous
   - name: version
 
 run:
@@ -24,6 +25,15 @@ run:
 
       mkpcli product set --product "${PRODUCT_SLUG}" --product-version "${VERSION}" --osl-file "osl-${VERSION}.txt"
 
+      # Validate that the OSL was properly updated
       OSL_URL=$(mkpcli product get --product "${PRODUCT_SLUG}" --output json | jq -r .opensourcedisclosure.licensedisclosureurl)
       OSL_CONTENT=$(curl "${OSL_URL}")
       test "${OSL_CONTENT}" == "OSL for ${PRODUCT_SLUG} ${VERSION}"
+
+      # Validate that the OSL URL didn't change for previous versions
+      PREVIOUS_OSL_URL=$(mkpcli product get --product "${PRODUCT_SLUG}" --product-version "$(cat previous/version.txt)" --output json | jq -r .opensourcedisclosure.licensedisclosureurl)
+      test "${OSL_URL}" != "${PREVIOUS_OSL_URL}"
+
+      # Validate that the OSL content didn't change for previous versions
+      PREVIOUS_OSL_CONTENT=$(curl "${PREVIOUS_OSL_URL}")
+      test "${OSL_CONTENT}" != "${PREVIOUS_OSL_URL}"
