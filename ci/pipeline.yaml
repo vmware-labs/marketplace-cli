@@ -136,7 +136,7 @@ resources:
     type: slack-alert
     icon: slack
     source:
-      url: https://hooks.slack.com/services/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
+      url: ((marketplace-cli-ci-cd-notifier-slack-webhook-url))
       channel: marketplace-cli
 
 jobs:
