@@ -286,6 +286,7 @@ jobs:
           bump: minor
 
   - name: test-publish-container-product
+    public: true
     max_in_flight: 1
     plan:
       - in_parallel:
@@ -346,6 +347,7 @@ jobs:
         alert_type: failed
 
   - name: test-download-container-product
+    public: true
     plan:
       - in_parallel:
         - get: mkpcli
@@ -372,6 +374,7 @@ jobs:
         alert_type: failed
 
   - name: test-publish-chart-product
+    public: true
     max_in_flight: 1
     plan:
       - in_parallel:
@@ -489,6 +492,7 @@ jobs:
         alert_type: failed
 
   - name: test-download-chart-product
+    public: true
     plan:
       - in_parallel:
           - get: mkpcli
@@ -515,6 +519,7 @@ jobs:
         alert_type: failed
 
   - name: test-publish-iso-product
+    public: true
     max_in_flight: 1
     plan:
       - in_parallel:
@@ -585,6 +590,7 @@ jobs:
         alert_type: failed
 
   - name: test-download-iso-product
+    public: true
     plan:
       - in_parallel:
           - get: mkpcli
@@ -611,6 +617,7 @@ jobs:
         alert_type: failed
 
   - name: test-publish-ova-product
+    public: true
     max_in_flight: 1
     plan:
       - in_parallel:
@@ -681,6 +688,7 @@ jobs:
         alert_type: failed
 
   - name: test-download-ova-product
+    public: true
     plan:
       - in_parallel:
           - get: mkpcli
