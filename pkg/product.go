@@ -11,6 +11,7 @@ import (
 	"net/http"
 	"net/url"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/google/uuid"
@@ -186,7 +187,7 @@ func (m *Marketplace) GetProduct(slug string) (*models.Product, error) {
 	return product, nil
 }
 
-func (m *Marketplace) GetVersionDetails(product *models.Product, version string) (*models.VersionSpecificProductDetails, error) {
+func (m *Marketplace) getVersionDetails(product *models.Product, version string) (*models.VersionSpecificProductDetails, error) {
 	requestURL := m.MakeURL(
 		fmt.Sprintf("/api/v1/products/%s/version-details", product.ProductId),
 		url.Values{
@@ -201,19 +202,24 @@ func (m *Marketplace) GetVersionDetails(product *models.Product, version string)
 
 	resp, err := m.PostJSON(requestURL, payload)
 	if err != nil {
-		return nil, fmt.Errorf("sending the request for product %s %s failed: %w", product.Slug, version, err)
+		return nil, fmt.Errorf("sending the product version details request for %s %s failed: %w", product.Slug, version, err)
 	}
 
 	if resp.StatusCode == http.StatusNotFound {
-		return nil, fmt.Errorf("product version details %s %s not found", product.Slug, version)
+		return nil, fmt.Errorf("product version details for %s %s not found", product.Slug, version)
 	}
 
 	if resp.StatusCode != http.StatusOK {
 		body, err := ioutil.ReadAll(resp.Body)
-		if err == nil {
-			return nil, fmt.Errorf("getting product version details %s %s failed: (%d)\n%s", product.Slug, version, resp.StatusCode, string(body))
+		if err != nil {
+			return nil, fmt.Errorf("getting product version details for %s %s failed: (%d)", product.Slug, version, resp.StatusCode)
 		}
-		return nil, fmt.Errorf("getting product version details %s %s failed: (%d)", product.Slug, version, resp.StatusCode)
+
+		if resp.StatusCode == http.StatusBadRequest && strings.Contains(string(body), "No data available for the provided product version") {
+			return nil, nil
+		}
+
+		return nil, fmt.Errorf("getting product version details for %s %s failed: (%d)\n%s", product.Slug, version, resp.StatusCode, string(body))
 	}
 
 	response := &VersionSpecificDetailsPayloadResponse{}
@@ -235,12 +241,14 @@ func (m *Marketplace) GetProductWithVersion(slug, version string) (*models.Produ
 	}
 	versionObject := product.GetVersion(version)
 
-	versionDetails, err := m.GetVersionDetails(product, versionObject.Number)
+	versionDetails, err := m.getVersionDetails(product, versionObject.Number)
 	if err != nil {
 		return nil, nil, err
 	}
 
-	product.UpdateWithVersionSpecificDetails(versionObject.Number, versionDetails)
+	if versionDetails != nil {
+		product.UpdateWithVersionSpecificDetails(versionObject.Number, versionDetails)
+	}
 
 	product.CurrentVersion = versionObject.Number
 	return product, versionObject, nil
