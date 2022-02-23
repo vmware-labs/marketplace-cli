@@ -180,7 +180,7 @@ func (m *Marketplace) GetProduct(slug string) (*models.Product, error) {
 	}
 
 	product := response.Response.Data
-	if product.GetLatestVersion() != nil {
+	if product.HasVersion("") {
 		product.LatestVersion = product.GetLatestVersion().Number
 	}
 	return product, nil
@@ -235,14 +235,12 @@ func (m *Marketplace) GetProductWithVersion(slug, version string) (*models.Produ
 	}
 	versionObject := product.GetVersion(version)
 
-	if product.LatestVersion != "" && product.LatestVersion != versionObject.Number {
-		versionDetails, err := m.GetVersionDetails(product, versionObject.Number)
-		if err != nil {
-			return nil, nil, err
-		}
-
-		product.UpdateWithVersionSpecificDetails(versionObject.Number, versionDetails)
+	versionDetails, err := m.GetVersionDetails(product, versionObject.Number)
+	if err != nil {
+		return nil, nil, err
 	}
+
+	product.UpdateWithVersionSpecificDetails(versionObject.Number, versionDetails)
 
 	product.CurrentVersion = versionObject.Number
 	return product, versionObject, nil
