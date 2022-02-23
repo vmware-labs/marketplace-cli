@@ -178,7 +178,12 @@ func (m *Marketplace) GetProduct(slug string) (*models.Product, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse the response for product %s: %w", slug, err)
 	}
-	return response.Response.Data, nil
+
+	product := response.Response.Data
+	if product.GetLatestVersion() != nil {
+		product.LatestVersion = product.GetLatestVersion().Number
+	}
+	return product, nil
 }
 
 func (m *Marketplace) GetVersionDetails(product *models.Product, version string) (*models.VersionSpecificProductDetails, error) {
