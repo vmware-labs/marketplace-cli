@@ -222,7 +222,7 @@ type Product struct {
 	LatestVersion                string                       `json:"latestversion"`
 	Version                      *Version                     `json:"version,omitempty"`
 	Versions                     []*Version                   `json:"versionsList"`
-	CurrentVersion               string                       `json:"currentVersion"`
+	CurrentVersion               string                       `json:"currentversion"`
 	DeploymentTypes              []string                     `json:"deploymenttypesList"`
 	SolutionType                 string                       `json:"solutiontype"`
 	FormFactor                   string                       `json:"formfactor"`
