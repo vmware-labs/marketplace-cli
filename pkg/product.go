@@ -11,7 +11,6 @@ import (
 	"net/http"
 	"net/url"
 	"strconv"
-	"strings"
 	"time"
 
 	"github.com/google/uuid"
@@ -209,14 +208,15 @@ func (m *Marketplace) getVersionDetails(product *models.Product, version string)
 		return nil, fmt.Errorf("product version details for %s %s not found", product.Slug, version)
 	}
 
+	// Workaround: Always ignore 400 errors, because they often indicate that there is no version-specific details
+	if resp.StatusCode == http.StatusBadRequest {
+		return nil, nil
+	}
+
 	if resp.StatusCode != http.StatusOK {
 		body, err := ioutil.ReadAll(resp.Body)
 		if err != nil {
 			return nil, fmt.Errorf("getting product version details for %s %s failed: (%d)", product.Slug, version, resp.StatusCode)
-		}
-
-		if resp.StatusCode == http.StatusBadRequest && strings.Contains(string(body), "No data available for the provided product version") {
-			return nil, nil
 		}
 
 		return nil, fmt.Errorf("getting product version details for %s %s failed: (%d)\n%s", product.Slug, version, resp.StatusCode, string(body))

@@ -312,6 +312,8 @@ func (product *Product) UpdateWithVersionSpecificDetails(version string, details
 }
 
 func (product *Product) PrepForUpdate() {
+	// This whole function is a workaround
+
 	// Send an empty compatibility matrix, any entries in here will multiply
 	product.CompatibilityMatrix = []*CompatibilityMatrix{}
 

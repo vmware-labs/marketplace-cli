@@ -169,6 +169,7 @@ var AttachContainerImageCmd = &cobra.Command{
 		})
 
 		product.PrepForUpdate()
+		product.CurrentVersion = "" // Workaround: Need to clear the currentversion, otherwise the image is only fetched with the tagged version and is not downloadable
 		product.DockerLinkVersions = append(product.DockerLinkVersions, containerImages)
 
 		updatedProduct, err := Marketplace.PutProduct(product, false)
