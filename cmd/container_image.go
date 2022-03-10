@@ -28,17 +28,11 @@ var (
 func init() {
 	rootCmd.AddCommand(ContainerImageCmd)
 	ContainerImageCmd.AddCommand(ListContainerImageCmd)
-	ContainerImageCmd.AddCommand(GetContainerImageCmd)
 	ContainerImageCmd.AddCommand(AttachContainerImageCmd)
 
 	ListContainerImageCmd.Flags().StringVarP(&ContainerImageProductSlug, "product", "p", "", "Product slug (required)")
 	_ = ListContainerImageCmd.MarkFlagRequired("product")
 	ListContainerImageCmd.Flags().StringVarP(&ContainerImageProductVersion, "product-version", "v", "", "Product version (default to latest version)")
-
-	GetContainerImageCmd.Flags().StringVarP(&ContainerImageProductSlug, "product", "p", "", "Product slug (required)")
-	_ = GetContainerImageCmd.MarkFlagRequired("product")
-	GetContainerImageCmd.Flags().StringVarP(&ContainerImageProductVersion, "product-version", "v", "", "Product version (default to latest version)")
-	GetContainerImageCmd.Flags().StringVarP(&ImageRepository, "image-repository", "r", "", "container repository")
 
 	AttachContainerImageCmd.Flags().StringVarP(&ContainerImageProductSlug, "product", "p", "", "Product slug (required)")
 	_ = AttachContainerImageCmd.MarkFlagRequired("product")
@@ -59,7 +53,7 @@ var ContainerImageCmd = &cobra.Command{
 	Short:     "List and manage container images attached to a product",
 	Long:      "List and manage container images attached to a product in the VMware Marketplace",
 	Args:      cobra.OnlyValidArgs,
-	ValidArgs: []string{ListContainerImageCmd.Use, GetContainerImageCmd.Use, AttachContainerImageCmd.Use},
+	ValidArgs: []string{ListContainerImageCmd.Use, AttachContainerImageCmd.Use},
 }
 
 var ListContainerImageCmd = &cobra.Command{
@@ -78,43 +72,6 @@ var ListContainerImageCmd = &cobra.Command{
 
 		Output.PrintHeader(fmt.Sprintf("Container images for %s %s:", product.DisplayName, version.Number))
 		return Output.RenderContainerImages(images)
-	},
-}
-
-var GetContainerImageCmd = &cobra.Command{
-	Use:   "get",
-	Short: "Get details for a container image",
-	Long:  "Prints detailed information about a container image attached to a product in the VMware Marketplace",
-	Args:  cobra.NoArgs,
-	RunE: func(cmd *cobra.Command, args []string) error {
-		cmd.SilenceUsage = true
-		product, version, err := Marketplace.GetProductWithVersion(ContainerImageProductSlug, ContainerImageProductVersion)
-		if err != nil {
-			return err
-		}
-
-		containerImages := product.GetContainerImagesForVersion(version.Number)
-		if containerImages == nil {
-			return fmt.Errorf("%s %s does not have any container images\n", product.Slug, version.Number)
-		}
-
-		var containerImage *models.DockerURLDetails
-		if ImageRepository != "" {
-			containerImage = containerImages.GetImage(ImageRepository)
-			if containerImage == nil {
-				return fmt.Errorf("%s %s does not have the container image \"%s\"", ContainerImageProductSlug, version.Number, ImageRepository)
-			}
-		} else {
-			if len(containerImages.DockerURLs) == 0 {
-				return fmt.Errorf("%s %s does not have any container images\n", product.Slug, version.Number)
-			} else if len(containerImages.DockerURLs) == 1 {
-				containerImage = containerImages.DockerURLs[0]
-			} else {
-				return fmt.Errorf("multiple container images found for %s %s, please use the --image-repository parameter", ContainerImageProductSlug, version.Number)
-			}
-		}
-
-		return Output.RenderContainerImage(containerImage)
 	},
 }
 
