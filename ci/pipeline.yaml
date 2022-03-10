@@ -27,6 +27,7 @@ resource_types:
       tag: v0.15.0
       username: ((harbor.username))
       password: ((harbor.token))
+      disable: true
 
 resources:
   - name: source

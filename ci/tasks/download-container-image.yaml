@@ -16,4 +16,4 @@ inputs:
   - name: source
 
 run:
-  path: source/ci/tasks/download-container-image.sh
+  path: source/test/download-container-image.sh

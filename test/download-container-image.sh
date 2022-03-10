@@ -10,18 +10,22 @@ if [ -z "${PRODUCT_SLUG}" ] ; then
   exit 1
 fi
 
+if [ -z "${PRODUCT_VERSION}" ] ; then
+  echo "PRODUCT_VERSION not defined"
+  exit 1
+fi
+
 # Get the ID for the first container image
 IMAGES=$(mkpcli container-image list --product "${PRODUCT_SLUG}" --product-version "${PRODUCT_VERSION}" --output json)
 IMAGE_URL=$(echo "${IMAGES}" | jq -r .[0].dockerurlsList[0].url)
 IMAGE_TAG=$(echo "${IMAGES}" | jq -r .[0].dockerurlsList[0].imagetagsList[0].tag)
 IS_IN_MKP_REGISTRY=$(echo "${IMAGES}" | jq -r .[0].dockerurlsList[0].imagetagsList[0].isupdatedinmarketplaceregistry)
-PROCESSING_ERROR=$(echo "${IMAGES}" | jq -r .[0].dockerurlsList[0].imagetagsList[0].processingerror)
 
-while [ "${IS_IN_MKP_REGISTRY}" == "false" ] && [ -z "${PROCESSING_ERROR}" ] ; do
+while [ "${IS_IN_MKP_REGISTRY}" == "false" ] ; do
   sleep 60
 done
 
-if [ "${IS_IN_MKP_REGISTRY}" == "true" ] && [ -z "${PROCESSING_ERROR}" ] ; then
+if [ "${IS_IN_MKP_REGISTRY}" == "true" ] ; then
   # Download the image
   mkpcli download --product "${PRODUCT_SLUG}" --product-version "${PRODUCT_VERSION}" \
     --filter "${IMAGE_URL}:${IMAGE_TAG}" \
@@ -31,6 +35,8 @@ if [ "${IS_IN_MKP_REGISTRY}" == "true" ] && [ -z "${PROCESSING_ERROR}" ] ; then
   # Downloaded file is a real docker image
   test -f my-container-image.tar
   tar tvf my-container-image.tar manifest.json
+
+  rm -f my-container-image.tar
 elif [ -n "${PROCESSING_ERROR}" ] ; then
   echo "Container image is not downloadable"
   exit 1

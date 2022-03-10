@@ -23,6 +23,8 @@ if [ "${STATUS}" == "APPROVAL_PENDING" ] || [ "${STATUS}" == "ACTIVE" ] ; then
 
   # Downloaded virtual machine file is a real file
   test -f my-file
+
+  rm -f my-file
 elif [ "${STATUS}" == "INACTIVE" ] ; then
   echo "VM file is not downloadable"
   echo "${FILES}" | jq -r .[0].comment

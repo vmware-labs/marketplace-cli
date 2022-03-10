@@ -29,6 +29,8 @@ if [ "${IS_IN_MKP_REGISTRY}" == "true" ] ; then
   # Downloaded file is a real Helm chart
   test -f my-chart.tgz
   tar tvf my-chart.tgz | grep Chart.yaml
+
+  rm -f my-chart.tgz
 elif [ "${IS_IN_MKP_REGISTRY}" == "false" ] && [ -n "${PROCESSING_ERROR}" ] ; then
   echo "Chart is not downloadable"
   exit 1

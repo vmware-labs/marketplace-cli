@@ -16,4 +16,4 @@ inputs:
   - name: source
 
 run:
-  path: source/ci/tasks/download-vm.sh
+  path: source/test/download-vm.sh
