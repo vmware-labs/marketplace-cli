@@ -8,8 +8,8 @@ params:
   CSP_API_TOKEN: ((marketplace_api_token))
   MARKETPLACE_ENV:
   PRODUCT_SLUG:
-  TEST_IMAGE_REPO: bitnami/nginx
-  TEST_IMAGE_TAG: 1.21.1
+  TEST_IMAGE_REPO:
+  TEST_IMAGE_TAG:
   MKPCLI_DEBUG: true
   MKPCLI_DEBUG_REQUEST_PAYLOADS: true
 

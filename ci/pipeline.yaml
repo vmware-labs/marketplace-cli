@@ -307,6 +307,15 @@ jobs:
           PRODUCT_SLUG: test-container-product-41
         file: source/ci/tasks/get-current-product.yaml
         output_mapping: {output: previous}
+      - task: add-container-image-to-existing-version
+        image: mkpcli
+        file: source/ci/tasks/test-container-image-product.yaml
+        input_mapping: { version: previous }
+        params:
+          MARKETPLACE_ENV: staging
+          PRODUCT_SLUG: test-container-product-41
+          TEST_IMAGE_REPO: bitnami/nginx
+          TEST_IMAGE_TAG: 1.21.6
       - task: add-version-to-marketplace
         image: mkpcli
         file: source/ci/tasks/add-version.yaml
@@ -325,6 +334,8 @@ jobs:
         params:
           MARKETPLACE_ENV: staging
           PRODUCT_SLUG: test-container-product-41
+          TEST_IMAGE_REPO: bitnami/nginx
+          TEST_IMAGE_TAG: 1.21.1
       - task: set-osl
         image: mkpcli
         file: source/ci/tasks/set-osl-file.yaml

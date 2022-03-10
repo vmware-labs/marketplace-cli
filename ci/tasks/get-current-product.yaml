@@ -21,4 +21,4 @@ run:
     - -exc
     - |
       mkpcli product get --product "${PRODUCT_SLUG}" --output json > product.json
-      mkpcli product list-versions --product "${PRODUCT_SLUG}" --output json | jq -r .[0].versionnumber > version.txt
+      mkpcli product list-versions --product "${PRODUCT_SLUG}" --output json | jq -r .[0].versionnumber > version

@@ -137,14 +137,24 @@ var _ = Describe("ContainerImage", func() {
 				Expect(versionUpdate).To(BeFalse())
 
 				Expect(updatedProduct.DeploymentTypes).To(ContainElement("DOCKERLINK"))
-				Expect(updatedProduct.DockerLinkVersions).To(HaveLen(1))
+				Expect(updatedProduct.DockerLinkVersions).To(HaveLen(2))
 				dockerLink := updatedProduct.DockerLinkVersions[0]
 				Expect(dockerLink.AppVersion).To(Equal("1.2.3"))
 				Expect(dockerLink.DockerURLs).To(HaveLen(1))
 				dockerUrl := dockerLink.DockerURLs[0]
-				Expect(dockerUrl.Url).To(Equal("python"))
+				Expect(dockerUrl.Url).To(Equal("nginx"))
 				Expect(dockerUrl.ImageTags).To(HaveLen(1))
 				tag := dockerUrl.ImageTags[0]
+				Expect(tag.Tag).To(Equal("latest"))
+				Expect(tag.Type).To(Equal("FLOATING"))
+
+				dockerLink = updatedProduct.DockerLinkVersions[1]
+				Expect(dockerLink.AppVersion).To(Equal("1.2.3"))
+				Expect(dockerLink.DockerURLs).To(HaveLen(1))
+				dockerUrl = dockerLink.DockerURLs[0]
+				Expect(dockerUrl.Url).To(Equal("python"))
+				Expect(dockerUrl.ImageTags).To(HaveLen(1))
+				tag = dockerUrl.ImageTags[0]
 				Expect(tag.Tag).To(Equal("1.2.3"))
 				Expect(tag.Type).To(Equal("FIXED"))
 			})
@@ -200,7 +210,7 @@ var _ = Describe("ContainerImage", func() {
 					Expect(versionUpdate).To(BeFalse())
 
 					Expect(updatedProduct.DeploymentTypes).To(ContainElement("DOCKERLINK"))
-					Expect(updatedProduct.DockerLinkVersions).To(HaveLen(1))
+					Expect(updatedProduct.DockerLinkVersions).To(HaveLen(2))
 					dockerLink := updatedProduct.DockerLinkVersions[0]
 					Expect(dockerLink.AppVersion).To(Equal("1.2.3"))
 					Expect(dockerLink.DockerURLs).To(HaveLen(1))
@@ -208,6 +218,16 @@ var _ = Describe("ContainerImage", func() {
 					Expect(dockerUrl.Url).To(Equal("nginx"))
 					Expect(dockerUrl.ImageTags).To(HaveLen(1))
 					tag := dockerUrl.ImageTags[0]
+					Expect(tag.Tag).To(Equal("latest"))
+					Expect(tag.Type).To(Equal("FLOATING"))
+
+					dockerLink = updatedProduct.DockerLinkVersions[1]
+					Expect(dockerLink.AppVersion).To(Equal("1.2.3"))
+					Expect(dockerLink.DockerURLs).To(HaveLen(1))
+					dockerUrl = dockerLink.DockerURLs[0]
+					Expect(dockerUrl.Url).To(Equal("nginx"))
+					Expect(dockerUrl.ImageTags).To(HaveLen(1))
+					tag = dockerUrl.ImageTags[0]
 					Expect(tag.Tag).To(Equal("5.5.5"))
 					Expect(tag.Type).To(Equal("FIXED"))
 				})

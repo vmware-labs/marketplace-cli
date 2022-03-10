@@ -31,7 +31,7 @@ run:
       test "${OSL_CONTENT}" == "OSL for ${PRODUCT_SLUG} ${VERSION}"
 
       # Validate that the OSL URL didn't change for previous versions
-      PREVIOUS_OSL_URL=$(mkpcli product get --product "${PRODUCT_SLUG}" --product-version "$(cat previous/version.txt)" --output json | jq -r .opensourcedisclosure.licensedisclosureurl)
+      PREVIOUS_OSL_URL=$(mkpcli product get --product "${PRODUCT_SLUG}" --product-version "$(cat previous/version)" --output json | jq -r .opensourcedisclosure.licensedisclosureurl)
       test "${OSL_URL}" != "${PREVIOUS_OSL_URL}"
 
       # Validate that the OSL content didn't change for previous versions
