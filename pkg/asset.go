@@ -68,25 +68,27 @@ func GetAssets(product *models.Product, version string) []*Asset {
 	}
 
 	containerImages := product.GetContainerImagesForVersion(version)
-	if containerImages != nil {
-		for _, containerImage := range containerImages.DockerURLs {
-			for _, tag := range containerImage.ImageTags {
-				assets = append(assets, &Asset{
-					DisplayName:  fmt.Sprintf("%s:%s", containerImage.Url, tag.Tag),
-					Filename:     "image.tar",
-					Version:      tag.Tag,
-					Type:         AssetTypeContainerImage,
-					Size:         tag.Size,
-					Downloads:    tag.DownloadCount,
-					Downloadable: tag.IsUpdatedInMarketplaceRegistry,
-					DownloadRequestPayload: &DownloadRequestPayload{
-						ProductId:           product.ProductId,
-						AppVersion:          version,
-						DockerlinkVersionID: containerImages.ID,
-						DockerUrlId:         containerImage.ID,
-						ImageTagId:          tag.ID,
-					},
-				})
+	if len(containerImages) > 0 {
+		for _, containerImage := range containerImages {
+			for _, imageURL := range containerImage.DockerURLs {
+				for _, tag := range imageURL.ImageTags {
+					assets = append(assets, &Asset{
+						DisplayName:  fmt.Sprintf("%s:%s", imageURL.Url, tag.Tag),
+						Filename:     "image.tar",
+						Version:      tag.Tag,
+						Type:         AssetTypeContainerImage,
+						Size:         tag.Size,
+						Downloads:    tag.DownloadCount,
+						Downloadable: tag.IsUpdatedInMarketplaceRegistry,
+						DownloadRequestPayload: &DownloadRequestPayload{
+							ProductId:           product.ProductId,
+							AppVersion:          version,
+							DockerlinkVersionID: containerImage.ID,
+							DockerUrlId:         imageURL.ID,
+							ImageTagId:          tag.ID,
+						},
+					})
+				}
 			}
 		}
 	}

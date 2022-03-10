@@ -48,21 +48,10 @@ type FakeFormat struct {
 	renderChartsReturnsOnCall map[int]struct {
 		result1 error
 	}
-	RenderContainerImageStub        func(*models.DockerURLDetails) error
-	renderContainerImageMutex       sync.RWMutex
-	renderContainerImageArgsForCall []struct {
-		arg1 *models.DockerURLDetails
-	}
-	renderContainerImageReturns struct {
-		result1 error
-	}
-	renderContainerImageReturnsOnCall map[int]struct {
-		result1 error
-	}
-	RenderContainerImagesStub        func(*models.DockerVersionList) error
+	RenderContainerImagesStub        func([]*models.DockerVersionList) error
 	renderContainerImagesMutex       sync.RWMutex
 	renderContainerImagesArgsForCall []struct {
-		arg1 *models.DockerVersionList
+		arg1 []*models.DockerVersionList
 	}
 	renderContainerImagesReturns struct {
 		result1 error
@@ -351,73 +340,18 @@ func (fake *FakeFormat) RenderChartsReturnsOnCall(i int, result1 error) {
 	}{result1}
 }
 
-func (fake *FakeFormat) RenderContainerImage(arg1 *models.DockerURLDetails) error {
-	fake.renderContainerImageMutex.Lock()
-	ret, specificReturn := fake.renderContainerImageReturnsOnCall[len(fake.renderContainerImageArgsForCall)]
-	fake.renderContainerImageArgsForCall = append(fake.renderContainerImageArgsForCall, struct {
-		arg1 *models.DockerURLDetails
-	}{arg1})
-	fake.recordInvocation("RenderContainerImage", []interface{}{arg1})
-	fake.renderContainerImageMutex.Unlock()
-	if fake.RenderContainerImageStub != nil {
-		return fake.RenderContainerImageStub(arg1)
+func (fake *FakeFormat) RenderContainerImages(arg1 []*models.DockerVersionList) error {
+	var arg1Copy []*models.DockerVersionList
+	if arg1 != nil {
+		arg1Copy = make([]*models.DockerVersionList, len(arg1))
+		copy(arg1Copy, arg1)
 	}
-	if specificReturn {
-		return ret.result1
-	}
-	fakeReturns := fake.renderContainerImageReturns
-	return fakeReturns.result1
-}
-
-func (fake *FakeFormat) RenderContainerImageCallCount() int {
-	fake.renderContainerImageMutex.RLock()
-	defer fake.renderContainerImageMutex.RUnlock()
-	return len(fake.renderContainerImageArgsForCall)
-}
-
-func (fake *FakeFormat) RenderContainerImageCalls(stub func(*models.DockerURLDetails) error) {
-	fake.renderContainerImageMutex.Lock()
-	defer fake.renderContainerImageMutex.Unlock()
-	fake.RenderContainerImageStub = stub
-}
-
-func (fake *FakeFormat) RenderContainerImageArgsForCall(i int) *models.DockerURLDetails {
-	fake.renderContainerImageMutex.RLock()
-	defer fake.renderContainerImageMutex.RUnlock()
-	argsForCall := fake.renderContainerImageArgsForCall[i]
-	return argsForCall.arg1
-}
-
-func (fake *FakeFormat) RenderContainerImageReturns(result1 error) {
-	fake.renderContainerImageMutex.Lock()
-	defer fake.renderContainerImageMutex.Unlock()
-	fake.RenderContainerImageStub = nil
-	fake.renderContainerImageReturns = struct {
-		result1 error
-	}{result1}
-}
-
-func (fake *FakeFormat) RenderContainerImageReturnsOnCall(i int, result1 error) {
-	fake.renderContainerImageMutex.Lock()
-	defer fake.renderContainerImageMutex.Unlock()
-	fake.RenderContainerImageStub = nil
-	if fake.renderContainerImageReturnsOnCall == nil {
-		fake.renderContainerImageReturnsOnCall = make(map[int]struct {
-			result1 error
-		})
-	}
-	fake.renderContainerImageReturnsOnCall[i] = struct {
-		result1 error
-	}{result1}
-}
-
-func (fake *FakeFormat) RenderContainerImages(arg1 *models.DockerVersionList) error {
 	fake.renderContainerImagesMutex.Lock()
 	ret, specificReturn := fake.renderContainerImagesReturnsOnCall[len(fake.renderContainerImagesArgsForCall)]
 	fake.renderContainerImagesArgsForCall = append(fake.renderContainerImagesArgsForCall, struct {
-		arg1 *models.DockerVersionList
-	}{arg1})
-	fake.recordInvocation("RenderContainerImages", []interface{}{arg1})
+		arg1 []*models.DockerVersionList
+	}{arg1Copy})
+	fake.recordInvocation("RenderContainerImages", []interface{}{arg1Copy})
 	fake.renderContainerImagesMutex.Unlock()
 	if fake.RenderContainerImagesStub != nil {
 		return fake.RenderContainerImagesStub(arg1)
@@ -435,13 +369,13 @@ func (fake *FakeFormat) RenderContainerImagesCallCount() int {
 	return len(fake.renderContainerImagesArgsForCall)
 }
 
-func (fake *FakeFormat) RenderContainerImagesCalls(stub func(*models.DockerVersionList) error) {
+func (fake *FakeFormat) RenderContainerImagesCalls(stub func([]*models.DockerVersionList) error) {
 	fake.renderContainerImagesMutex.Lock()
 	defer fake.renderContainerImagesMutex.Unlock()
 	fake.RenderContainerImagesStub = stub
 }
 
-func (fake *FakeFormat) RenderContainerImagesArgsForCall(i int) *models.DockerVersionList {
+func (fake *FakeFormat) RenderContainerImagesArgsForCall(i int) []*models.DockerVersionList {
 	fake.renderContainerImagesMutex.RLock()
 	defer fake.renderContainerImagesMutex.RUnlock()
 	argsForCall := fake.renderContainerImagesArgsForCall[i]
@@ -793,8 +727,6 @@ func (fake *FakeFormat) Invocations() map[string][][]interface{} {
 	defer fake.renderChartMutex.RUnlock()
 	fake.renderChartsMutex.RLock()
 	defer fake.renderChartsMutex.RUnlock()
-	fake.renderContainerImageMutex.RLock()
-	defer fake.renderContainerImageMutex.RUnlock()
 	fake.renderContainerImagesMutex.RLock()
 	defer fake.renderContainerImagesMutex.RUnlock()
 	fake.renderFileMutex.RLock()

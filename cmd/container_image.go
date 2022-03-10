@@ -94,40 +94,27 @@ var AttachContainerImageCmd = &cobra.Command{
 
 		product.SetDeploymentType(models.DeploymentTypesDocker)
 
-		containerImages := product.GetContainerImagesForVersion(version.Number)
-		if containerImages == nil {
-			if ContainerImageDeploymentInstructions == "" {
-				cmd.SilenceUsage = false
-				return fmt.Errorf("must specify the deployment instructions for the first container image. Please run again with --deployment-instructions <string>")
-			}
-
-			containerImages = &models.DockerVersionList{
-				AppVersion: version.Number,
-				DockerURLs: []*models.DockerURLDetails{},
-			}
-		}
-
-		containerImage := containerImages.GetImage(ImageRepository)
-		if containerImage == nil {
-			containerImage = &models.DockerURLDetails{
-				Url:                   ImageRepository,
-				ImageTags:             []*models.DockerImageTag{},
-				DeploymentInstruction: ContainerImageDeploymentInstructions,
-			}
-			containerImages.DockerURLs = append(containerImages.DockerURLs, containerImage)
-		}
-
-		if containerImage.HasTag(ImageTag) {
+		if product.HasContainerImage(version.Number, ImageRepository, ImageTag) {
 			return fmt.Errorf("%s %s already has the tag %s:%s", ContainerImageProductSlug, version.Number, ImageRepository, ImageTag)
 		}
-		containerImage.ImageTags = append(containerImage.ImageTags, &models.DockerImageTag{
-			Tag:  ImageTag,
-			Type: ImageTagType,
-		})
 
 		product.PrepForUpdate()
 		product.CurrentVersion = "" // Workaround: Need to clear the currentversion, otherwise the image is only fetched with the tagged version and is not downloadable
-		product.DockerLinkVersions = append(product.DockerLinkVersions, containerImages)
+		product.DockerLinkVersions = append(product.DockerLinkVersions, &models.DockerVersionList{
+			AppVersion: version.Number,
+			DockerURLs: []*models.DockerURLDetails{
+				{
+					Url: ImageRepository,
+					ImageTags: []*models.DockerImageTag{
+						{
+							Tag:  ImageTag,
+							Type: ImageTagType,
+						},
+					},
+					DeploymentInstruction: ContainerImageDeploymentInstructions,
+				},
+			},
+		})
 
 		updatedProduct, err := Marketplace.PutProduct(product, false)
 		if err != nil {

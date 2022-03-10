@@ -66,11 +66,7 @@ func (o *EncodedOutput) RenderCharts(charts []*models.ChartVersion) error {
 	return o.Print(charts)
 }
 
-func (o *EncodedOutput) RenderContainerImage(image *models.DockerURLDetails) error {
-	return o.Print(image)
-}
-
-func (o *EncodedOutput) RenderContainerImages(images *models.DockerVersionList) error {
+func (o *EncodedOutput) RenderContainerImages(images []*models.DockerVersionList) error {
 	return o.Print(images)
 }
 

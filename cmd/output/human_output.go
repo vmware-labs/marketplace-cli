@@ -164,83 +164,47 @@ func (o *HumanOutput) RenderCharts(charts []*models.ChartVersion) error {
 	return nil
 }
 
-func (o *HumanOutput) RenderContainerImage(image *models.DockerURLDetails) error {
-	o.Println(image.Url)
-	o.Println("Tags:")
-
-	footnotes := ""
-	table := o.NewTable("Tag", "Type", "Downloads")
-	for _, tag := range image.ImageTags {
-		downloads := ""
-		if tag.IsUpdatedInMarketplaceRegistry {
-			downloads = strconv.FormatInt(tag.DownloadCount, 10)
-		} else {
-			if tag.ProcessingError != "" {
-				downloads = "Error*"
-				footnotes += fmt.Sprintf("* %s\n", tag.ProcessingError)
-			} else {
-				downloads = "Not yet available"
-			}
-		}
-		table.Append([]string{tag.Tag, tag.Type, downloads})
-	}
-	table.Render()
-	o.Println()
-	if footnotes != "" {
-		o.Println(footnotes)
-	}
-
-	o.Println("Deployment instructions:")
-	o.Println(image.DeploymentInstruction)
-
-	return nil
-}
-
-func (o *HumanOutput) RenderContainerImages(images *models.DockerVersionList) error {
-	var imageList []*models.DockerURLDetails
-	if images != nil {
-		imageList = images.DockerURLs
-	}
+func (o *HumanOutput) RenderContainerImages(images []*models.DockerVersionList) error {
+	total := 0
 	footnote := ""
 	table := o.NewTable("Image", "Tags", "Downloads")
-	for _, docker := range imageList {
-		var tagList []string
-		var downloads int64 = 0
-		downloadable := true
-		problem := false
-		for _, tag := range docker.ImageTags {
-			if downloadable && tag.IsUpdatedInMarketplaceRegistry {
-				downloads += tag.DownloadCount
-			} else {
-				downloadable = false
-				if tag.ProcessingError != "" {
-					problem = true
+	for _, image := range images {
+		for _, dockerURL := range image.DockerURLs {
+			total += 1
+			var tagList []string
+			var downloads int64 = 0
+			downloadable := true
+			problem := false
+			for _, tag := range dockerURL.ImageTags {
+				if downloadable && tag.IsUpdatedInMarketplaceRegistry {
+					downloads += tag.DownloadCount
+				} else {
+					downloadable = false
+					if tag.ProcessingError != "" {
+						problem = true
+					}
 				}
+				tagList = append(tagList, tag.Tag)
 			}
-			tagList = append(tagList, tag.Tag)
-		}
-		if downloadable {
-			table.Append([]string{docker.Url, strings.Join(tagList, ", "), strconv.FormatInt(downloads, 10)})
-		} else if problem {
-			table.Append([]string{docker.Url, strings.Join(tagList, ", "), "Err*"})
-			footnote = "* There is an error with this image."
-		} else {
-			table.Append([]string{docker.Url, strings.Join(tagList, ", "), "N/A"})
+			if downloadable {
+				table.Append([]string{dockerURL.Url, strings.Join(tagList, ", "), strconv.FormatInt(downloads, 10)})
+			} else if problem {
+				table.Append([]string{dockerURL.Url, strings.Join(tagList, ", "), "Err*"})
+				footnote = "* There is an error with this image."
+			} else {
+				table.Append([]string{dockerURL.Url, strings.Join(tagList, ", "), "N/A"})
+			}
 		}
 	}
 	table.Render()
 	o.Println()
-	o.Printf("Total count: %d\n", len(imageList))
+	o.Printf("Total count: %d\n", total)
 
 	if footnote != "" {
 		o.Println(footnote)
 		o.Println()
 	}
 
-	if images != nil && images.DeploymentInstruction != "" {
-		o.Println("Deployment instructions:")
-		o.Println(images.DeploymentInstruction)
-	}
 	return nil
 }
 

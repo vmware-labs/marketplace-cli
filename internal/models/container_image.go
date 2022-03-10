@@ -52,25 +52,37 @@ type DockerVersionList struct {
 	ImageTags             []*DockerImageTag   `json:"imagetagsList"`
 }
 
-func (l *DockerVersionList) GetImage(imageURL string) *DockerURLDetails {
-	for _, image := range l.DockerURLs {
-		if image.Url == imageURL {
-			return image
+func (product *Product) HasContainerImage(version, imageURL, tag string) bool {
+	versionObj := product.GetVersion(version)
+
+	if versionObj != nil {
+		for _, dockerVersionLink := range product.DockerLinkVersions {
+			if dockerVersionLink.AppVersion == versionObj.Number {
+				for _, dockerUrl := range dockerVersionLink.DockerURLs {
+					if dockerUrl.Url == imageURL {
+						for _, imageTag := range dockerUrl.ImageTags {
+							if imageTag.Tag == tag {
+								return true
+							}
+						}
+					}
+				}
+			}
 		}
 	}
-	return nil
+	return false
 }
 
-func (product *Product) GetContainerImagesForVersion(version string) *DockerVersionList {
+func (product *Product) GetContainerImagesForVersion(version string) []*DockerVersionList {
+	var images []*DockerVersionList
 	versionObj := product.GetVersion(version)
-	if versionObj == nil {
-		return nil
-	}
 
-	for _, dockerVersionLink := range product.DockerLinkVersions {
-		if dockerVersionLink.AppVersion == versionObj.Number {
-			return dockerVersionLink
+	if versionObj != nil {
+		for _, dockerVersionLink := range product.DockerLinkVersions {
+			if dockerVersionLink.AppVersion == versionObj.Number {
+				images = append(images, dockerVersionLink)
+			}
 		}
 	}
-	return nil
+	return images
 }

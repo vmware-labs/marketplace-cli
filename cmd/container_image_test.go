@@ -67,13 +67,14 @@ var _ = Describe("ContainerImage", func() {
 			By("outputting the response", func() {
 				Expect(output.RenderContainerImagesCallCount()).To(Equal(1))
 				images := output.RenderContainerImagesArgsForCall(0)
-				Expect(images.AppVersion).To(Equal("1.2.3"))
-				Expect(images.DockerURLs).To(HaveLen(1))
-				Expect(images.DockerURLs[0].ImageTags).To(HaveLen(2))
-				Expect(images.DockerURLs[0].ImageTags[0].Tag).To(Equal("0.0.1"))
-				Expect(images.DockerURLs[0].ImageTags[0].Type).To(Equal("FIXED"))
-				Expect(images.DockerURLs[0].ImageTags[1].Tag).To(Equal("latest"))
-				Expect(images.DockerURLs[0].ImageTags[1].Type).To(Equal("FLOATING"))
+				Expect(images).To(HaveLen(1))
+				Expect(images[0].AppVersion).To(Equal("1.2.3"))
+				Expect(images[0].DockerURLs).To(HaveLen(1))
+				Expect(images[0].DockerURLs[0].ImageTags).To(HaveLen(2))
+				Expect(images[0].DockerURLs[0].ImageTags[0].Tag).To(Equal("0.0.1"))
+				Expect(images[0].DockerURLs[0].ImageTags[0].Type).To(Equal("FIXED"))
+				Expect(images[0].DockerURLs[0].ImageTags[1].Tag).To(Equal("latest"))
+				Expect(images[0].DockerURLs[0].ImageTags[1].Type).To(Equal("FLOATING"))
 			})
 		})
 
@@ -158,7 +159,8 @@ var _ = Describe("ContainerImage", func() {
 			By("outputting the response", func() {
 				Expect(output.RenderContainerImagesCallCount()).To(Equal(1))
 				images := output.RenderContainerImagesArgsForCall(0)
-				Expect(images.DockerURLs).To(HaveLen(2))
+				Expect(images).To(HaveLen(1))
+				Expect(images[0].DockerURLs).To(HaveLen(2))
 			})
 		})
 
@@ -205,13 +207,13 @@ var _ = Describe("ContainerImage", func() {
 					Expect(versionUpdate).To(BeFalse())
 
 					Expect(updatedProduct.DeploymentTypes).To(ContainElement("DOCKERLINK"))
-					Expect(updatedProduct.DockerLinkVersions).To(HaveLen(1))
+					Expect(updatedProduct.DockerLinkVersions).To(HaveLen(2))
 					dockerLink := updatedProduct.DockerLinkVersions[0]
 					Expect(dockerLink.AppVersion).To(Equal("1.2.3"))
 					Expect(dockerLink.DockerURLs).To(HaveLen(1))
 					dockerUrl := dockerLink.DockerURLs[0]
 					Expect(dockerUrl.Url).To(Equal("nginx"))
-					Expect(dockerUrl.ImageTags).To(HaveLen(2))
+					Expect(dockerUrl.ImageTags).To(HaveLen(1))
 					tag := dockerUrl.ImageTags[0]
 					Expect(tag.Tag).To(Equal("latest"))
 					Expect(tag.Type).To(Equal("FLOATING"))
@@ -223,11 +225,12 @@ var _ = Describe("ContainerImage", func() {
 				By("outputting the response", func() {
 					Expect(output.RenderContainerImagesCallCount()).To(Equal(1))
 					images := output.RenderContainerImagesArgsForCall(0)
-					Expect(images.DockerURLs[0].ImageTags).To(HaveLen(2))
-					Expect(images.DockerURLs[0].ImageTags[0].Tag).To(Equal("latest"))
-					Expect(images.DockerURLs[0].ImageTags[0].Type).To(Equal("FLOATING"))
-					Expect(images.DockerURLs[0].ImageTags[1].Tag).To(Equal("5.5.5"))
-					Expect(images.DockerURLs[0].ImageTags[1].Type).To(Equal("FIXED"))
+					Expect(images).To(HaveLen(1))
+					Expect(images[0].DockerURLs[0].ImageTags).To(HaveLen(2))
+					Expect(images[0].DockerURLs[0].ImageTags[0].Tag).To(Equal("latest"))
+					Expect(images[0].DockerURLs[0].ImageTags[0].Type).To(Equal("FLOATING"))
+					Expect(images[0].DockerURLs[0].ImageTags[1].Tag).To(Equal("5.5.5"))
+					Expect(images[0].DockerURLs[0].ImageTags[1].Type).To(Equal("FIXED"))
 				})
 			})
 		})
