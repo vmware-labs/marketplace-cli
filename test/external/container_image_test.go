@@ -20,12 +20,6 @@ var _ = Describe("Container Image", func() {
 		steps.And("the table of container images is printed")
 	})
 
-	Scenario("Getting a single container images", func() {
-		steps.When("running mkpcli container-image get --product redis-enterprise-kubernetes-operator-for-vmware-enterprise-pks --product-version 5.4.2-27 --image-repository https://hub.docker.com/u/redislabs")
-		steps.Then("the command exits without error")
-		steps.And("the table of the container image is printed")
-	})
-
 	steps.Define(func(define Definitions) {
 		DefineCommonSteps(define, "production")
 
@@ -34,20 +28,6 @@ var _ = Describe("Container Image", func() {
 			Eventually(CommandSession.Out).Should(Say("TAGS"))
 			Eventually(CommandSession.Out).Should(Say("DOWNLOADS"))
 			Eventually(CommandSession.Out).Should(Say("https://hub.docker.com/u/redislabs"))
-
-			Eventually(CommandSession.Out).Should(Say("Deployment instructions:"))
-			Eventually(CommandSession.Out).Should(Say("Redis Enterprise for PKS is deployed and maintained using a Kubernetes Operator."))
-		})
-
-		define.Then(`^the table of the container image is printed$`, func() {
-			Eventually(CommandSession.Out).Should(Say("https://hub.docker.com/u/redislabs"))
-			Eventually(CommandSession.Out).Should(Say("Tags:"))
-			Eventually(CommandSession.Out).Should(Say("TAG"))
-			Eventually(CommandSession.Out).Should(Say("TYPE"))
-			Eventually(CommandSession.Out).Should(Say("DOWNLOADS"))
-
-			Eventually(CommandSession.Out).Should(Say("Deployment instructions:"))
-			Eventually(CommandSession.Out).Should(Say("Redis Enterprise for PKS is deployed and maintained using a Kubernetes Operator."))
 		})
 	})
 })

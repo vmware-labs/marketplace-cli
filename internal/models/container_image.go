@@ -5,18 +5,18 @@ package models
 
 type DockerImageTag struct {
 	ID                             string `json:"id,omitempty"`
-	Tag                            string `json:"tag,omitempty"`
-	Type                           string `json:"type,omitempty"`
-	IsUpdatedInMarketplaceRegistry bool   `json:"isupdatedinmarketplaceregistry"`
-	MarketplaceS3Link              string `json:"marketplaces3link"`
-	AppCheckReportLink             string `json:"appcheckreportlink"`
-	AppCheckSummaryPdfLink         string `json:"appchecksummarypdflink"`
-	S3TarBackupUrl                 string `json:"s3tarbackupurl"`
-	ProcessingError                string `json:"processingerror"`
-	DownloadCount                  int64  `json:"downloadcount"`
-	DownloadURL                    string `json:"downloadurl"`
-	HashAlgo                       string `json:"hashalgo"`
-	HashDigest                     string `json:"hashdigest"`
+	Tag                            string `json:"tag"`
+	Type                           string `json:"type"`
+	IsUpdatedInMarketplaceRegistry bool   `json:"isupdatedinmarketplaceregistry,omitempty"`
+	MarketplaceS3Link              string `json:"marketplaces3link,omitempty"`
+	AppCheckReportLink             string `json:"appcheckreportlink,omitempty"`
+	AppCheckSummaryPdfLink         string `json:"appchecksummarypdflink,omitempty"`
+	S3TarBackupUrl                 string `json:"s3tarbackupurl,omitempty"`
+	ProcessingError                string `json:"processingerror,omitempty"`
+	DownloadCount                  int64  `json:"downloadcount,omitempty"`
+	DownloadURL                    string `json:"downloadurl,omitempty"`
+	HashAlgo                       string `json:"hashalgo,omitempty"`
+	HashDigest                     string `json:"hashdigest,omitempty"`
 	Size                           int64  `json:"size,omitempty"`
 }
 
@@ -24,11 +24,17 @@ type DockerURLDetails struct {
 	ID                    string            `json:"id,omitempty"`
 	Key                   string            `json:"key,omitempty"`
 	Url                   string            `json:"url,omitempty"`
-	MarketplaceUpdatedUrl string            `json:"marketplaceupdatedurl"`
+	MarketplaceUpdatedUrl string            `json:"marketplaceupdatedurl,omitempty"`
 	ImageTags             []*DockerImageTag `json:"imagetagsList"`
-	ImageTagsAsJson       string            `json:"imagetagsasjson"`
+	ImageTagsAsJson       string            `json:"imagetagsasjson,omitempty"`
 	DeploymentInstruction string            `json:"deploymentinstruction"`
+	DockerType            string            `json:"dockertype,omitempty"`
 }
+
+const (
+	DockerTypeRegistry = "registry"
+	DockerTypeUpload   = "upload"
+)
 
 func (d *DockerURLDetails) GetTag(tagName string) *DockerImageTag {
 	for _, tag := range d.ImageTags {
@@ -52,25 +58,37 @@ type DockerVersionList struct {
 	ImageTags             []*DockerImageTag   `json:"imagetagsList"`
 }
 
-func (l *DockerVersionList) GetImage(imageURL string) *DockerURLDetails {
-	for _, image := range l.DockerURLs {
-		if image.Url == imageURL {
-			return image
+func (product *Product) HasContainerImage(version, imageURL, tag string) bool {
+	versionObj := product.GetVersion(version)
+
+	if versionObj != nil {
+		for _, dockerVersionLink := range product.DockerLinkVersions {
+			if dockerVersionLink.AppVersion == versionObj.Number {
+				for _, dockerUrl := range dockerVersionLink.DockerURLs {
+					if dockerUrl.Url == imageURL {
+						for _, imageTag := range dockerUrl.ImageTags {
+							if imageTag.Tag == tag {
+								return true
+							}
+						}
+					}
+				}
+			}
 		}
 	}
-	return nil
+	return false
 }
 
-func (product *Product) GetContainerImagesForVersion(version string) *DockerVersionList {
+func (product *Product) GetContainerImagesForVersion(version string) []*DockerVersionList {
+	var images []*DockerVersionList
 	versionObj := product.GetVersion(version)
-	if versionObj == nil {
-		return nil
-	}
 
-	for _, dockerVersionLink := range product.DockerLinkVersions {
-		if dockerVersionLink.AppVersion == versionObj.Number {
-			return dockerVersionLink
+	if versionObj != nil {
+		for _, dockerVersionLink := range product.DockerLinkVersions {
+			if dockerVersionLink.AppVersion == versionObj.Number {
+				images = append(images, dockerVersionLink)
+			}
 		}
 	}
-	return nil
+	return images
 }

@@ -25,8 +25,7 @@ type Format interface {
 	RenderVersions(product *models.Product) error
 	RenderChart(chart *models.ChartVersion) error
 	RenderCharts(charts []*models.ChartVersion) error
-	RenderContainerImage(image *models.DockerURLDetails) error
-	RenderContainerImages(images *models.DockerVersionList) error
+	RenderContainerImages(images []*models.DockerVersionList) error
 	RenderFile(file *models.ProductDeploymentFile) error
 	RenderFiles(files []*models.ProductDeploymentFile) error
 

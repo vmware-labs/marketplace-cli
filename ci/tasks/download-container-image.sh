@@ -12,10 +12,10 @@ fi
 
 # Get the ID for the first container image
 IMAGES=$(mkpcli container-image list --product "${PRODUCT_SLUG}" --product-version "${PRODUCT_VERSION}" --output json)
-IMAGE_URL=$(echo "${IMAGES}" | jq -r .dockerurlsList[0].url)
-IMAGE_TAG=$(echo "${IMAGES}" | jq -r .dockerurlsList[0].imagetagsList[0].tag)
-IS_IN_MKP_REGISTRY=$(echo "${IMAGES}" | jq -r .dockerurlsList[0].imagetagsList[0].isupdatedinmarketplaceregistry)
-PROCESSING_ERROR=$(echo "${IMAGES}" | jq -r .dockerurlsList[0].imagetagsList[0].processingerror)
+IMAGE_URL=$(echo "${IMAGES}" | jq -r .[0].dockerurlsList[0].url)
+IMAGE_TAG=$(echo "${IMAGES}" | jq -r .[0].dockerurlsList[0].imagetagsList[0].tag)
+IS_IN_MKP_REGISTRY=$(echo "${IMAGES}" | jq -r .[0].dockerurlsList[0].imagetagsList[0].isupdatedinmarketplaceregistry)
+PROCESSING_ERROR=$(echo "${IMAGES}" | jq -r .[0].dockerurlsList[0].imagetagsList[0].processingerror)
 
 while [ "${IS_IN_MKP_REGISTRY}" == "false" ] && [ -z "${PROCESSING_ERROR}" ] ; do
   sleep 60

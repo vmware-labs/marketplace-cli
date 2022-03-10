@@ -67,13 +67,14 @@ var _ = Describe("ContainerImage", func() {
 			By("outputting the response", func() {
 				Expect(output.RenderContainerImagesCallCount()).To(Equal(1))
 				images := output.RenderContainerImagesArgsForCall(0)
-				Expect(images.AppVersion).To(Equal("1.2.3"))
-				Expect(images.DockerURLs).To(HaveLen(1))
-				Expect(images.DockerURLs[0].ImageTags).To(HaveLen(2))
-				Expect(images.DockerURLs[0].ImageTags[0].Tag).To(Equal("0.0.1"))
-				Expect(images.DockerURLs[0].ImageTags[0].Type).To(Equal("FIXED"))
-				Expect(images.DockerURLs[0].ImageTags[1].Tag).To(Equal("latest"))
-				Expect(images.DockerURLs[0].ImageTags[1].Type).To(Equal("FLOATING"))
+				Expect(images).To(HaveLen(1))
+				Expect(images[0].AppVersion).To(Equal("1.2.3"))
+				Expect(images[0].DockerURLs).To(HaveLen(1))
+				Expect(images[0].DockerURLs[0].ImageTags).To(HaveLen(2))
+				Expect(images[0].DockerURLs[0].ImageTags[0].Tag).To(Equal("0.0.1"))
+				Expect(images[0].DockerURLs[0].ImageTags[0].Type).To(Equal("FIXED"))
+				Expect(images[0].DockerURLs[0].ImageTags[1].Tag).To(Equal("latest"))
+				Expect(images[0].DockerURLs[0].ImageTags[1].Type).To(Equal("FLOATING"))
 			})
 		})
 
@@ -88,72 +89,6 @@ var _ = Describe("ContainerImage", func() {
 				err := cmd.ListContainerImageCmd.RunE(cmd.ListContainerImageCmd, []string{""})
 				Expect(err).To(HaveOccurred())
 				Expect(err.Error()).To(Equal("get product failed"))
-			})
-		})
-	})
-
-	Describe("GetContainerImageCmd", func() {
-		BeforeEach(func() {
-			container := test.CreateFakeContainerImage(
-				"myId",
-				"0.0.1",
-				"latest",
-			)
-
-			product = test.CreateFakeProduct(
-				"",
-				"My Super Product",
-				"my-super-product",
-				"PENDING")
-			test.AddVerions(product, "1.2.3", "2.3.4")
-			test.AddContainerImages(product, "1.2.3", "Machine wash cold with like colors", container)
-		})
-
-		It("outputs the container image", func() {
-			cmd.ContainerImageProductSlug = "my-super-product"
-			cmd.ContainerImageProductVersion = "1.2.3"
-			cmd.ImageRepository = "myId"
-			err := cmd.GetContainerImageCmd.RunE(cmd.GetContainerImageCmd, []string{""})
-			Expect(err).ToNot(HaveOccurred())
-
-			By("getting the product details", func() {
-				Expect(marketplace.GetProductWithVersionCallCount()).To(Equal(1))
-			})
-
-			By("outputting the response", func() {
-				Expect(output.RenderContainerImageCallCount()).To(Equal(1))
-				containerImage := output.RenderContainerImageArgsForCall(0)
-				Expect(containerImage.Url).To(Equal("myId"))
-				Expect(containerImage.ImageTags[0].Tag).To(Equal("0.0.1"))
-				Expect(containerImage.ImageTags[0].Type).To(Equal("FIXED"))
-				Expect(containerImage.ImageTags[1].Tag).To(Equal("latest"))
-				Expect(containerImage.ImageTags[1].Type).To(Equal("FLOATING"))
-			})
-		})
-
-		Context("Error fetching product", func() {
-			BeforeEach(func() {
-				marketplace.GetProductWithVersionReturns(nil, nil, fmt.Errorf("get product failed"))
-			})
-
-			It("prints the error", func() {
-				cmd.ContainerImageProductSlug = "my-super-product"
-				cmd.ContainerImageProductVersion = "1.2.3"
-				cmd.ImageRepository = "myId"
-				err := cmd.GetContainerImageCmd.RunE(cmd.GetContainerImageCmd, []string{""})
-				Expect(err).To(HaveOccurred())
-				Expect(err.Error()).To(Equal("get product failed"))
-			})
-		})
-
-		Context("No container images for version", func() {
-			It("says that the version does not exist", func() {
-				cmd.ContainerImageProductSlug = "my-super-product"
-				cmd.ContainerImageProductVersion = "1.2.3"
-				cmd.ImageRepository = "thisImageDoesNotExist"
-				err := cmd.GetContainerImageCmd.RunE(cmd.GetContainerImageCmd, []string{""})
-				Expect(err).To(HaveOccurred())
-				Expect(err.Error()).To(Equal("my-super-product 1.2.3 does not have the container image \"thisImageDoesNotExist\""))
 			})
 		})
 	})
@@ -205,18 +140,11 @@ var _ = Describe("ContainerImage", func() {
 				Expect(updatedProduct.DockerLinkVersions).To(HaveLen(1))
 				dockerLink := updatedProduct.DockerLinkVersions[0]
 				Expect(dockerLink.AppVersion).To(Equal("1.2.3"))
-				Expect(dockerLink.DockerURLs).To(HaveLen(2))
+				Expect(dockerLink.DockerURLs).To(HaveLen(1))
 				dockerUrl := dockerLink.DockerURLs[0]
-				Expect(dockerUrl.Url).To(Equal("nginx"))
-				Expect(dockerUrl.ImageTags).To(HaveLen(1))
-				tag := dockerUrl.ImageTags[0]
-				Expect(tag.Tag).To(Equal("latest"))
-				Expect(tag.Type).To(Equal("FLOATING"))
-
-				dockerUrl = dockerLink.DockerURLs[1]
 				Expect(dockerUrl.Url).To(Equal("python"))
 				Expect(dockerUrl.ImageTags).To(HaveLen(1))
-				tag = dockerUrl.ImageTags[0]
+				tag := dockerUrl.ImageTags[0]
 				Expect(tag.Tag).To(Equal("1.2.3"))
 				Expect(tag.Type).To(Equal("FIXED"))
 			})
@@ -224,7 +152,8 @@ var _ = Describe("ContainerImage", func() {
 			By("outputting the response", func() {
 				Expect(output.RenderContainerImagesCallCount()).To(Equal(1))
 				images := output.RenderContainerImagesArgsForCall(0)
-				Expect(images.DockerURLs).To(HaveLen(2))
+				Expect(images).To(HaveLen(1))
+				Expect(images[0].DockerURLs).To(HaveLen(2))
 			})
 		})
 
@@ -277,11 +206,8 @@ var _ = Describe("ContainerImage", func() {
 					Expect(dockerLink.DockerURLs).To(HaveLen(1))
 					dockerUrl := dockerLink.DockerURLs[0]
 					Expect(dockerUrl.Url).To(Equal("nginx"))
-					Expect(dockerUrl.ImageTags).To(HaveLen(2))
+					Expect(dockerUrl.ImageTags).To(HaveLen(1))
 					tag := dockerUrl.ImageTags[0]
-					Expect(tag.Tag).To(Equal("latest"))
-					Expect(tag.Type).To(Equal("FLOATING"))
-					tag = dockerUrl.ImageTags[1]
 					Expect(tag.Tag).To(Equal("5.5.5"))
 					Expect(tag.Type).To(Equal("FIXED"))
 				})
@@ -289,11 +215,12 @@ var _ = Describe("ContainerImage", func() {
 				By("outputting the response", func() {
 					Expect(output.RenderContainerImagesCallCount()).To(Equal(1))
 					images := output.RenderContainerImagesArgsForCall(0)
-					Expect(images.DockerURLs[0].ImageTags).To(HaveLen(2))
-					Expect(images.DockerURLs[0].ImageTags[0].Tag).To(Equal("latest"))
-					Expect(images.DockerURLs[0].ImageTags[0].Type).To(Equal("FLOATING"))
-					Expect(images.DockerURLs[0].ImageTags[1].Tag).To(Equal("5.5.5"))
-					Expect(images.DockerURLs[0].ImageTags[1].Type).To(Equal("FIXED"))
+					Expect(images).To(HaveLen(1))
+					Expect(images[0].DockerURLs[0].ImageTags).To(HaveLen(2))
+					Expect(images[0].DockerURLs[0].ImageTags[0].Tag).To(Equal("latest"))
+					Expect(images[0].DockerURLs[0].ImageTags[0].Type).To(Equal("FLOATING"))
+					Expect(images[0].DockerURLs[0].ImageTags[1].Tag).To(Equal("5.5.5"))
+					Expect(images[0].DockerURLs[0].ImageTags[1].Type).To(Equal("FIXED"))
 				})
 			})
 		})
