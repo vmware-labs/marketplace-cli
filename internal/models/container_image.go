@@ -5,18 +5,18 @@ package models
 
 type DockerImageTag struct {
 	ID                             string `json:"id,omitempty"`
-	Tag                            string `json:"tag,omitempty"`
-	Type                           string `json:"type,omitempty"`
-	IsUpdatedInMarketplaceRegistry bool   `json:"isupdatedinmarketplaceregistry"`
-	MarketplaceS3Link              string `json:"marketplaces3link"`
-	AppCheckReportLink             string `json:"appcheckreportlink"`
-	AppCheckSummaryPdfLink         string `json:"appchecksummarypdflink"`
-	S3TarBackupUrl                 string `json:"s3tarbackupurl"`
-	ProcessingError                string `json:"processingerror"`
-	DownloadCount                  int64  `json:"downloadcount"`
-	DownloadURL                    string `json:"downloadurl"`
-	HashAlgo                       string `json:"hashalgo"`
-	HashDigest                     string `json:"hashdigest"`
+	Tag                            string `json:"tag"`
+	Type                           string `json:"type"`
+	IsUpdatedInMarketplaceRegistry bool   `json:"isupdatedinmarketplaceregistry,omitempty"`
+	MarketplaceS3Link              string `json:"marketplaces3link,omitempty"`
+	AppCheckReportLink             string `json:"appcheckreportlink,omitempty"`
+	AppCheckSummaryPdfLink         string `json:"appchecksummarypdflink,omitempty"`
+	S3TarBackupUrl                 string `json:"s3tarbackupurl,omitempty"`
+	ProcessingError                string `json:"processingerror,omitempty"`
+	DownloadCount                  int64  `json:"downloadcount,omitempty"`
+	DownloadURL                    string `json:"downloadurl,omitempty"`
+	HashAlgo                       string `json:"hashalgo,omitempty"`
+	HashDigest                     string `json:"hashdigest,omitempty"`
 	Size                           int64  `json:"size,omitempty"`
 }
 
@@ -24,11 +24,17 @@ type DockerURLDetails struct {
 	ID                    string            `json:"id,omitempty"`
 	Key                   string            `json:"key,omitempty"`
 	Url                   string            `json:"url,omitempty"`
-	MarketplaceUpdatedUrl string            `json:"marketplaceupdatedurl"`
+	MarketplaceUpdatedUrl string            `json:"marketplaceupdatedurl,omitempty"`
 	ImageTags             []*DockerImageTag `json:"imagetagsList"`
-	ImageTagsAsJson       string            `json:"imagetagsasjson"`
-	DeploymentInstruction string            `json:"deploymentinstruction"`
+	ImageTagsAsJson       string            `json:"imagetagsasjson,omitempty"`
+	DeploymentInstruction string            `json:"deploymentinstruction,omitempty"`
+	DockerType            string            `json:"dockertype,omitempty"`
 }
+
+const (
+	DockerTypeRegistry = "registry"
+	DockerTypeUpload   = "upload"
+)
 
 func (d *DockerURLDetails) GetTag(tagName string) *DockerImageTag {
 	for _, tag := range d.ImageTags {
@@ -46,7 +52,7 @@ func (d *DockerURLDetails) HasTag(tagName string) bool {
 type DockerVersionList struct {
 	ID                    string              `json:"id,omitempty"`
 	AppVersion            string              `json:"appversion"`
-	DeploymentInstruction string              `json:"deploymentinstruction"`
+	DeploymentInstruction string              `json:"deploymentinstruction,omitempty"`
 	DockerURLs            []*DockerURLDetails `json:"dockerurlsList"`
 	Status                string              `json:"status,omitempty"`
 	ImageTags             []*DockerImageTag   `json:"imagetagsList"`

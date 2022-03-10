@@ -99,7 +99,6 @@ var AttachContainerImageCmd = &cobra.Command{
 		}
 
 		product.PrepForUpdate()
-		product.CurrentVersion = "" // Workaround: Need to clear the currentversion, otherwise the image is only fetched with the tagged version and is not downloadable
 		product.DockerLinkVersions = append(product.DockerLinkVersions, &models.DockerVersionList{
 			AppVersion: version.Number,
 			DockerURLs: []*models.DockerURLDetails{
@@ -112,6 +111,7 @@ var AttachContainerImageCmd = &cobra.Command{
 						},
 					},
 					DeploymentInstruction: ContainerImageDeploymentInstructions,
+					DockerType:            models.DockerTypeRegistry,
 				},
 			},
 		})
