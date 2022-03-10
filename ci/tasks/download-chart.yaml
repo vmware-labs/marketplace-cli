@@ -16,4 +16,4 @@ inputs:
   - name: source
 
 run:
-  path: source/test/download-chart.sh
+  path: source/test-scripts/download-chart.sh

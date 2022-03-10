@@ -10,6 +10,11 @@ if [ -z "${PRODUCT_SLUG}" ] ; then
   exit 1
 fi
 
+if [ -z "${PRODUCT_VERSION}" ] ; then
+  echo "PRODUCT_VERSION not defined"
+  exit 1
+fi
+
 # Get the name for the first chart
 CHARTS=$(mkpcli chart list --product "${PRODUCT_SLUG}" --product-version "${PRODUCT_VERSION}" --output json)
 CHART_NAME=$(echo "${CHARTS}" | jq -r .[0].helmtarurl)

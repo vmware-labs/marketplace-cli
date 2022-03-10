@@ -1,4 +1,8 @@
 #!/usr/bin/env bash
+
+# Copyright 2022 VMware, Inc.
+# SPDX-License-Identifier: BSD-2-Clause
+
 function TestDownloadChart() {
     echo "Download Chart test"
     PRODUCT_SLUG=$(jq -r .tests.downloadChart.slug ./external-test-inputs.json)

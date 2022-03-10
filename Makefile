@@ -123,11 +123,16 @@ else
 	MKPCLI_STRICT_DECODING=true ginkgo -r test/external
 endif
 
+test-external-scripts:
+	cd test-scripts && ./external-test-runner.sh
+
 test: deps lint test-units test-features test-external test-external-with-strict-decoding
+
+test-all: test test-external-scripts
 
 lint: deps-golangci-lint deps-shellcheck
 	golangci-lint run
-	shellcheck ci/tasks/*.sh
+	shellcheck test-scripts/*.sh
 
 # #### DEVOPS ####
 .PHONY: set-pipeline

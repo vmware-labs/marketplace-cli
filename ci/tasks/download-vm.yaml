@@ -16,4 +16,4 @@ inputs:
   - name: source
 
 run:
-  path: source/test/download-vm.sh
+  path: source/test-scripts/download-vm.sh
