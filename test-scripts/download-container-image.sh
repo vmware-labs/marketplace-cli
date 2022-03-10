@@ -11,8 +11,7 @@ if [ -z "${PRODUCT_SLUG}" ] ; then
 fi
 
 if [ -z "${PRODUCT_VERSION}" ] ; then
-  echo "PRODUCT_VERSION not defined"
-  exit 1
+  echo "PRODUCT_VERSION not defined, using latest version" >&2
 fi
 
 # Get the ID for the first container image
