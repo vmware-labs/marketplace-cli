@@ -21,14 +21,15 @@ type DockerImageTag struct {
 }
 
 type DockerURLDetails struct {
-	ID                    string            `json:"id,omitempty"`
 	Key                   string            `json:"key,omitempty"`
 	Url                   string            `json:"url,omitempty"`
 	MarketplaceUpdatedUrl string            `json:"marketplaceupdatedurl,omitempty"`
 	ImageTags             []*DockerImageTag `json:"imagetagsList"`
-	ImageTagsAsJson       string            `json:"imagetagsasjson,omitempty"`
-	DeploymentInstruction string            `json:"deploymentinstruction"`
+	ImageTagsAsJson       string            `json:"imagetagsasjson"`
 	DockerType            string            `json:"dockertype,omitempty"`
+	ID                    string            `json:"id,omitempty"`
+	DeploymentInstruction string            `json:"deploymentinstruction"`
+	Name                  string            `json:"name"`
 }
 
 const (
