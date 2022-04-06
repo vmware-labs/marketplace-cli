@@ -34,17 +34,40 @@ var _ = AfterSuite(func() {
 	gexec.CleanupBuildArtifacts()
 })
 
-func DefineCommonSteps(define Definitions, marketplaceEnvironment string) {
-	var envVars []string
+func unsetEnvVars(envVars []string, varsToUnset []string) []string {
+	var filtered []string
+	for _, envVar := range envVars {
+		needsToBeUnset := false
+		for _, varToUnset := range varsToUnset {
+			if strings.HasPrefix(envVar, varToUnset) {
+				needsToBeUnset = true
+			}
+		}
+		if !needsToBeUnset {
+			filtered = append(filtered, envVar)
+		}
+	}
+	return filtered
+}
 
-	define.When(`^The environment variable ([_A-Z]*) is set to (.*)$`, func(key, value string) {
+func DefineCommonSteps(define Definitions, marketplaceEnvironment string) {
+	var (
+		envVars   []string
+		unsetVars []string
+	)
+
+	define.When(`^the environment variable ([_A-Z]*) is set to (.*)$`, func(key, value string) {
 		envVars = append(envVars, key+"="+value)
+	})
+
+	define.When(`^the environment variable ([_A-Z]*) is not set$`, func(key string) {
+		unsetVars = append(unsetVars, key)
 	})
 
 	define.When(`^running mkpcli (.*)$`, func(argString string) {
 		command := exec.Command(mkpcliPath, strings.Split(argString, " ")...)
 		envVars = append(envVars, "MARKETPLACE_ENV="+marketplaceEnvironment)
-		command.Env = append(os.Environ(), envVars...)
+		command.Env = unsetEnvVars(append(os.Environ(), envVars...), unsetVars)
 
 		var err error
 		CommandSession, err = gexec.Start(command, GinkgoWriter, GinkgoWriter)

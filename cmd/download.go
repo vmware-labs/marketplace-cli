@@ -41,10 +41,11 @@ func filterAssets(filter string, assets []*pkg.Asset) []*pkg.Asset {
 }
 
 var DownloadCmd = &cobra.Command{
-	Use:   "download",
-	Short: "Download an asset from a product",
-	Long:  "Download an asset attached to a product in the VMware Marketplace",
-	Args:  cobra.NoArgs,
+	Use:     "download",
+	Short:   "Download an asset from a product",
+	Long:    "Download an asset attached to a product in the VMware Marketplace",
+	Args:    cobra.NoArgs,
+	PreRunE: GetRefreshToken,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		cmd.SilenceUsage = true
 		product, version, err := Marketplace.GetProductWithVersion(DownloadProductSlug, DownloadProductVersion)

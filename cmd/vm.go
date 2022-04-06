@@ -50,10 +50,11 @@ var VMCmd = &cobra.Command{
 }
 
 var ListVMCmd = &cobra.Command{
-	Use:   "list",
-	Short: "List product virtual machines",
-	Long:  "Prints the list of virtual machine files attached to a product in the VMware Marketplace",
-	Args:  cobra.NoArgs,
+	Use:     "list",
+	Short:   "List product virtual machines",
+	Long:    "Prints the list of virtual machine files attached to a product in the VMware Marketplace",
+	Args:    cobra.NoArgs,
+	PreRunE: GetRefreshToken,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		cmd.SilenceUsage = true
 
@@ -70,10 +71,11 @@ var ListVMCmd = &cobra.Command{
 }
 
 var GetVMCmd = &cobra.Command{
-	Use:   "get",
-	Short: "Get details for a virtual machine",
-	Long:  "Prints detailed information about a virtual machine file attached to a product in the VMware Marketplace",
-	Args:  cobra.NoArgs,
+	Use:     "get",
+	Short:   "Get details for a virtual machine",
+	Long:    "Prints detailed information about a virtual machine file attached to a product in the VMware Marketplace",
+	Args:    cobra.NoArgs,
+	PreRunE: GetRefreshToken,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		cmd.SilenceUsage = true
 
@@ -113,7 +115,7 @@ var AttachVMCmd = &cobra.Command{
 	Short:   "Upload and attach a virtual machine file (ISO or OVA)",
 	Long:    "Uploads and attaches a virtual machine file (ISO or OVA) to a product in the VMware Marketplace",
 	Args:    cobra.NoArgs,
-	PreRunE: GetUploadCredentials,
+	PreRunE: RunSerially(GetRefreshToken, GetUploadCredentials),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		cmd.SilenceUsage = true
 

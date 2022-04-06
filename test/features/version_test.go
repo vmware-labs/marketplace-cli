@@ -20,6 +20,13 @@ var _ = Describe("Report version", func() {
 		steps.And("the version is printed")
 	})
 
+	Scenario("version command does not require CSP API token", func() {
+		steps.Given("the environment variable CSP_API_TOKEN is not set")
+		steps.When("running mkpcli version")
+		steps.Then("the command exits without error")
+		steps.And("the version is printed")
+	})
+
 	steps.Define(func(define Definitions) {
 		DefineCommonSteps(define, "staging")
 

@@ -62,7 +62,8 @@ var ListProductsCmd = &cobra.Command{
 	Short: "List products",
 	Long: "List and search for products in the VMware Marketplace\n" +
 		"Default without --all-orgs is to list all products (including unpublished) from your organization",
-	Args: cobra.NoArgs,
+	Args:    cobra.NoArgs,
+	PreRunE: GetRefreshToken,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		cmd.SilenceUsage = true
 		products, err := Marketplace.ListProducts(allOrgs, searchTerm)
@@ -86,10 +87,11 @@ var ListProductsCmd = &cobra.Command{
 }
 
 var GetProductCmd = &cobra.Command{
-	Use:   "get",
-	Short: "Show details about a product",
-	Long:  "Show details about a product in the VMware Marketplace",
-	Args:  cobra.NoArgs,
+	Use:     "get",
+	Short:   "Show details about a product",
+	Long:    "Show details about a product in the VMware Marketplace",
+	Args:    cobra.NoArgs,
+	PreRunE: GetRefreshToken,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		cmd.SilenceUsage = true
 
@@ -110,10 +112,11 @@ var GetProductCmd = &cobra.Command{
 }
 
 var AddProductVersionCmd = &cobra.Command{
-	Use:   "add-version",
-	Short: "Add a new version",
-	Long:  "Adds a new version to the given product",
-	Args:  cobra.NoArgs,
+	Use:     "add-version",
+	Short:   "Add a new version",
+	Long:    "Adds a new version to the given product",
+	Args:    cobra.NoArgs,
+	PreRunE: GetRefreshToken,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		cmd.SilenceUsage = true
 
@@ -141,10 +144,11 @@ var AddProductVersionCmd = &cobra.Command{
 }
 
 var ListProductVersionsCmd = &cobra.Command{
-	Use:   "list-versions",
-	Short: "List product versions",
-	Long:  "Prints the list of versions for the given product",
-	Args:  cobra.NoArgs,
+	Use:     "list-versions",
+	Short:   "List product versions",
+	Long:    "Prints the list of versions for the given product",
+	Args:    cobra.NoArgs,
+	PreRunE: GetRefreshToken,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		cmd.SilenceUsage = true
 		product, err := Marketplace.GetProduct(ProductSlug)
@@ -159,10 +163,11 @@ var ListProductVersionsCmd = &cobra.Command{
 }
 
 var SetCmd = &cobra.Command{
-	Use:   "set",
-	Short: "Modify the product",
-	Long:  "Modify the product",
-	Args:  cobra.NoArgs,
+	Use:     "set",
+	Short:   "Modify the product",
+	Long:    "Modify the product",
+	Args:    cobra.NoArgs,
+	PreRunE: GetRefreshToken,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if SetOSLFile == "" {
 			return fmt.Errorf("nothing specified to set")
