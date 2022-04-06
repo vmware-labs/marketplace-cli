@@ -26,5 +26,6 @@ run:
     - -exc
     - |
       export VERSION=$(cat ../version/version)
+      apt-get update && apt-get install -y zip
       make release
       cp release/* ../build
