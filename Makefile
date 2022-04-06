@@ -90,12 +90,20 @@ build/mkpcli-darwin-arm64: $(SRC)
 build/mkpcli-linux-amd64: $(SRC)
 	GOARCH=amd64 GOOS=linux go build -o build/mkpcli-linux-amd64 -ldflags ${LDFLAGS} ./main.go
 
-build/mkpcli-windows-amd64: $(SRC)
+build/mkpcli-windows-amd64.exe: $(SRC)
 	GOARCH=amd64 GOOS=windows go build -o build/mkpcli-windows-amd64.exe -ldflags ${LDFLAGS} ./main.go
 
 build: deps build/mkpcli
 
 build-all: build/mkpcli-darwin-amd64 build/mkpcli-darwin-arm64 build/mkpcli-linux-amd64 build/mkpcli-windows-amd64
+
+release: build/mkpcli-darwin-amd64 build/mkpcli-darwin-arm64 build/mkpcli-linux-amd64 build/mkpcli-windows-amd64.exe
+	mkdir -p release
+	cp -f build/mkpcli-darwin-amd64 release/mkpcli && tar czvf release/mkpcli-darwin-amd64.tgz -C release mkpcli
+	cp -f build/mkpcli-darwin-arm64 release/mkpcli && tar czvf release/mkpcli-darwin-arm64.tgz -C release mkpcli
+	cp -f build/mkpcli-linux-amd64 release/mkpcli && tar czvf release/mkpcli-linux-amd64.tgz -C release mkpcli
+	cp -f build/mkpcli-windows-amd64.exe release/mkpcli.exe && zip -j release/mkpcli-windows-amd64.zip release/mkpcli.exe
+	rm release/mkpcli release/mkpcli.exe
 
 build-image: build/mkpcli-linux
 	docker build . --tag harbor-repo.vmware.com/tanzu_isv_engineering/mkpcli:$(VERSION)

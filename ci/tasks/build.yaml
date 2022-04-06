@@ -26,5 +26,5 @@ run:
     - -exc
     - |
       export VERSION=$(cat ../version/version)
-      make build-all
-      cp build/* ../build
+      make release
+      cp release/* ../build
