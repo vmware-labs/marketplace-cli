@@ -57,10 +57,11 @@ var ContainerImageCmd = &cobra.Command{
 }
 
 var ListContainerImageCmd = &cobra.Command{
-	Use:   "list",
-	Short: "List product container images",
-	Long:  "Prints the list of container images attached to a product in the VMware Marketplace",
-	Args:  cobra.NoArgs,
+	Use:     "list",
+	Short:   "List product container images",
+	Long:    "Prints the list of container images attached to a product in the VMware Marketplace",
+	Args:    cobra.NoArgs,
+	PreRunE: GetRefreshToken,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		cmd.SilenceUsage = true
 		product, version, err := Marketplace.GetProductWithVersion(ContainerImageProductSlug, ContainerImageProductVersion)
@@ -76,10 +77,11 @@ var ListContainerImageCmd = &cobra.Command{
 }
 
 var AttachContainerImageCmd = &cobra.Command{
-	Use:   "attach",
-	Short: "Attach a container image",
-	Long:  "Attaches a container image to a product in the VMware Marketplace",
-	Args:  cobra.NoArgs,
+	Use:     "attach",
+	Short:   "Attach a container image",
+	Long:    "Attaches a container image to a product in the VMware Marketplace",
+	Args:    cobra.NoArgs,
+	PreRunE: GetRefreshToken,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		ImageTagType = strings.ToUpper(ImageTagType)
 		if ImageTagType != ImageTagTypeFixed && ImageTagType != ImageTagTypeFloating {

@@ -60,10 +60,11 @@ var ChartCmd = &cobra.Command{
 }
 
 var ListChartsCmd = &cobra.Command{
-	Use:   "list",
-	Short: "List product charts",
-	Long:  "Prints the list of Helm charts attached to a product in the VMware Marketplace",
-	Args:  cobra.NoArgs,
+	Use:     "list",
+	Short:   "List product charts",
+	Long:    "Prints the list of Helm charts attached to a product in the VMware Marketplace",
+	Args:    cobra.NoArgs,
+	PreRunE: GetRefreshToken,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		cmd.SilenceUsage = true
 		product, version, err := Marketplace.GetProductWithVersion(ChartProductSlug, ChartProductVersion)
@@ -79,10 +80,11 @@ var ListChartsCmd = &cobra.Command{
 }
 
 var GetChartCmd = &cobra.Command{
-	Use:   "get",
-	Short: "Get details for a chart",
-	Long:  "Prints detailed information about a Helm chart attached to a product in the VMware Marketplace",
-	Args:  cobra.NoArgs,
+	Use:     "get",
+	Short:   "Get details for a chart",
+	Long:    "Prints detailed information about a Helm chart attached to a product in the VMware Marketplace",
+	Args:    cobra.NoArgs,
+	PreRunE: GetRefreshToken,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		cmd.SilenceUsage = true
 		product, version, err := Marketplace.GetProductWithVersion(ChartProductSlug, ChartProductVersion)
@@ -112,10 +114,11 @@ var GetChartCmd = &cobra.Command{
 }
 
 var AttachChartCmd = &cobra.Command{
-	Use:   "attach",
-	Short: "Attach a chart",
-	Long:  "Attaches a Helm Chart to a product in the VMware Marketplace",
-	Args:  cobra.NoArgs,
+	Use:     "attach",
+	Short:   "Attach a chart",
+	Long:    "Attaches a Helm Chart to a product in the VMware Marketplace",
+	Args:    cobra.NoArgs,
+	PreRunE: GetRefreshToken,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		cmd.SilenceUsage = true
 		product, version, err := Marketplace.GetProductWithVersion(ChartProductSlug, ChartProductVersion)

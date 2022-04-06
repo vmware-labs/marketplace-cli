@@ -52,7 +52,7 @@ var rootCmd = &cobra.Command{
 	Short: fmt.Sprintf("%s is a CLI interface for the VMware Marketplace", AppName),
 	Long: fmt.Sprintf(`%s is a CLI interface for the VMware Marketplace,
 enabling users to view, get, and manage their Marketplace entries.`, AppName),
-	PersistentPreRunE: RunSerially(EnableDebugging, ValidateOutputFormatFlag, GetRefreshToken),
+	PersistentPreRunE: RunSerially(EnableDebugging, ValidateOutputFormatFlag),
 }
 
 func init() {
