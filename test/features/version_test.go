@@ -28,7 +28,7 @@ var _ = Describe("Report version", func() {
 	})
 
 	steps.Define(func(define Definitions) {
-		DefineCommonSteps(define, "staging")
+		DefineCommonSteps(define)
 
 		define.Then(`^the version is printed$`, func() {
 			Eventually(CommandSession.Out).Should(Say("mkpcli version: 1.2.3"))

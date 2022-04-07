@@ -18,19 +18,22 @@ var _ = Describe("Debugging", func() {
 	steps := NewSteps()
 
 	Scenario("Debugging enabled", func() {
+		steps.Given("targeting the production environment")
 		steps.When("running mkpcli --debug product get --product vmware-tanzu-rabbitmq1")
 		steps.Then("the command exits without error")
 		steps.And("the request is printed")
 	})
 
 	Scenario("Debugging enabled with environment variable", func() {
-		steps.When("the environment variable MKPCLI_DEBUG is set to true")
-		steps.And("running mkpcli product get --product vmware-tanzu-rabbitmq1")
+		steps.Given("targeting the production environment")
+		steps.And("the environment variable MKPCLI_DEBUG is set to true")
+		steps.When("running mkpcli product get --product vmware-tanzu-rabbitmq1")
 		steps.Then("the command exits without error")
 		steps.And("the request is printed")
 	})
 
 	Scenario("Debugging enabled with request payloads", func() {
+		steps.Given("targeting the production environment")
 		steps.When("running mkpcli --debug --debug-request-payloads download -p vmware-tanzu-rabbitmq1 -v 1.0.0 --accept-eula")
 		steps.Then("the command exits without error")
 		steps.And("the container image is downloaded")
@@ -38,16 +41,17 @@ var _ = Describe("Debugging", func() {
 	})
 
 	Scenario("Debugging enabled with request payloads with environment variables", func() {
-		steps.When("the environment variable MKPCLI_DEBUG is set to true")
+		steps.Given("targeting the production environment")
+		steps.And("the environment variable MKPCLI_DEBUG is set to true")
 		steps.And("the environment variable MKPCLI_DEBUG_REQUEST_PAYLOADS is set to true")
-		steps.And("running mkpcli download -p vmware-tanzu-rabbitmq1 -v 1.0.0 --accept-eula")
+		steps.When("running mkpcli download -p vmware-tanzu-rabbitmq1 -v 1.0.0 --accept-eula")
 		steps.Then("the command exits without error")
 		steps.And("the container image is downloaded")
 		steps.And("the requests are printed with request payloads")
 	})
 
 	steps.Define(func(define Definitions) {
-		DefineCommonSteps(define, "production")
+		DefineCommonSteps(define)
 
 		define.Then(`^the request is printed$`, func() {
 			Eventually(CommandSession.Err).Should(Say(regexp.QuoteMeta("Request #0: GET https://gtw.marketplace.cloud.vmware.com/api/v1/products/vmware-tanzu-rabbitmq1?increaseViewCount=false&isSlug=true")))

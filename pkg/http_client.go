@@ -39,9 +39,11 @@ func (c *DebuggingClient) Do(req *http.Request) (*http.Response, error) {
 
 	resp, err := c.client.Do(req)
 
-	c.logger.Printf("Request #%d Response: %s", currentRequest, resp.Status)
-	if c.printResposePayloads {
-		resp.Body = c.printPayload(fmt.Sprintf("request #%d response body", currentRequest), resp.Body)
+	if resp != nil {
+		c.logger.Printf("Request #%d Response: %s", currentRequest, resp.Status)
+		if c.printResposePayloads {
+			resp.Body = c.printPayload(fmt.Sprintf("request #%d response body", currentRequest), resp.Body)
+		}
 	}
 
 	return resp, err

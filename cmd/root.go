@@ -79,26 +79,34 @@ func init() {
 	_ = rootCmd.PersistentFlags().MarkHidden("csp-host")
 	_ = viper.BindPFlag("csp.host", rootCmd.PersistentFlags().Lookup("csp-host"))
 
+	_ = viper.BindEnv("marketplace.host", "MKPCLI_HOST")
+	_ = viper.BindEnv("marketplace.api-host", "MKPCLI_API_HOST")
+	_ = viper.BindEnv("marketplace.ui-host", "MKPCLI_UI_HOST")
+	_ = viper.BindEnv("marketplace.storage.bucket", "MKPCLI_STORAGE_BUCKET")
+	_ = viper.BindEnv("marketplace.storage.region", "MKPCLI_STORAGE_REGION")
+
 	if os.Getenv("MARKETPLACE_ENV") == "staging" {
-		Marketplace = &pkg.Marketplace{
-			Host:          "gtwstg.market.csp.vmware.com",
-			APIHost:       "apistg.market.csp.vmware.com",
-			UIHost:        "stg.market.csp.vmware.com",
-			StorageBucket: "cspmarketplacestage",
-			StorageRegion: "us-east-2",
-			Client:        pkg.NewClient(),
-			Output:        os.Stderr,
-		}
+		viper.SetDefault("marketplace.host", "gtwstg.market.csp.vmware.com")
+		viper.SetDefault("marketplace.api-host", "apistg.market.csp.vmware.com")
+		viper.SetDefault("marketplace.ui-host", "stg.market.csp.vmware.com")
+		viper.SetDefault("marketplace.storage.bucket", "cspmarketplacestage")
+		viper.SetDefault("marketplace.storage.region", "us-east-2")
 	} else {
-		Marketplace = &pkg.Marketplace{
-			Host:          "gtw.marketplace.cloud.vmware.com",
-			APIHost:       "api.marketplace.cloud.vmware.com",
-			UIHost:        "marketplace.cloud.vmware.com",
-			StorageBucket: "cspmarketplaceprd",
-			StorageRegion: "us-west-2",
-			Client:        pkg.NewClient(),
-			Output:        os.Stderr,
-		}
+		viper.SetDefault("marketplace.host", "gtw.marketplace.cloud.vmware.com")
+		viper.SetDefault("marketplace.api-host", "api.marketplace.cloud.vmware.com")
+		viper.SetDefault("marketplace.ui-host", "marketplace.cloud.vmware.com")
+		viper.SetDefault("marketplace.storage.bucket", "cspmarketplaceprd")
+		viper.SetDefault("marketplace.storage.region", "us-west-2")
+	}
+
+	Marketplace = &pkg.Marketplace{
+		Host:          viper.GetString("marketplace.host"),
+		APIHost:       viper.GetString("marketplace.api-host"),
+		UIHost:        viper.GetString("marketplace.ui-host"),
+		StorageBucket: viper.GetString("marketplace.storage.bucket"),
+		StorageRegion: viper.GetString("marketplace.storage.region"),
+		Client:        pkg.NewClient(),
+		Output:        os.Stderr,
 	}
 
 	viper.SetDefault("marketplace.strict-decoding", false)

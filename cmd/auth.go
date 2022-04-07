@@ -58,7 +58,6 @@ func GetUploadCredentials(cmd *cobra.Command, args []string) error {
 	return nil
 }
 
-// This adds this as a secret command, please remove from finished product.
 func init() {
 	rootCmd.AddCommand(AuthCmd)
 }

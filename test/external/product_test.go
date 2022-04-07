@@ -15,25 +15,28 @@ var _ = Describe("Product", func() {
 	steps := NewSteps()
 
 	Scenario("Listing products", func() {
+		steps.Given("targeting the production environment")
 		steps.When("running mkpcli product list --all-orgs --search-text nginx")
 		steps.Then("the command exits without error")
 		steps.And("the list of products is printed")
 	})
 
 	Scenario("Listing product versions", func() {
+		steps.Given("targeting the production environment")
 		steps.When("running mkpcli product list-versions --product nginx")
 		steps.Then("the command exits without error")
 		steps.And("the list of product versions is printed")
 	})
 
 	Scenario("Getting product details", func() {
+		steps.Given("targeting the production environment")
 		steps.When("running mkpcli product get --product nginx")
 		steps.Then("the command exits without error")
 		steps.And("the product details are printed")
 	})
 
 	steps.Define(func(define Definitions) {
-		DefineCommonSteps(define, "production")
+		DefineCommonSteps(define)
 
 		define.Then(`^the list of products is printed$`, func() {
 			Eventually(CommandSession.Out).Should(Say("All products from all organizations filtered by \"nginx\""))

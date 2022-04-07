@@ -13,6 +13,7 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/onsi/gomega/gexec"
+	"github.com/tidwall/gjson"
 )
 
 var (
@@ -32,6 +33,7 @@ var _ = BeforeSuite(func() {
 
 var _ = AfterSuite(func() {
 	gexec.CleanupBuildArtifacts()
+	gexec.KillAndWait()
 })
 
 func unsetEnvVars(envVars []string, varsToUnset []string) []string {
@@ -50,23 +52,26 @@ func unsetEnvVars(envVars []string, varsToUnset []string) []string {
 	return filtered
 }
 
-func DefineCommonSteps(define Definitions, marketplaceEnvironment string) {
+func DefineCommonSteps(define Definitions) {
 	var (
 		envVars   []string
 		unsetVars []string
 	)
 
-	define.When(`^the environment variable ([_A-Z]*) is set to (.*)$`, func(key, value string) {
+	define.Given(`^targeting the (.*) environment$`, func(environment string) {
+		envVars = append(envVars, "MARKETPLACE_ENV="+environment)
+	})
+
+	define.Given(`^the environment variable ([_A-Z]*) is set to (.*)$`, func(key, value string) {
 		envVars = append(envVars, key+"="+value)
 	})
 
-	define.When(`^the environment variable ([_A-Z]*) is not set$`, func(key string) {
+	define.Given(`^the environment variable ([_A-Z]*) is not set$`, func(key string) {
 		unsetVars = append(unsetVars, key)
 	})
 
 	define.When(`^running mkpcli (.*)$`, func(argString string) {
 		command := exec.Command(mkpcliPath, strings.Split(argString, " ")...)
-		envVars = append(envVars, "MARKETPLACE_ENV="+marketplaceEnvironment)
 		command.Env = unsetEnvVars(append(os.Environ(), envVars...), unsetVars)
 
 		var err error
@@ -80,5 +85,11 @@ func DefineCommonSteps(define Definitions, marketplaceEnvironment string) {
 
 	define.Then(`^the command exits with an error$`, func() {
 		Eventually(CommandSession, 5*time.Minute).Should(gexec.Exit(1))
+	})
+
+	define.Then(`^the printed configuration has (.*) with the value (.*)$`, func(keyPath, expectedValue string) {
+		configOutput := string(CommandSession.Wait().Out.Contents())
+		value := gjson.Get(configOutput, keyPath)
+		Expect(value.String()).To(Equal(expectedValue))
 	})
 }
