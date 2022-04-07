@@ -16,10 +16,9 @@ func init() {
 }
 
 var ConfigCmd = &cobra.Command{
-	Use:     "config",
-	Short:   "prints the current config",
-	Hidden:  true,
-	PreRunE: GetRefreshToken,
+	Use:    "config",
+	Short:  "prints the current config",
+	Hidden: true,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		config := viper.AllSettings()
 		formattedConfig, err := json.MarshalIndent(config, "", "  ")
