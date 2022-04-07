@@ -15,13 +15,14 @@ var _ = Describe("Container Image", func() {
 	steps := NewSteps()
 
 	Scenario("Listing container images", func() {
+		steps.Given("targeting the production environment")
 		steps.When("running mkpcli container-image list --product redis-enterprise-kubernetes-operator-for-vmware-enterprise-pks --product-version 5.4.2-27")
 		steps.Then("the command exits without error")
 		steps.And("the table of container images is printed")
 	})
 
 	steps.Define(func(define Definitions) {
-		DefineCommonSteps(define, "production")
+		DefineCommonSteps(define)
 
 		define.Then(`^the table of container images is printed$`, func() {
 			Eventually(CommandSession.Out).Should(Say("IMAGE"))

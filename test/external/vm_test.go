@@ -15,13 +15,14 @@ var _ = Describe("Virtual Machine", func() {
 	steps := NewSteps()
 
 	Scenario("Listing virtual machine files", func() {
+		steps.Given("targeting the production environment")
 		steps.When("running mkpcli vm list --product nginxstack --product-version 1.21.0_1")
 		steps.Then("the command exits without error")
 		steps.And("the table of virtual machine files is printed")
 	})
 
 	steps.Define(func(define Definitions) {
-		DefineCommonSteps(define, "production")
+		DefineCommonSteps(define)
 
 		define.Then(`^the table of virtual machine files is printed$`, func() {
 			Eventually(CommandSession.Out).Should(Say("ID"))

@@ -15,13 +15,14 @@ var _ = Describe("Chart", func() {
 	steps := NewSteps()
 
 	Scenario("Listing charts", func() {
+		steps.Given("targeting the production environment")
 		steps.When("running mkpcli chart list --product nginx --product-version 1.21.1_0")
 		steps.Then("the command exits without error")
 		steps.And("the table of charts is printed")
 	})
 
 	steps.Define(func(define Definitions) {
-		DefineCommonSteps(define, "production")
+		DefineCommonSteps(define)
 
 		define.Then(`^the table of charts is printed$`, func() {
 			Eventually(CommandSession.Out).Should(Say("ID"))
