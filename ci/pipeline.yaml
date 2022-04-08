@@ -27,7 +27,6 @@ resource_types:
       tag: v0.15.0
       username: ((harbor.username))
       password: ((harbor.token))
-      disable: true
 
 resources:
   - name: source
@@ -138,7 +137,7 @@ resources:
     icon: slack
     source:
       url: ((marketplace-cli-ci-cd-notifier-slack-webhook-url))
-      channel: marketplace-cli
+      channel: marketplace-cli-developers
 
 jobs:
   - name: test
@@ -726,11 +725,11 @@ jobs:
       params:
         alert_type: failed
 
-  - name: release
-    serial_groups: [ version ]
+  - name: declare-tests-complete
     plan:
       - in_parallel:
         - get: source
+          trigger: true
           passed:
             - test-publish-chart-product
             - test-publish-container-product
@@ -750,6 +749,48 @@ jobs:
             - test-download-container-product
             - test-download-iso-product
             - test-download-ova-product
+        - get: release
+      - task: make-notes
+        config:
+          platform: linux
+          image_resource:
+            type: registry-image
+            source:
+              repository: harbor-repo.vmware.com/dockerhub-proxy-cache/library/golang
+              tag: 1.17
+              username: ((harbor.username))
+              password: ((harbor.token))
+          inputs:
+            - name: release
+            - name: source
+            - name: version
+          outputs:
+            - name: message
+          run:
+            path: bash
+            dir: source
+            args:
+              - -exc
+              - |
+                VERSION=$(cat ../version/version)
+                CHANGES=$(git log $(cat ../release/tag)..HEAD --oneline | grep -v "\[ci skip\] bump version")
+                echo "All tests passed for mkpcli ${VERSION}." > ../message/message.txt
+                echo "Changes include:" >> ../message/message.txt
+                echo "${CHANGES}" >> ../message/message.txt
+      - put: slack
+        params:
+          text_file: message/message.txt
+
+  - name: release
+    serial_groups: [ version ]
+    plan:
+      - in_parallel:
+        - get: source
+          passed:
+            - declare-tests-complete
+        - get: version
+          passed:
+            - declare-tests-complete
           params:
             bump: final
       - in_parallel:
