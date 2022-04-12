@@ -12,6 +12,14 @@ resource_types:
       username: ((harbor.username))
       password: ((harbor.token))
 
+  - name: helm-chart
+    type: registry-image
+    source:
+      repository: harbor-repo.vmware.com/dockerhub-proxy-cache/jghiloni/helm-chart-resource
+      tag: 1.0.0
+      username: ((harbor.username))
+      password: ((harbor.token))
+
   - name: pull-request
     type: registry-image
     source:
@@ -91,16 +99,33 @@ resources:
       file: test-container-product-version
       commit_message: "[ci skip] Updating test container product to version %version%"
 
+  - name: test-chart-source
+    type: git
+    icon: gitlab
+    source:
+      uri: git@gitlab.eng.vmware.com:marketplace-partner-eng/test-helm-product-for-marketplace-cli.git
+      private_key: ((gitlab.private_key))
+      branch: main
+
   - name: test-chart-product-version
     type: semver
     icon: gitlab
     source:
       driver: git
-      uri: git@gitlab.eng.vmware.com:marketplace-partner-eng/test-products.git
+      uri: git@gitlab.eng.vmware.com:marketplace-partner-eng/test-helm-product-for-marketplace-cli.git
       private_key: ((gitlab.private_key))
-      branch: master
-      file: test-chart-product-version
-      commit_message: "[ci skip] Updating test chart product to version %version%"
+      branch: main
+      file: version
+      commit_message: "[ci skip] Updating version file to %version%"
+
+  - name: test-chart
+    type: helm-chart
+    icon: ship-wheel
+    source:
+      repository_url: https://projects.registry.vmware.com/chartrepo/tanzu_isv_engineering
+      chart: test-chart
+      username: ((harbor-public.username))
+      password: ((harbor-public.token))
 
   - name: test-iso-product-version
     type: semver
@@ -384,77 +409,57 @@ jobs:
       params:
         alert_type: failed
 
+  - name: update-test-chart
+    max_in_flight: 1
+    plan:
+      - in_parallel:
+          - get: test-chart-product-version
+            params: { bump: patch }
+          - get: test-chart-source
+          - get: mkpcli
+            trigger: true
+            passed: [ build ]
+          - get: mkpcli_source
+            resource: source
+            passed: [ build ]
+          - get: version
+            passed: [ build ]
+      - task: set-chart-version
+        file: test-chart-source/ci/tasks/set-version.yaml
+        input_mapping:
+          source: test-chart-source
+          version: test-chart-product-version
+      - task: commit-chart-version
+        file: test-chart-source/ci/tasks/commit-version.yaml
+        input_mapping:
+          version: test-chart-product-version
+      - put: test-chart-source
+        inputs: detect
+        params:
+          repository: source
+      - put: test-chart
+        inputs: detect
+        params:
+          repository: source/test-chart
+      - put: test-chart-product-version
+        inputs: detect
+
   - name: test-publish-chart-product
     public: true
     max_in_flight: 1
     plan:
       - in_parallel:
           - get: test-chart-product-version
-            params: { bump: patch }
+            passed: [ update-test-chart ]
+          - get: test-chart
+#            trigger: true
+            passed: [ update-test-chart ]
           - get: mkpcli
-            trigger: true
-            passed: [build]
+            passed: [ update-test-chart ]
           - get: source
-            passed: [build]
+            passed: [ update-test-chart ]
           - get: version
-            passed: [build]
-      - task: create-test-helm-chart
-        config:
-          platform: linux
-          image_resource:
-            type: registry-image
-            source:
-              repository: harbor-repo.vmware.com/dockerhub-proxy-cache/alpine/helm
-              tag: 3.7.2
-              username: ((harbor.username))
-              password: ((harbor.token))
-          outputs:
-            - name: chart
-          run:
-            path: helm
-            dir: chart
-            args: [create, mkpcli-test-chart]
-      - task: set-chart-version
-        config:
-          platform: linux
-          image_resource:
-            type: registry-image
-            source:
-              repository: harbor-repo.vmware.com/dockerhub-proxy-cache/linuxserver/yq
-              tag: 2.13.0
-              username: ((harbor.username))
-              password: ((harbor.token))
-          inputs:
-            - name: chart
-            - name: test-chart-product-version
-          outputs:
-            - name: chart
-          run:
-            path: bash
-            dir: chart/mkpcli-test-chart
-            args:
-              - -exc
-              - |
-                yq --yaml-output --arg version $(cat ../../test-chart-product-version/version) '.version = $version' Chart.yaml > Chart.yaml.new
-                mv Chart.yaml.new Chart.yaml
-      - task: package-test-helm-chart
-        config:
-          platform: linux
-          image_resource:
-            type: registry-image
-            source:
-              repository: harbor-repo.vmware.com/dockerhub-proxy-cache/alpine/helm
-              tag: 3.7.2
-              username: ((harbor.username))
-              password: ((harbor.token))
-          inputs:
-            - name: chart
-          outputs:
-            - name: chart
-          run:
-            path: helm
-            dir: chart
-            args: [package, mkpcli-test-chart]
+            passed: [ update-test-chart ]
       - task: get-current-product
         image: mkpcli
         params:
@@ -469,14 +474,12 @@ jobs:
         params:
           MARKETPLACE_ENV: staging
           PRODUCT_SLUG: test-chart-product-42
-      - put: test-chart-product-version
-        inputs: detect
-        params:
-          file: test-chart-product-version/version
       - task: add-chart-to-marketplace
         image: mkpcli
         file: source/ci/tasks/test-chart-product.yaml
-        input_mapping: {version: test-chart-product-version}
+        input_mapping:
+          chart: test-chart
+          version: test-chart-product-version
         params:
           MARKETPLACE_ENV: staging
           PRODUCT_SLUG: test-chart-product-42
