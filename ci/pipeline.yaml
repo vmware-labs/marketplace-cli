@@ -15,8 +15,8 @@ resource_types:
   - name: helm-chart
     type: registry-image
     source:
-      repository: harbor-repo.vmware.com/dockerhub-proxy-cache/jghiloni/helm-chart-resource
-      tag: 1.0.0
+      repository: harbor-repo.vmware.com/dockerhub-proxy-cache/cathive/concourse-chartmuseum-resource
+      tag: v1.0.0
       username: ((harbor.username))
       password: ((harbor.token))
 
@@ -112,20 +112,21 @@ resources:
     icon: gitlab
     source:
       driver: git
-      uri: git@gitlab.eng.vmware.com:marketplace-partner-eng/test-helm-product-for-marketplace-cli.git
+      uri: git@gitlab.eng.vmware.com:marketplace-partner-eng/test-products.git
       private_key: ((gitlab.private_key))
-      branch: main
-      file: version
-      commit_message: "[ci skip] Updating version file to %version%"
+      branch: master
+      file: test-chart-product-version
+      commit_message: "[ci skip] Updating test chart product to version %version%"
 
   - name: test-chart
     type: helm-chart
     icon: ship-wheel
     source:
-      repository_url: https://projects.registry.vmware.com/chartrepo/tanzu_isv_engineering
-      chart: test-chart
-      username: ((harbor-public.username))
-      password: ((harbor-public.token))
+      server_url: https://projects.registry.vmware.com/api/chartrepo/tanzu_isv_engineering/charts
+      chart_name: test-chart
+      harbor_api: true
+      basic_auth_username: ((harbor-public.username))
+      basic_auth_password: ((harbor-public.token))
 
   - name: test-iso-product-version
     type: semver
@@ -413,17 +414,17 @@ jobs:
     max_in_flight: 1
     plan:
       - in_parallel:
-          - get: test-chart-product-version
-            params: { bump: patch }
-          - get: test-chart-source
-          - get: mkpcli
-            trigger: true
-            passed: [ build ]
-          - get: mkpcli_source
-            resource: source
-            passed: [ build ]
-          - get: version
-            passed: [ build ]
+        - put: test-chart-product-version
+          params: { bump: patch }
+        - get: mkpcli
+          trigger: true
+          passed: [ build ]
+        - get: mkpcli_source
+          resource: source
+          passed: [ build ]
+        - get: version
+          passed: [ build ]
+      - get: test-chart-source
       - task: set-chart-version
         file: test-chart-source/ci/tasks/set-version.yaml
         input_mapping:
@@ -440,9 +441,7 @@ jobs:
       - put: test-chart
         inputs: detect
         params:
-          repository: source/test-chart
-      - put: test-chart-product-version
-        inputs: detect
+          chart: source/test-chart
 
   - name: test-publish-chart-product
     public: true
@@ -452,7 +451,7 @@ jobs:
           - get: test-chart-product-version
             passed: [ update-test-chart ]
           - get: test-chart
-#            trigger: true
+            trigger: true
             passed: [ update-test-chart ]
           - get: mkpcli
             passed: [ update-test-chart ]
