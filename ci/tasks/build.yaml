@@ -8,7 +8,7 @@ image_resource:
   type: registry-image
   source:
     repository: harbor-repo.vmware.com/dockerhub-proxy-cache/library/golang
-    tag: 1.17
+    tag: 1.18
     username: ((harbor.username))
     password: ((harbor.token))
 
