@@ -414,6 +414,7 @@ jobs:
     max_in_flight: 1
     plan:
       - in_parallel:
+        - get: test-chart-source
         - put: test-chart-product-version
           params: { bump: patch }
         - get: mkpcli
@@ -424,24 +425,11 @@ jobs:
           passed: [ build ]
         - get: version
           passed: [ build ]
-      - get: test-chart-source
-      - task: set-chart-version
-        file: test-chart-source/ci/tasks/set-version.yaml
-        input_mapping:
-          source: test-chart-source
-          version: test-chart-product-version
-      - task: commit-chart-version
-        file: test-chart-source/ci/tasks/commit-version.yaml
-        input_mapping:
-          version: test-chart-product-version
-      - put: test-chart-source
-        inputs: detect
-        params:
-          repository: source
       - put: test-chart
         inputs: detect
         params:
-          chart: source/test-chart
+          chart: test-chart-source/test-chart
+          version_file: test-chart-product-version/version
 
   - name: test-publish-chart-product
     public: true
