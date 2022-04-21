@@ -14,18 +14,23 @@ import (
 )
 
 var _ = Describe("Download", func() {
+	const (
+		ProductSlug    = "tanzu-kubenetes-grid-1-111-1-1"
+		ProductVersion = "1.5.1"
+	)
+
 	steps := NewSteps()
 
 	Scenario("Downloading an asset", func() {
 		steps.Given("targeting the staging environment")
-		steps.When("running mkpcli download --product tanzu-kubenetes-grid-1-111 --product-version 1.4.0 --filter yq_linux_amd64 --filename yq --accept-eula")
+		steps.When("running mkpcli download --product " + ProductSlug + " --product-version " + ProductVersion + " --filter yq_linux_amd64 --filename yq --accept-eula")
 		steps.Then("the command exits without error")
 		steps.And("yq is downloaded")
 	})
 
 	Scenario("Download fails when there are multiple files", func() {
 		steps.Given("targeting the staging environment")
-		steps.When("running mkpcli download --product tanzu-kubenetes-grid-1-111 --product-version 1.4.0 --accept-eula")
+		steps.When("running mkpcli download --product " + ProductSlug + " --product-version " + ProductVersion + " --accept-eula")
 		steps.Then("the command exits with an error")
 		steps.And("a message saying that there are multiple assets available to download")
 	})
@@ -41,7 +46,7 @@ var _ = Describe("Download", func() {
 		})
 
 		define.Then(`^a message saying that there are multiple assets available to download$`, func() {
-			Eventually(CommandSession.Err).Should(Say("product tanzu-kubenetes-grid-1-111 1.4.0 has multiple downloadable assets, please use the --filter parameter"))
+			Eventually(CommandSession.Err).Should(Say("product " + ProductSlug + " " + ProductVersion + " has multiple downloadable assets, please use the --filter parameter"))
 		})
 	})
 })
