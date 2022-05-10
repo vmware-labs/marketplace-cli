@@ -50,7 +50,7 @@ var _ = Describe("Upload", func() {
 				Expect(options).To(BeEmpty())
 			})
 			Expect(filename).To(MatchRegexp("^mkpcli-test-uploader-file-[0-9]+.txt$"))
-			Expect(fileUrl).To(MatchRegexp("^https://stg-cdn.market.csp.vmware.com/my-org/media-files/[0-9]+/mkpcli-test-uploader-file-[0-9]+.txt$"))
+			Expect(fileUrl).To(MatchRegexp("^https://my-bucket.s3.my-region.amazonaws.com/my-org/media-files/[0-9]+/mkpcli-test-uploader-file-[0-9]+.txt$"))
 		})
 	})
 

@@ -79,7 +79,7 @@ func NewS3Uploader(bucket, region, orgID string, client S3Client) *S3Uploader {
 func (u *S3Uploader) UploadMediaFile(filePath string) (string, string, error) {
 	filename := filepath.Base(filePath)
 	key := path.Join(u.orgID, FolderMediaFiles, now(), filename)
-	url := fmt.Sprintf("https://stg-cdn.market.csp.vmware.com/%s", key)
+	url := fmt.Sprintf("https://%s.s3.%s.amazonaws.com/%s", u.bucket, u.region, key)
 	err := u.upload(filePath, key, types.ObjectCannedACLPublicRead)
 	return filename, url, err
 }
