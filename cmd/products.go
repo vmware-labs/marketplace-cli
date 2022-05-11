@@ -22,7 +22,6 @@ func init() {
 	rootCmd.AddCommand(ProductCmd)
 	ProductCmd.AddCommand(ListProductsCmd)
 	ProductCmd.AddCommand(GetProductCmd)
-	ProductCmd.AddCommand(AddProductVersionCmd)
 	ProductCmd.AddCommand(ListProductVersionsCmd)
 	ProductCmd.AddCommand(SetCmd)
 
@@ -32,11 +31,6 @@ func init() {
 	GetProductCmd.Flags().StringVarP(&ProductSlug, "product", "p", "", "Product slug (required)")
 	_ = GetProductCmd.MarkFlagRequired("product")
 	GetProductCmd.Flags().StringVarP(&ProductVersion, "product-version", "v", "", "Product version")
-
-	AddProductVersionCmd.Flags().StringVarP(&ProductSlug, "product", "p", "", "Product slug (required)")
-	_ = AddProductVersionCmd.MarkFlagRequired("product")
-	AddProductVersionCmd.Flags().StringVarP(&ProductVersion, "product-version", "v", "", "Product version (required)")
-	_ = AddProductVersionCmd.MarkFlagRequired("product-version")
 
 	ListProductVersionsCmd.Flags().StringVarP(&ProductSlug, "product", "p", "", "Product slug (required)")
 	_ = ListProductVersionsCmd.MarkFlagRequired("product")

@@ -4,11 +4,13 @@
 package cmd
 
 import (
+	"errors"
 	"fmt"
 	"strings"
 
 	"github.com/spf13/cobra"
 	"github.com/vmware-labs/marketplace-cli/v2/internal/models"
+	"github.com/vmware-labs/marketplace-cli/v2/pkg"
 )
 
 const (
@@ -20,6 +22,7 @@ var (
 	ContainerImageProductSlug            string
 	ContainerImageProductVersion         string
 	ContainerImageDeploymentInstructions string
+	ContainerImageCreateVersion          bool
 	ImageRepository                      string
 	ImageTag                             string
 	ImageTagType                         string
@@ -45,6 +48,7 @@ func init() {
 	_ = AttachContainerImageCmd.MarkFlagRequired("tag-type")
 	AttachContainerImageCmd.Flags().StringVarP(&ContainerImageDeploymentInstructions, "deployment-instructions", "i", "", "deployment instructions")
 	_ = AttachContainerImageCmd.MarkFlagRequired("deployment-instructions")
+	AttachContainerImageCmd.Flags().BoolVar(&ContainerImageCreateVersion, "create-version", false, "create the product version, if it doesn't already exist")
 }
 
 var ContainerImageCmd = &cobra.Command{
@@ -91,7 +95,11 @@ var AttachContainerImageCmd = &cobra.Command{
 		cmd.SilenceUsage = true
 		product, version, err := Marketplace.GetProductWithVersion(ContainerImageProductSlug, ContainerImageProductVersion)
 		if err != nil {
-			return err
+			if errors.Is(err, &pkg.VersionDoesNotExistError{}) && ContainerImageCreateVersion {
+				version = product.NewVersion(ContainerImageProductVersion)
+			} else {
+				return err
+			}
 		}
 
 		product.SetDeploymentType(models.DeploymentTypesDocker)
@@ -118,7 +126,7 @@ var AttachContainerImageCmd = &cobra.Command{
 			},
 		})
 
-		updatedProduct, err := Marketplace.PutProduct(product, false)
+		updatedProduct, err := Marketplace.PutProduct(product, version.IsNewVersion)
 		if err != nil {
 			return err
 		}

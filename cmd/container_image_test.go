@@ -4,6 +4,7 @@
 package cmd_test
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/google/uuid"
@@ -12,6 +13,7 @@ import (
 	"github.com/vmware-labs/marketplace-cli/v2/cmd"
 	"github.com/vmware-labs/marketplace-cli/v2/cmd/output/outputfakes"
 	"github.com/vmware-labs/marketplace-cli/v2/internal/models"
+	"github.com/vmware-labs/marketplace-cli/v2/pkg"
 	"github.com/vmware-labs/marketplace-cli/v2/pkg/pkgfakes"
 	"github.com/vmware-labs/marketplace-cli/v2/test"
 )
@@ -285,6 +287,82 @@ var _ = Describe("ContainerImage", func() {
 				err := cmd.AttachContainerImageCmd.RunE(cmd.AttachContainerImageCmd, []string{""})
 				Expect(err).To(HaveOccurred())
 				Expect(err.Error()).To(Equal("put product failed"))
+			})
+		})
+
+		Context("Getting the product fails", func() {
+			BeforeEach(func() {
+				marketplace.GetProductWithVersionReturns(nil, nil, errors.New("get product with version failed"))
+			})
+			It("returns an error", func() {
+				cmd.ContainerImageProductSlug = "my-super-product"
+				cmd.ContainerImageProductVersion = "1.2.3"
+				cmd.ImageRepository = "nginx"
+				cmd.ImageTag = "5.5.5"
+				cmd.ImageTagType = cmd.ImageTagTypeFixed
+				err := cmd.AttachContainerImageCmd.RunE(cmd.AttachContainerImageCmd, []string{""})
+				Expect(err).To(HaveOccurred())
+				Expect(err.Error()).To(Equal("get product with version failed"))
+			})
+		})
+
+		Context("Version does not exist", func() {
+			BeforeEach(func() {
+				marketplace.GetProductWithVersionReturns(product, nil, &pkg.VersionDoesNotExistError{
+					Product: "my-super-product",
+					Version: "9.9.9",
+				})
+			})
+			It("returns an error", func() {
+				cmd.ContainerImageProductSlug = "my-super-product"
+				cmd.ContainerImageProductVersion = "9.9.9"
+				cmd.ImageRepository = "nginx"
+				cmd.ImageTag = "5.5.5"
+				cmd.ImageTagType = cmd.ImageTagTypeFixed
+				err := cmd.AttachContainerImageCmd.RunE(cmd.AttachContainerImageCmd, []string{""})
+				Expect(err).To(HaveOccurred())
+				Expect(err.Error()).To(Equal("product \"my-super-product\" does not have version 9.9.9"))
+			})
+
+			Context("--create-version argument is passed", func() {
+				It("updates the product, but with the new version", func() {
+					cmd.ContainerImageProductSlug = "my-super-product"
+					cmd.ContainerImageProductVersion = "9.9.9"
+					cmd.ContainerImageCreateVersion = true
+					cmd.ImageRepository = "nginx"
+					cmd.ImageTag = "5.5.5"
+					cmd.ImageTagType = cmd.ImageTagTypeFixed
+					err := cmd.AttachContainerImageCmd.RunE(cmd.AttachContainerImageCmd, []string{""})
+					Expect(err).ToNot(HaveOccurred())
+
+					By("updating the product with the new container image", func() {
+						Expect(marketplace.PutProductCallCount()).To(Equal(1))
+						updatedProduct, versionUpdate := marketplace.PutProductArgsForCall(0)
+						Expect(versionUpdate).To(BeTrue())
+
+						Expect(updatedProduct.DeploymentTypes).To(ContainElement("DOCKERLINK"))
+						Expect(updatedProduct.DockerLinkVersions).To(HaveLen(2))
+						dockerLink := updatedProduct.DockerLinkVersions[0]
+						Expect(dockerLink.AppVersion).To(Equal("1.2.3"))
+						Expect(dockerLink.DockerURLs).To(HaveLen(1))
+						dockerUrl := dockerLink.DockerURLs[0]
+						Expect(dockerUrl.Url).To(Equal("nginx"))
+						Expect(dockerUrl.ImageTags).To(HaveLen(1))
+						tag := dockerUrl.ImageTags[0]
+						Expect(tag.Tag).To(Equal("latest"))
+						Expect(tag.Type).To(Equal("FLOATING"))
+
+						dockerLink = updatedProduct.DockerLinkVersions[1]
+						Expect(dockerLink.AppVersion).To(Equal("9.9.9"))
+						Expect(dockerLink.DockerURLs).To(HaveLen(1))
+						dockerUrl = dockerLink.DockerURLs[0]
+						Expect(dockerUrl.Url).To(Equal("nginx"))
+						Expect(dockerUrl.ImageTags).To(HaveLen(1))
+						tag = dockerUrl.ImageTags[0]
+						Expect(tag.Tag).To(Equal("5.5.5"))
+						Expect(tag.Type).To(Equal("FIXED"))
+					})
+				})
 			})
 		})
 	})

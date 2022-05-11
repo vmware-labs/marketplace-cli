@@ -18,6 +18,20 @@ type Version struct {
 	CreatedOn        int32  `json:"createdon,omitempty"`
 	HasLimitedAccess bool   `json:"haslimitedaccess,omitempty"`
 	Tag              string `json:"tag,omitempty"`
+	IsNewVersion     bool   // This is only for the CLI when adding a version
+}
+
+func (product *Product) NewVersion(number string) *Version {
+	if product.HasVersion(number) {
+		return product.GetVersion(number)
+	}
+	version := &Version{
+		Number:       number,
+		IsNewVersion: true,
+	}
+	product.CurrentVersion = number
+	product.Versions = append(product.Versions, version)
+	return version
 }
 
 func (product *Product) GetVersion(version string) *Version {

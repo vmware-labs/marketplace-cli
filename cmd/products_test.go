@@ -6,7 +6,6 @@ package cmd_test
 import (
 	"fmt"
 
-	"github.com/google/uuid"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/vmware-labs/marketplace-cli/v2/cmd"
@@ -145,89 +144,6 @@ var _ = Describe("Products", func() {
 				err := cmd.GetProductCmd.RunE(cmd.GetProductCmd, []string{""})
 				Expect(err).To(HaveOccurred())
 				Expect(err.Error()).To(Equal("get product failed"))
-			})
-		})
-	})
-
-	Describe("AddProductVersionCmd", func() {
-		var productID string
-		BeforeEach(func() {
-			productID = uuid.New().String()
-			product := test.CreateFakeProduct(
-				productID,
-				"My Super Product",
-				"my-super-product",
-				"PENDING")
-			test.AddVerions(product, "0.1.2", "1.2.3")
-
-			updatedProduct := test.CreateFakeProduct(
-				productID,
-				"My Super Product",
-				"my-super-product",
-				"PENDING")
-			test.AddVerions(updatedProduct, "0.1.2", "1.2.3", "9.9.9")
-
-			marketplace.GetProductReturns(product, nil)
-			marketplace.PutProductReturns(updatedProduct, nil)
-		})
-
-		It("adds the new version", func() {
-			cmd.ProductSlug = "my-super-product"
-			cmd.ProductVersion = "9.9.9"
-			err := cmd.AddProductVersionCmd.RunE(cmd.AddProductVersionCmd, []string{""})
-			Expect(err).ToNot(HaveOccurred())
-
-			By("first, getting the existing product", func() {
-				Expect(marketplace.GetProductCallCount()).To(Equal(1))
-			})
-
-			By("second, sending the new product", func() {
-				Expect(marketplace.PutProductCallCount()).To(Equal(1))
-			})
-
-			By("outputting the response", func() {
-				Expect(output.RenderVersionsCallCount()).To(Equal(1))
-				product := output.RenderVersionsArgsForCall(0)
-				Expect(product.Slug).To(Equal("my-super-product"))
-				Expect(product.AllVersions).To(HaveLen(3))
-			})
-		})
-
-		Context("Version already exists", func() {
-			It("says that the version already exists", func() {
-				cmd.ProductSlug = "my-super-product"
-				cmd.ProductVersion = "1.2.3"
-				err := cmd.AddProductVersionCmd.RunE(cmd.AddProductVersionCmd, []string{""})
-				Expect(err).To(HaveOccurred())
-				Expect(err.Error()).To(Equal("product \"my-super-product\" already has version 1.2.3"))
-			})
-		})
-
-		Context("Error fetching product", func() {
-			BeforeEach(func() {
-				marketplace.GetProductReturns(nil, fmt.Errorf("get product failed"))
-			})
-
-			It("prints the error", func() {
-				cmd.ProductSlug = "my-super-product"
-				cmd.ProductVersion = "9.9.9"
-				err := cmd.AddProductVersionCmd.RunE(cmd.AddProductVersionCmd, []string{""})
-				Expect(err).To(HaveOccurred())
-				Expect(err.Error()).To(Equal("get product failed"))
-			})
-		})
-
-		Context("Error putting product", func() {
-			BeforeEach(func() {
-				marketplace.PutProductReturns(nil, fmt.Errorf("put product failed"))
-			})
-
-			It("prints the error", func() {
-				cmd.ProductSlug = "my-super-product"
-				cmd.ProductVersion = "9.9.9"
-				err := cmd.AddProductVersionCmd.RunE(cmd.AddProductVersionCmd, []string{""})
-				Expect(err).To(HaveOccurred())
-				Expect(err.Error()).To(Equal("put product failed"))
 			})
 		})
 	})

@@ -23,11 +23,8 @@ run:
       set -ex
       VERSION=$(cat version/version)
 
-      # Get the list of charts
-      mkpcli chart list --product "${PRODUCT_SLUG}" --product-version "${VERSION}"
-
       # Upload a chart
-      mkpcli chart attach --product "${PRODUCT_SLUG}" --product-version "${VERSION}" \
+      mkpcli chart attach --product "${PRODUCT_SLUG}" --product-version "${VERSION}" --create-version \
         --chart chart/*.tgz --readme "helm install it"
 
       # Get the list of charts

@@ -4,6 +4,7 @@
 package cmd
 
 import (
+	"errors"
 	"fmt"
 	"time"
 
@@ -16,6 +17,7 @@ var (
 	vmFile           string
 	VMProductSlug    string
 	VMProductVersion string
+	VMCreateVersion  bool
 )
 
 func init() {
@@ -38,6 +40,7 @@ func init() {
 	AttachVMCmd.Flags().StringVarP(&VMProductVersion, "product-version", "v", "", "Product version (default to latest version)")
 	AttachVMCmd.Flags().StringVar(&vmFile, "file", "", "Virtual machine file to upload (required)")
 	_ = AttachVMCmd.MarkFlagRequired("file")
+	AttachVMCmd.Flags().BoolVar(&VMCreateVersion, "create-version", false, "create the product version, if it doesn't already exist")
 }
 
 var VMCmd = &cobra.Command{
@@ -120,7 +123,9 @@ var AttachVMCmd = &cobra.Command{
 		cmd.SilenceUsage = true
 
 		product, version, err := Marketplace.GetProductWithVersion(VMProductSlug, VMProductVersion)
-		if err != nil {
+		if errors.Is(err, &pkg.VersionDoesNotExistError{}) && VMCreateVersion {
+			version = product.NewVersion(VMProductVersion)
+		} else {
 			return err
 		}
 
@@ -147,7 +152,7 @@ var AttachVMCmd = &cobra.Command{
 			VersionList:   []string{},
 		})
 
-		updatedProduct, err := Marketplace.PutProduct(product, false)
+		updatedProduct, err := Marketplace.PutProduct(product, version.IsNewVersion)
 		if err != nil {
 			return err
 		}

@@ -341,17 +341,6 @@ jobs:
           PRODUCT_SLUG: test-container-product-41
           TEST_IMAGE_REPO: bitnami/nginx
           TEST_IMAGE_TAG: 1.21.6
-      - task: add-version-to-marketplace
-        image: mkpcli
-        file: source/ci/tasks/add-version.yaml
-        input_mapping: {version: test-container-product-version}
-        params:
-          MARKETPLACE_ENV: staging
-          PRODUCT_SLUG: test-container-product-41
-      - put: test-container-product-version
-        inputs: detect
-        params:
-          file: test-container-product-version/version
       - task: add-container-image-to-marketplace
         image: mkpcli
         file: source/ci/tasks/test-container-image-product.yaml
@@ -361,6 +350,10 @@ jobs:
           PRODUCT_SLUG: test-container-product-41
           TEST_IMAGE_REPO: bitnami/nginx
           TEST_IMAGE_TAG: 1.21.1
+      - put: test-container-product-version
+        inputs: detect
+        params:
+          file: test-container-product-version/version
       - task: set-osl
         image: mkpcli
         file: source/ci/tasks/set-osl-file.yaml
@@ -454,13 +447,6 @@ jobs:
           PRODUCT_SLUG: test-chart-product-42
         file: source/ci/tasks/get-current-product.yaml
         output_mapping: {output: previous}
-      - task: add-version-to-marketplace
-        image: mkpcli
-        file: source/ci/tasks/add-version.yaml
-        input_mapping: {version: test-chart-product-version}
-        params:
-          MARKETPLACE_ENV: staging
-          PRODUCT_SLUG: test-chart-product-42
       - task: add-chart-to-marketplace
         image: mkpcli
         file: source/ci/tasks/test-chart-product.yaml
@@ -550,9 +536,9 @@ jobs:
           PRODUCT_SLUG: test-iso-product1
         file: source/ci/tasks/get-current-product.yaml
         output_mapping: {output: previous}
-      - task: add-version-to-marketplace
+      - task: add-iso-to-marketplace
         image: mkpcli
-        file: source/ci/tasks/add-version.yaml
+        file: source/ci/tasks/test-vm-product.yaml
         input_mapping: {version: test-iso-product-version}
         params:
           MARKETPLACE_ENV: staging
@@ -561,13 +547,6 @@ jobs:
         inputs: detect
         params:
           file: test-iso-product-version/version
-      - task: add-iso-to-marketplace
-        image: mkpcli
-        file: source/ci/tasks/test-vm-product.yaml
-        input_mapping: {version: test-iso-product-version}
-        params:
-          MARKETPLACE_ENV: staging
-          PRODUCT_SLUG: test-iso-product1
       - task: set-osl
         image: mkpcli
         file: source/ci/tasks/set-osl-file.yaml
@@ -648,9 +627,9 @@ jobs:
           PRODUCT_SLUG: test-ova-product-201
         file: source/ci/tasks/get-current-product.yaml
         output_mapping: {output: previous}
-      - task: add-version-to-marketplace
+      - task: add-ova-to-marketplace
         image: mkpcli
-        file: source/ci/tasks/add-version.yaml
+        file: source/ci/tasks/test-vm-product.yaml
         input_mapping: {version: test-ova-product-version}
         params:
           MARKETPLACE_ENV: staging
@@ -659,13 +638,6 @@ jobs:
         inputs: detect
         params:
           file: test-ova-product-version/version
-      - task: add-ova-to-marketplace
-        image: mkpcli
-        file: source/ci/tasks/test-vm-product.yaml
-        input_mapping: {version: test-ova-product-version}
-        params:
-          MARKETPLACE_ENV: staging
-          PRODUCT_SLUG: test-ova-product-201
       - task: set-osl
         image: mkpcli
         file: source/ci/tasks/set-osl-file.yaml
