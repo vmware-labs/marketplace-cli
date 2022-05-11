@@ -24,11 +24,8 @@ run:
       set -ex
       VERSION=$(cat version/version)
 
-      # Get the list of container images
-      mkpcli container-image list --product "${PRODUCT_SLUG}" --product-version "${VERSION}"
-
       # Upload a docker image
-      mkpcli container-image attach --product "${PRODUCT_SLUG}" --product-version "${VERSION}" \
+      mkpcli container-image attach --product "${PRODUCT_SLUG}" --product-version "${VERSION}" --create-version \
         --image-repository "${TEST_IMAGE_REPO}" --tag "${TEST_IMAGE_TAG}" --tag-type FIXED \
         --deployment-instructions "docker run ${TEST_IMAGE_REPO}:${TEST_IMAGE_TAG}"
 

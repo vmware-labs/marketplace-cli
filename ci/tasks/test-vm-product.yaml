@@ -24,11 +24,8 @@ run:
       VERSION=$(cat version/version)
       VM_FILE=$(find vm -type f -name '*.iso' -or -name '*.ova')
 
-      # Get the list of virtual machine files
-      mkpcli vm list --product "${PRODUCT_SLUG}" --product-version "${VERSION}"
-
       # Attach a virtual machine file
-      mkpcli vm attach --product "${PRODUCT_SLUG}" --product-version "${VERSION}" \
+      mkpcli vm attach --product "${PRODUCT_SLUG}" --product-version "${VERSION}" --create-version \
         --file "${VM_FILE}"
 
       # Get the list of virtual machine files

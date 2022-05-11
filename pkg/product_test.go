@@ -6,6 +6,7 @@ package pkg_test
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -20,6 +21,14 @@ import (
 	"github.com/vmware-labs/marketplace-cli/v2/pkg/pkgfakes"
 	"github.com/vmware-labs/marketplace-cli/v2/test"
 )
+
+type FailingReader struct {
+	Message string
+}
+
+func (r *FailingReader) Read(p []byte) (n int, err error) {
+	return 0, errors.New(r.Message)
+}
 
 var _ = Describe("Product", func() {
 	var (
@@ -327,6 +336,187 @@ var _ = Describe("Product", func() {
 				_, err := marketplace.GetProduct("my-super-product")
 				Expect(err).To(HaveOccurred())
 				Expect(err.Error()).To(Equal("failed to parse the response for product my-super-product: invalid character 'T' looking for beginning of value"))
+			})
+		})
+	})
+
+	Describe("GetProductWithVersion", func() {
+		var productId string
+		BeforeEach(func() {
+			product := test.CreateFakeProduct(
+				"",
+				"My Super Product",
+				"my-super-product",
+				"PENDING")
+			productId = product.ProductId
+			product.EulaURL = "https://example.com/eula.txt"
+			product.OpenSourceDisclosure = &models.OpenSourceDisclosureURLS{
+				SourceCodePackageURL: "https://github.com/vmware-labs/marketplace-cli",
+			}
+			test.AddVerions(product, "0.1.2", "1.2.3")
+			response := &pkg.GetProductResponse{
+				Response: &pkg.GetProductResponsePayload{
+					Data:       product,
+					StatusCode: http.StatusOK,
+					Message:    "testing",
+				},
+			}
+
+			responseBytes, err := json.Marshal(response)
+			Expect(err).ToNot(HaveOccurred())
+
+			httpClient.DoReturnsOnCall(0, &http.Response{
+				StatusCode: http.StatusOK,
+				Body:       ioutil.NopCloser(bytes.NewReader(responseBytes)),
+			}, nil)
+
+			versionSpecificDetails := &pkg.VersionSpecificDetailsPayloadResponse{
+				Response: &pkg.VersionSpecificDetailsPayload{
+					Data: &models.VersionSpecificProductDetails{
+						EulaURL: "https://example.com/eula-from-a-version.txt",
+						OpenSourceDisclosure: &models.OpenSourceDisclosureURLS{
+							LicenseDisclosureURL: "https://example.com/osl.txt",
+						},
+					},
+					StatusCode: http.StatusOK,
+					Message:    "testing",
+				},
+			}
+
+			versionSpecificDetailsResponseBytes, err := json.Marshal(versionSpecificDetails)
+			Expect(err).ToNot(HaveOccurred())
+
+			httpClient.DoReturnsOnCall(1, &http.Response{
+				StatusCode: http.StatusOK,
+				Body:       ioutil.NopCloser(bytes.NewReader(versionSpecificDetailsResponseBytes)),
+			}, nil)
+		})
+
+		It("returns the product with version specific details", func() {
+			product, version, err := marketplace.GetProductWithVersion("my-super-product", "0.1.2")
+			Expect(err).ToNot(HaveOccurred())
+
+			Expect(product.Slug).To(Equal("my-super-product"))
+			Expect(version.Number).To(Equal("0.1.2"))
+
+			By("sending the correct requests", func() {
+				Expect(httpClient.DoCallCount()).To(Equal(2))
+				request := httpClient.DoArgsForCall(0)
+				Expect(request.Method).To(Equal("GET"))
+				Expect(request.URL.Path).To(Equal("/api/v1/products/my-super-product"))
+				Expect(request.URL.Query().Get("increaseViewCount")).To(Equal("false"))
+				Expect(request.URL.Query().Get("isSlug")).To(Equal("true"))
+
+				request = httpClient.DoArgsForCall(1)
+				Expect(request.Method).To(Equal("POST"))
+				Expect(request.URL.Path).To(Equal(fmt.Sprintf("/api/v1/products/%s/version-details", productId)))
+				Expect(request.URL.Query().Get("versionNumber")).To(Equal("0.1.2"))
+				var payload *pkg.VersionSpecificDetailsRequestPayload
+				body, err := ioutil.ReadAll(request.Body)
+				Expect(err).ToNot(HaveOccurred())
+				err = json.Unmarshal(body, &payload)
+				Expect(err).ToNot(HaveOccurred())
+				Expect(payload.ProductId).To(Equal(productId))
+				Expect(payload.VersionNumber).To(Equal("0.1.2"))
+			})
+
+			By("updating the product with the version specific details", func() {
+				Expect(product.CurrentVersion).To(Equal("0.1.2"))
+				Expect(product.EulaURL).To(Equal("https://example.com/eula-from-a-version.txt"))
+				Expect(product.OpenSourceDisclosure.SourceCodePackageURL).To(BeEmpty())
+				Expect(product.OpenSourceDisclosure.LicenseDisclosureURL).To(Equal("https://example.com/osl.txt"))
+			})
+		})
+
+		Context("there was an error getting the product", func() {
+			BeforeEach(func() {
+				httpClient.DoReturnsOnCall(0, &http.Response{
+					StatusCode: http.StatusTeapot,
+					Body:       ioutil.NopCloser(bytes.NewReader([]byte("get product failed"))),
+				}, nil)
+			})
+			It("returns the error", func() {
+				_, _, err := marketplace.GetProductWithVersion("my-super-product", "0.1.2")
+				Expect(err).To(HaveOccurred())
+				Expect(err.Error()).To(Equal("getting product my-super-product failed: (418)\nget product failed"))
+			})
+		})
+
+		Context("the product does not have that version", func() {
+			It("returns a version does not exist error", func() {
+				product, _, err := marketplace.GetProductWithVersion("my-super-product", "9.9.9")
+				Expect(err).To(HaveOccurred())
+				Expect(err.Error()).To(Equal("product \"my-super-product\" does not have version 9.9.9"))
+
+				By("still returning the product", func() {
+					Expect(product.Slug).To(Equal("my-super-product"))
+				})
+			})
+		})
+
+		Context("there was an error getting the version specific details", func() {
+			BeforeEach(func() {
+				httpClient.DoReturnsOnCall(1, &http.Response{
+					StatusCode: http.StatusTeapot,
+					Body:       ioutil.NopCloser(bytes.NewReader([]byte("get version specific details failed"))),
+				}, nil)
+			})
+			It("returns an error", func() {
+				_, _, err := marketplace.GetProductWithVersion("my-super-product", "0.1.2")
+				Expect(err).To(HaveOccurred())
+				Expect(err.Error()).To(Equal("getting product version details for my-super-product 0.1.2 failed: (418)\nget version specific details failed"))
+			})
+		})
+		Context("there is no version specific details", func() {
+			BeforeEach(func() {
+				httpClient.DoReturnsOnCall(1, &http.Response{
+					StatusCode: http.StatusNotFound,
+					Body:       ioutil.NopCloser(bytes.NewReader([]byte("version specific details not found"))),
+				}, nil)
+			})
+			It("returns an error", func() {
+				_, _, err := marketplace.GetProductWithVersion("my-super-product", "0.1.2")
+				Expect(err).To(HaveOccurred())
+				Expect(err.Error()).To(Equal("product version details for my-super-product 0.1.2 not found"))
+			})
+		})
+		Context("version specific details request returns bad request", func() {
+			BeforeEach(func() {
+				httpClient.DoReturnsOnCall(1, &http.Response{
+					StatusCode: http.StatusBadRequest,
+					Body:       ioutil.NopCloser(bytes.NewReader([]byte("bad version specific details request"))),
+				}, nil)
+			})
+			It("returns the product without version specific details", func() {
+
+			})
+		})
+		Context("version specific details returns bad data", func() {
+			BeforeEach(func() {
+				httpClient.DoReturnsOnCall(1, &http.Response{
+					StatusCode: http.StatusOK,
+					Body:       ioutil.NopCloser(&FailingReader{"bad response body"}),
+				}, nil)
+			})
+
+			It("returns an error", func() {
+				_, _, err := marketplace.GetProductWithVersion("my-super-product", "0.1.2")
+				Expect(err).To(HaveOccurred())
+				Expect(err.Error()).To(Equal("failed to parse the response for product my-super-product 0.1.2: bad response body"))
+			})
+		})
+		Context("version specific details returns malformed json", func() {
+			BeforeEach(func() {
+				httpClient.DoReturnsOnCall(1, &http.Response{
+					StatusCode: http.StatusOK,
+					Body:       ioutil.NopCloser(bytes.NewReader([]byte("}}} this is bad json! {{{"))),
+				}, nil)
+			})
+
+			It("returns an error", func() {
+				_, _, err := marketplace.GetProductWithVersion("my-super-product", "0.1.2")
+				Expect(err).To(HaveOccurred())
+				Expect(err.Error()).To(ContainSubstring("failed to parse the response for product my-super-product 0.1.2:"))
 			})
 		})
 	})

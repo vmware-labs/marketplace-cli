@@ -6,8 +6,31 @@ package models_test
 import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	"github.com/vmware-labs/marketplace-cli/v2/internal/models"
 	"github.com/vmware-labs/marketplace-cli/v2/test"
 )
+
+var _ = Describe("NewVersion", func() {
+	var product *models.Product
+	BeforeEach(func() {
+		product = test.CreateFakeProduct("", "My Product", "my-product", "PENDING")
+		test.AddVerions(product, "1.2.3")
+	})
+	It("creates a new version object and adds it to the product", func() {
+		version := product.NewVersion("5.5.5")
+		Expect(version.Number).To(Equal("5.5.5"))
+		Expect(version.IsNewVersion).To(BeTrue())
+		Expect(product.CurrentVersion).To(Equal("5.5.5"))
+	})
+
+	Context("version already exists", func() {
+		It("returns that version", func() {
+			version := product.NewVersion("1.2.3")
+			Expect(version.Number).To(Equal("1.2.3"))
+			Expect(version.IsNewVersion).To(BeFalse())
+		})
+	})
+})
 
 var _ = Describe("GetVersion", func() {
 	It("gets the version object from the version number", func() {

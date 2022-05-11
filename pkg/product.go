@@ -19,6 +19,23 @@ import (
 	"github.com/vmware-labs/marketplace-cli/v2/internal/models"
 )
 
+type VersionDoesNotExistError struct {
+	Product string
+	Version string
+}
+
+func (e *VersionDoesNotExistError) Error() string {
+	return fmt.Sprintf("product \"%s\" does not have version %s", e.Product, e.Version)
+}
+
+func (e *VersionDoesNotExistError) Is(otherError error) bool {
+	_, ok := otherError.(*VersionDoesNotExistError)
+	if !ok {
+		return false
+	}
+	return true
+}
+
 type ListProductResponse struct {
 	Response *ListProductResponsePayload `json:"response"`
 }
@@ -237,7 +254,7 @@ func (m *Marketplace) GetProductWithVersion(slug, version string) (*models.Produ
 	}
 
 	if !product.HasVersion(version) {
-		return nil, nil, fmt.Errorf("product \"%s\" does not have a version %s", slug, version)
+		return product, nil, &VersionDoesNotExistError{Product: slug, Version: version}
 	}
 	versionObject := product.GetVersion(version)
 

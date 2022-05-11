@@ -16,8 +16,7 @@ Features:
 ## Example
 ```bash
 $ export CSP_API_TOKEN=...
-$ mkpcli product add-version --product hyperspace-database --version 1.0.1
-$ mkpcli chart attach --product hyperspace-database --version 1.0.1 --chart ./hyperspace-database-1.0.1.tgz
+$ mkpcli chart attach --product hyperspace-database --version 1.0.1 --create-version --chart ./hyperspace-database-1.0.1.tgz
 ```
 
 For more information, see [Updating Products](docs/UpdatingProducts.md)

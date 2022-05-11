@@ -286,6 +286,48 @@ var _ = Describe("Charts", func() {
 					Expect(err.Error()).To(Equal("put product failed"))
 				})
 			})
+
+			Context("Version does not exist", func() {
+				BeforeEach(func() {
+					marketplace.GetProductWithVersionReturns(product, nil, &pkg.VersionDoesNotExistError{
+						Product: "my-super-product",
+						Version: "9.9.9",
+					})
+				})
+				It("returns an error", func() {
+					cmd.ChartProductSlug = "my-super-product"
+					cmd.ChartProductVersion = "9.9.9"
+					cmd.ChartURL = "https://charts.nitbami.com/nitbami/charts/mydatabase-0.1.0.tgz"
+					err := cmd.AttachChartCmd.RunE(cmd.AttachChartCmd, []string{""})
+					Expect(err).To(HaveOccurred())
+					Expect(err.Error()).To(Equal("product \"my-super-product\" does not have version 9.9.9"))
+				})
+
+				Context("--create-version argument is passed", func() {
+					It("updates the product, but with the new version", func() {
+						cmd.ChartProductSlug = "my-super-product"
+						cmd.ChartProductVersion = "9.9.9"
+						cmd.ChartCreateVersion = true
+						cmd.ChartURL = "https://charts.nitbami.com/nitbami/charts/mydatabase-0.1.0.tgz"
+						err := cmd.AttachChartCmd.RunE(cmd.AttachChartCmd, []string{""})
+						Expect(err).ToNot(HaveOccurred())
+
+						By("updating the product with the new chart", func() {
+							Expect(marketplace.PutProductCallCount()).To(Equal(1))
+							updatedProduct, versionUpdate := marketplace.PutProductArgsForCall(0)
+							Expect(versionUpdate).To(BeTrue())
+
+							Expect(updatedProduct.DeploymentTypes).To(ContainElement("HELM"))
+							Expect(updatedProduct.ChartVersions).To(HaveLen(1))
+							newChart := updatedProduct.ChartVersions[0]
+							Expect(newChart.AppVersion).To(Equal("9.9.9"))
+							Expect(newChart.Version).To(Equal("0.1.0"))
+							Expect(newChart.HelmTarUrl).To(Equal("https://charts.nitbami.com/nitbami/charts/mydatabase-0.1.0.tgz"))
+							Expect(newChart.Repo.Name).To(Equal("mydatabase"))
+						})
+					})
+				})
+			})
 		})
 
 		Context("chart is local file", func() {

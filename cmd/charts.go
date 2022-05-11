@@ -4,6 +4,7 @@
 package cmd
 
 import (
+	"errors"
 	"fmt"
 	"net/url"
 
@@ -18,6 +19,7 @@ var (
 	ChartProductSlug    string
 	ChartProductVersion string
 	ChartURL            string
+	ChartCreateVersion  bool
 )
 
 func init() {
@@ -48,6 +50,7 @@ func init() {
 	//_ = AttachChartCmd.MarkFlagRequired("repository-name")
 	AttachChartCmd.Flags().StringVar(&ChartReadme, "readme", "", "readme information")
 	_ = AttachChartCmd.MarkFlagRequired("readme")
+	AttachChartCmd.Flags().BoolVar(&ChartCreateVersion, "create-version", false, "create the product version, if it doesn't already exist")
 }
 
 var ChartCmd = &cobra.Command{
@@ -123,7 +126,11 @@ var AttachChartCmd = &cobra.Command{
 		cmd.SilenceUsage = true
 		product, version, err := Marketplace.GetProductWithVersion(ChartProductSlug, ChartProductVersion)
 		if err != nil {
-			return err
+			if errors.Is(err, &pkg.VersionDoesNotExistError{}) && ChartCreateVersion {
+				version = product.NewVersion(ChartProductVersion)
+			} else {
+				return err
+			}
 		}
 
 		product.SetDeploymentType(models.DeploymentTypeHelm)
@@ -166,7 +173,7 @@ var AttachChartCmd = &cobra.Command{
 		chart.Readme = ChartReadme
 
 		product.AddChart(chart)
-		updatedProduct, err := Marketplace.PutProduct(product, false)
+		updatedProduct, err := Marketplace.PutProduct(product, version.IsNewVersion)
 		if err != nil {
 			return err
 		}
