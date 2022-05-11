@@ -19,7 +19,7 @@ $ export CSP_API_TOKEN=...
 $ mkpcli chart attach --product hyperspace-database --version 1.0.1 --create-version --chart ./hyperspace-database-1.0.1.tgz
 ```
 
-For more information, see [Updating Products](docs/UpdatingProducts.md)
+For more information, see the [documentation page](docs/README.md)
 
 
 ## Authentication
