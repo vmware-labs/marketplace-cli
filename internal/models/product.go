@@ -335,8 +335,6 @@ func (product *Product) PrepForUpdate() {
 	}
 	product.Versions = product.AllVersions
 
-	product.ChartVersions = []*ChartVersion{}
-	//product.DockerLinkVersions = []*DockerVersionList{}
 	product.ProductDeploymentFiles = []*ProductDeploymentFile{}
 }
 

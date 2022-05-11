@@ -54,7 +54,3 @@ func (product *Product) GetChart(chartId string) *ChartVersion {
 	}
 	return nil
 }
-
-func (product *Product) AddChart(chart *ChartVersion) {
-	product.ChartVersions = append(product.ChartVersions, chart)
-}

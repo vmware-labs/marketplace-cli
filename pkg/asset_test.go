@@ -36,7 +36,7 @@ var _ = Describe("Asset", func() {
 					DownloadCount:                  10,
 					IsUpdatedInMarketplaceRegistry: true,
 				}
-				product.AddChart(chart)
+				product.ChartVersions = []*models.ChartVersion{chart}
 			})
 
 			It("returns the chart", func() {

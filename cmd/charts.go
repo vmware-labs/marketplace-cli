@@ -172,7 +172,7 @@ var AttachChartCmd = &cobra.Command{
 		chart.AppVersion = version.Number
 		chart.Readme = ChartReadme
 
-		product.AddChart(chart)
+		product.ChartVersions = []*models.ChartVersion{chart}
 		updatedProduct, err := Marketplace.PutProduct(product, version.IsNewVersion)
 		if err != nil {
 			return err
