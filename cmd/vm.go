@@ -123,10 +123,12 @@ var AttachVMCmd = &cobra.Command{
 		cmd.SilenceUsage = true
 
 		product, version, err := Marketplace.GetProductWithVersion(VMProductSlug, VMProductVersion)
-		if errors.Is(err, &pkg.VersionDoesNotExistError{}) && VMCreateVersion {
-			version = product.NewVersion(VMProductVersion)
-		} else {
-			return err
+		if err != nil {
+			if errors.Is(err, &pkg.VersionDoesNotExistError{}) && VMCreateVersion {
+				version = product.NewVersion(VMProductVersion)
+			} else {
+				return err
+			}
 		}
 
 		hashString, err := pkg.Hash(vmFile, models.HashAlgoSHA1)
