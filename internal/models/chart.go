@@ -9,19 +9,15 @@ type Repo struct {
 }
 
 type ChartVersion struct {
-	Id            string `json:"id,omitempty"`
-	Version       string `json:"version,omitempty"`
-	AppVersion    string `json:"appversion"`
-	Details       string `json:"details,omitempty"`
-	Readme        string `json:"readme,omitempty"`
-	Repo          *Repo  `json:"repo,omitempty"`
-	Values        string `json:"values,omitempty"`
-	Digest        string `json:"digest,omitempty"`
-	HashDigest    string `json:"hashdigest,omitempty"`
-	HashAlgorithm string `json:"hashalgo,omitempty"`
-	Status        string `json:"status,omitempty"`
-	Size          int64  `json:"size,omitempty"`
-
+	Id                             string `json:"id,omitempty"`
+	Version                        string `json:"version,omitempty"`
+	AppVersion                     string `json:"appversion"`
+	Details                        string `json:"details,omitempty"`
+	Readme                         string `json:"readme,omitempty"`
+	Repo                           *Repo  `json:"repo,omitempty"`
+	Values                         string `json:"values,omitempty"`
+	Digest                         string `json:"digest,omitempty"`
+	Status                         string `json:"status,omitempty"`
 	TarUrl                         string `json:"tarurl"` // to use during imgprocessor update & download from UI/API
 	IsExternalUrl                  bool   `json:"isexternalurl"`
 	HelmTarUrl                     string `json:"helmtarurl"` // to use during UI/API create & update product
@@ -30,6 +26,10 @@ type ChartVersion struct {
 	DownloadCount                  int64  `json:"downloadcount"`
 	ValidationStatus               string `json:"validationstatus"`
 	InstallOptions                 string `json:"installoptions"`
+	HashDigest                     string `json:"hashdigest,omitempty"`
+	HashAlgorithm                  string `json:"hashalgo,omitempty"`
+	Size                           int64  `json:"size,omitempty"`
+	Comment                        string `json:"comment"`
 }
 
 func (product *Product) GetChartsForVersion(version string) []*ChartVersion {
