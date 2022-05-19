@@ -8,19 +8,19 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	csp2 "github.com/vmware-labs/marketplace-cli/v2/internal/csp"
+	"github.com/vmware-labs/marketplace-cli/v2/internal/csp"
 )
 
 //go:generate counterfeiter . TokenServices
 type TokenServices interface {
-	Redeem(refreshToken string) (*csp2.Claims, error)
+	Redeem(refreshToken string) (*csp.Claims, error)
 }
 
 //go:generate counterfeiter . TokenServicesInitializer
 type TokenServicesInitializer func(cspHost string) (TokenServices, error)
 
 var InitializeTokenServices TokenServicesInitializer = func(cspHost string) (TokenServices, error) {
-	return csp2.NewTokenServices(cspHost)
+	return csp.NewTokenServices(cspHost)
 }
 
 func GetRefreshToken(cmd *cobra.Command, args []string) error {

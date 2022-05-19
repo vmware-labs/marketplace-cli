@@ -18,6 +18,10 @@ type TokenServices struct {
 	CSPHost string
 }
 
+type RedeemResponse struct {
+	AccessToken string `json:"access_token"`
+}
+
 func (csp *TokenServices) Redeem(refreshToken string) (*Claims, error) {
 	formData := url.Values{
 		"refresh_token": []string{refreshToken},
@@ -25,33 +29,27 @@ func (csp *TokenServices) Redeem(refreshToken string) (*Claims, error) {
 
 	resp, err := http.PostForm(csp.CSPHost+"/csp/gateway/am/api/auth/api-tokens/authorize", formData)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to redeem token: %w", err)
 	}
 
 	if resp.StatusCode != 200 {
-		return nil, fmt.Errorf("cannot exchange refresh token for access token: %d", resp.StatusCode)
+		return nil, fmt.Errorf("failed to exchange refresh token for access token: %d", resp.StatusCode)
 	}
 
-	m := map[string]interface{}{}
-	err = json.NewDecoder(resp.Body).Decode(&m)
+	var body RedeemResponse
+	err = json.NewDecoder(resp.Body).Decode(&body)
 	if err != nil {
-		return nil, fmt.Errorf("bad response from CSP: %+v", err)
-	}
-
-	accessToken := m["access_token"].(string)
-	if accessToken == "" {
-		return nil, fmt.Errorf("bad response from server, access_token expected")
+		return nil, fmt.Errorf("failed to parse redeem response: %w", err)
 	}
 
 	claims := &Claims{}
-	_, _ = jwt.ParseWithClaims(accessToken, claims, func(t *jwt.Token) (interface{}, error) {
+	_, _ = jwt.ParseWithClaims(body.AccessToken, claims, func(t *jwt.Token) (interface{}, error) {
 		// token was just retrieved, no need to validate
 		return "not a valid key anyway", nil
 	})
-
 	// err != nil here are the token validation has failed
 
-	claims.Token = accessToken
+	claims.Token = body.AccessToken
 	return claims, nil
 }
 
@@ -73,7 +71,7 @@ func NewTokenServices(cspHost string) (*TokenServices, error) {
 
 	publicKey, err := jwt.ParseRSAPublicKeyFromPEM(keyData)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to make public key structure: %w", err)
 	}
 
 	rsa := func(*jwt.Token) (interface{}, error) {
@@ -91,23 +89,23 @@ func fetchPublicKey(cspLink string) ([]byte, error) {
 	u := cspLink + "/csp/gateway/am/api/auth/token-public-key"
 	resp, err := http.Get(u)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to get CSP Public key: %w", err)
 	}
 
 	m := map[string]interface{}{}
 	err = json.NewDecoder(resp.Body).Decode(&m)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to parse CSP Public key: %w", err)
 	}
 
 	pemData, ok := m["value"]
 	if !ok {
-		return nil, fmt.Errorf("cannot find validation key, value expected")
+		return nil, fmt.Errorf("public key does not contain value")
 	}
 
 	s, ok := pemData.(string)
 	if !ok {
-		return nil, fmt.Errorf("cannot find validation key, string expected for value")
+		return nil, fmt.Errorf("public key value was not in the expected format")
 	}
 
 	return []byte(s), nil
