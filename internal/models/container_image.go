@@ -7,7 +7,7 @@ type DockerImageTag struct {
 	ID                             string `json:"id,omitempty"`
 	Tag                            string `json:"tag"`
 	Type                           string `json:"type"`
-	IsUpdatedInMarketplaceRegistry bool   `json:"isupdatedinmarketplaceregistry,omitempty"`
+	IsUpdatedInMarketplaceRegistry bool   `json:"isupdatedinmarketplaceregistry"`
 	MarketplaceS3Link              string `json:"marketplaces3link,omitempty"`
 	AppCheckReportLink             string `json:"appcheckreportlink,omitempty"`
 	AppCheckSummaryPdfLink         string `json:"appchecksummarypdflink,omitempty"`

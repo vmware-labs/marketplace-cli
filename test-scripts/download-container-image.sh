@@ -19,10 +19,7 @@ IMAGES=$(mkpcli container-image list --product "${PRODUCT_SLUG}" --product-versi
 IMAGE_URL=$(echo "${IMAGES}" | jq -r .[0].dockerurlsList[0].url)
 IMAGE_TAG=$(echo "${IMAGES}" | jq -r .[0].dockerurlsList[0].imagetagsList[0].tag)
 IS_IN_MKP_REGISTRY=$(echo "${IMAGES}" | jq -r .[0].dockerurlsList[0].imagetagsList[0].isupdatedinmarketplaceregistry)
-
-while [ "${IS_IN_MKP_REGISTRY}" == "false" ] ; do
-  sleep 60
-done
+PROCESSING_ERROR=$(echo "${IMAGES}" | jq -r .[0].dockerurlsList[0].imagetagsList[0].processingerror)
 
 if [ "${IS_IN_MKP_REGISTRY}" == "true" ] ; then
   # Download the image
