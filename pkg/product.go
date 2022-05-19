@@ -30,10 +30,7 @@ func (e *VersionDoesNotExistError) Error() string {
 
 func (e *VersionDoesNotExistError) Is(otherError error) bool {
 	_, ok := otherError.(*VersionDoesNotExistError)
-	if !ok {
-		return false
-	}
-	return true
+	return ok
 }
 
 type ListProductResponse struct {
