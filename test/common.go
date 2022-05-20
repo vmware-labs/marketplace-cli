@@ -5,11 +5,16 @@ package test
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
+	"os"
 
 	"github.com/google/uuid"
 	. "github.com/onsi/gomega"
 	"github.com/vmware-labs/marketplace-cli/v2/internal/models"
+	"helm.sh/helm/v3/pkg/chart"
+	"helm.sh/helm/v3/pkg/chart/loader"
+	"helm.sh/helm/v3/pkg/chartutil"
 )
 
 func CreateFakeProduct(id, name, slug, status string) *models.Product {
@@ -64,6 +69,22 @@ func CreateFakeOVA(name, version string) *models.ProductDeploymentFile {
 		Size:          1000100,
 		DownloadCount: 20,
 	}
+}
+
+func CreateFakeChart(name string) (*chart.Chart, string, string) {
+	chartDir, err := os.MkdirTemp("", "mkpcli-test-chart")
+	Expect(err).ToNot(HaveOccurred())
+
+	chartFile, err := chartutil.Create(name, chartDir)
+	Expect(err).ToNot(HaveOccurred())
+
+	testChart, err := loader.Load(chartFile)
+	Expect(err).ToNot(HaveOccurred())
+
+	chartPath, err := chartutil.Save(testChart, chartDir)
+	Expect(err).ToNot(HaveOccurred())
+
+	return testChart, chartPath, chartDir
 }
 
 func CreateFakeContainerImage(url string, tags ...string) *models.DockerURLDetails {
@@ -139,4 +160,12 @@ func AddContainerImages(product *models.Product, version string, instructions st
 
 	product.DockerLinkVersions = append(product.DockerLinkVersions, imageList)
 	return product
+}
+
+type FailingReader struct {
+	Message string
+}
+
+func (r *FailingReader) Read(p []byte) (n int, err error) {
+	return 0, errors.New(r.Message)
 }

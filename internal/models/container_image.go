@@ -3,6 +3,11 @@
 
 package models
 
+const (
+	ImageTagTypeFixed    = "FIXED"
+	ImageTagTypeFloating = "FLOATING"
+)
+
 type DockerImageTag struct {
 	ID                             string `json:"id,omitempty"`
 	Tag                            string `json:"tag"`

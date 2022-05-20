@@ -45,19 +45,6 @@ func GetRefreshToken(cmd *cobra.Command, args []string) error {
 	return nil
 }
 
-func GetUploadCredentials(cmd *cobra.Command, args []string) error {
-	credentials, err := Marketplace.GetUploadCredentials()
-	if err != nil {
-		return err
-	}
-
-	UploadCredentials.AccessKeyID = credentials.AccessID
-	UploadCredentials.SecretAccessKey = credentials.AccessKey
-	UploadCredentials.SessionToken = credentials.SessionToken
-	UploadCredentials.Expires = credentials.Expiration
-	return nil
-}
-
 func init() {
 	rootCmd.AddCommand(AuthCmd)
 }

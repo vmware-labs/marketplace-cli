@@ -4,13 +4,10 @@
 package cmd
 
 import (
-	"errors"
 	"fmt"
-	"time"
 
 	"github.com/spf13/cobra"
 	"github.com/vmware-labs/marketplace-cli/v2/internal/models"
-	"github.com/vmware-labs/marketplace-cli/v2/pkg"
 )
 
 var (
@@ -24,7 +21,7 @@ func init() {
 	rootCmd.AddCommand(VMCmd)
 	VMCmd.AddCommand(ListVMCmd)
 	VMCmd.AddCommand(GetVMCmd)
-	VMCmd.AddCommand(AttachVMCmd)
+	VMCmd.AddCommand(OldAttachVMCmd)
 
 	ListVMCmd.Flags().StringVarP(&VMProductSlug, "product", "p", "", "Product slug (required)")
 	_ = ListVMCmd.MarkFlagRequired("product")
@@ -35,12 +32,12 @@ func init() {
 	GetVMCmd.Flags().StringVarP(&VMProductVersion, "product-version", "v", "", "Product version (default to latest version)")
 	GetVMCmd.Flags().StringVar(&vmFile, "file-id", "", "The file ID of the file to get")
 
-	AttachVMCmd.Flags().StringVarP(&VMProductSlug, "product", "p", "", "Product slug (required)")
-	_ = AttachVMCmd.MarkFlagRequired("product")
-	AttachVMCmd.Flags().StringVarP(&VMProductVersion, "product-version", "v", "", "Product version (default to latest version)")
-	AttachVMCmd.Flags().StringVar(&vmFile, "file", "", "Virtual machine file to upload (required)")
-	_ = AttachVMCmd.MarkFlagRequired("file")
-	AttachVMCmd.Flags().BoolVar(&VMCreateVersion, "create-version", false, "create the product version, if it doesn't already exist")
+	OldAttachVMCmd.Flags().StringVarP(&VMProductSlug, "product", "p", "", "Product slug (required)")
+	_ = OldAttachVMCmd.MarkFlagRequired("product")
+	OldAttachVMCmd.Flags().StringVarP(&VMProductVersion, "product-version", "v", "", "Product version (default to latest version)")
+	OldAttachVMCmd.Flags().StringVar(&vmFile, "file", "", "Virtual machine file to upload (required)")
+	_ = OldAttachVMCmd.MarkFlagRequired("file")
+	OldAttachVMCmd.Flags().BoolVar(&VMCreateVersion, "create-version", false, "create the product version, if it doesn't already exist")
 }
 
 var VMCmd = &cobra.Command{
@@ -108,58 +105,19 @@ var GetVMCmd = &cobra.Command{
 	},
 }
 
-func makeUniqueFileID() string {
-	now := time.Now().UnixNano() / int64(time.Millisecond)
-	return fmt.Sprintf("fileuploader%d.url", now)
-}
-
-var AttachVMCmd = &cobra.Command{
+var OldAttachVMCmd = &cobra.Command{
 	Use:     "attach",
 	Short:   "Upload and attach a virtual machine file (ISO or OVA)",
 	Long:    "Uploads and attaches a virtual machine file (ISO or OVA) to a product in the VMware Marketplace",
 	Args:    cobra.NoArgs,
-	PreRunE: RunSerially(GetRefreshToken, GetUploadCredentials),
+	PreRunE: GetRefreshToken,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		cmd.SilenceUsage = true
-
-		product, version, err := Marketplace.GetProductWithVersion(VMProductSlug, VMProductVersion)
-		if err != nil {
-			if errors.Is(err, &pkg.VersionDoesNotExistError{}) && VMCreateVersion {
-				version = product.NewVersion(VMProductVersion)
-			} else {
-				return err
-			}
-		}
-
-		hashString, err := pkg.Hash(vmFile, models.HashAlgoSHA1)
-		if err != nil {
-			return err
-		}
-
-		uploader := Marketplace.GetUploader(product.PublisherDetails.OrgId, UploadCredentials)
-		filename, fileUrl, err := uploader.UploadProductFile(vmFile)
-		if err != nil {
-			return err
-		}
-
-		product.PrepForUpdate()
-		product.AddFile(&models.ProductDeploymentFile{
-			Name:          filename,
-			AppVersion:    version.Number,
-			Url:           fileUrl,
-			HashAlgo:      models.HashAlgoSHA1,
-			HashDigest:    hashString,
-			IsRedirectUrl: false,
-			UniqueFileID:  makeUniqueFileID(),
-			VersionList:   []string{},
-		})
-
-		updatedProduct, err := Marketplace.PutProduct(product, version.IsNewVersion)
-		if err != nil {
-			return err
-		}
-
-		Output.PrintHeader(fmt.Sprintf("Virtual machine files for %s %s:", updatedProduct.DisplayName, version.Number))
-		return Output.RenderFiles(updatedProduct.GetFilesForVersion(version.Number))
+		cmd.PrintErrln("mkpcli vm attach has been deprecated and will be removed in the next major version. Please use mkpcli attach vm instead.")
+		AttachProductSlug = VMProductSlug
+		AttachProductVersion = VMProductVersion
+		AttachCreateVersion = VMCreateVersion
+		AttachVMFile = vmFile
+		return AttachVMCmd.RunE(cmd, args)
 	},
 }

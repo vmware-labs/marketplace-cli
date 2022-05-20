@@ -4,18 +4,9 @@
 package cmd
 
 import (
-	"errors"
 	"fmt"
-	"strings"
 
 	"github.com/spf13/cobra"
-	"github.com/vmware-labs/marketplace-cli/v2/internal/models"
-	"github.com/vmware-labs/marketplace-cli/v2/pkg"
-)
-
-const (
-	ImageTagTypeFixed    = "FIXED"
-	ImageTagTypeFloating = "FLOATING"
 )
 
 var (
@@ -25,30 +16,29 @@ var (
 	ContainerImageCreateVersion          bool
 	ImageRepository                      string
 	ImageTag                             string
-	ImageTagType                         string
 )
 
 func init() {
 	rootCmd.AddCommand(ContainerImageCmd)
 	ContainerImageCmd.AddCommand(ListContainerImageCmd)
-	ContainerImageCmd.AddCommand(AttachContainerImageCmd)
+	ContainerImageCmd.AddCommand(OldAttachContainerImageCmd)
 
 	ListContainerImageCmd.Flags().StringVarP(&ContainerImageProductSlug, "product", "p", "", "Product slug (required)")
 	_ = ListContainerImageCmd.MarkFlagRequired("product")
 	ListContainerImageCmd.Flags().StringVarP(&ContainerImageProductVersion, "product-version", "v", "", "Product version (default to latest version)")
 
-	AttachContainerImageCmd.Flags().StringVarP(&ContainerImageProductSlug, "product", "p", "", "Product slug (required)")
-	_ = AttachContainerImageCmd.MarkFlagRequired("product")
-	AttachContainerImageCmd.Flags().StringVarP(&ContainerImageProductVersion, "product-version", "v", "", "Product version (default to latest version)")
-	AttachContainerImageCmd.Flags().StringVarP(&ImageRepository, "image-repository", "r", "", "container repository")
-	_ = AttachContainerImageCmd.MarkFlagRequired("image-repository")
-	AttachContainerImageCmd.Flags().StringVar(&ImageTag, "tag", "", "container repository tag")
-	_ = AttachContainerImageCmd.MarkFlagRequired("tag")
-	AttachContainerImageCmd.Flags().StringVar(&ImageTagType, "tag-type", "", "container repository tag type (fixed or floating)")
-	_ = AttachContainerImageCmd.MarkFlagRequired("tag-type")
-	AttachContainerImageCmd.Flags().StringVarP(&ContainerImageDeploymentInstructions, "deployment-instructions", "i", "", "deployment instructions")
-	_ = AttachContainerImageCmd.MarkFlagRequired("deployment-instructions")
-	AttachContainerImageCmd.Flags().BoolVar(&ContainerImageCreateVersion, "create-version", false, "create the product version, if it doesn't already exist")
+	OldAttachContainerImageCmd.Flags().StringVarP(&ContainerImageProductSlug, "product", "p", "", "Product slug (required)")
+	_ = OldAttachContainerImageCmd.MarkFlagRequired("product")
+	OldAttachContainerImageCmd.Flags().StringVarP(&ContainerImageProductVersion, "product-version", "v", "", "Product version (default to latest version)")
+	OldAttachContainerImageCmd.Flags().StringVarP(&ImageRepository, "image-repository", "r", "", "container repository")
+	_ = OldAttachContainerImageCmd.MarkFlagRequired("image-repository")
+	OldAttachContainerImageCmd.Flags().StringVar(&ImageTag, "tag", "", "container repository tag")
+	_ = OldAttachContainerImageCmd.MarkFlagRequired("tag")
+	OldAttachContainerImageCmd.Flags().StringVar(&AttachContainerImageTagType, "tag-type", "", "container repository tag type (fixed or floating)")
+	_ = OldAttachContainerImageCmd.MarkFlagRequired("tag-type")
+	OldAttachContainerImageCmd.Flags().StringVarP(&ContainerImageDeploymentInstructions, "deployment-instructions", "i", "", "deployment instructions")
+	_ = OldAttachContainerImageCmd.MarkFlagRequired("deployment-instructions")
+	OldAttachContainerImageCmd.Flags().BoolVar(&ContainerImageCreateVersion, "create-version", false, "create the product version, if it doesn't already exist")
 }
 
 var ContainerImageCmd = &cobra.Command{
@@ -57,7 +47,7 @@ var ContainerImageCmd = &cobra.Command{
 	Short:     "List and manage container images attached to a product",
 	Long:      "List and manage container images attached to a product in the VMware Marketplace",
 	Args:      cobra.OnlyValidArgs,
-	ValidArgs: []string{ListContainerImageCmd.Use, AttachContainerImageCmd.Use},
+	ValidArgs: []string{ListContainerImageCmd.Use, OldAttachContainerImageCmd.Use},
 }
 
 var ListContainerImageCmd = &cobra.Command{
@@ -80,58 +70,20 @@ var ListContainerImageCmd = &cobra.Command{
 	},
 }
 
-var AttachContainerImageCmd = &cobra.Command{
+var OldAttachContainerImageCmd = &cobra.Command{
 	Use:     "attach",
 	Short:   "Attach a container image",
 	Long:    "Attaches a container image to a product in the VMware Marketplace",
 	Args:    cobra.NoArgs,
-	PreRunE: GetRefreshToken,
+	PreRunE: RunSerially(GetRefreshToken, ValidateTagType),
 	RunE: func(cmd *cobra.Command, args []string) error {
-		ImageTagType = strings.ToUpper(ImageTagType)
-		if ImageTagType != ImageTagTypeFixed && ImageTagType != ImageTagTypeFloating {
-			return fmt.Errorf("invalid image tag type: %s. must be either \"%s\" or \"%s\"", ImageTagType, ImageTagTypeFixed, ImageTagTypeFloating)
-		}
-
 		cmd.SilenceUsage = true
-		product, version, err := Marketplace.GetProductWithVersion(ContainerImageProductSlug, ContainerImageProductVersion)
-		if err != nil {
-			if errors.Is(err, &pkg.VersionDoesNotExistError{}) && ContainerImageCreateVersion {
-				version = product.NewVersion(ContainerImageProductVersion)
-			} else {
-				return err
-			}
-		}
-
-		product.SetDeploymentType(models.DeploymentTypesDocker)
-
-		if product.HasContainerImage(version.Number, ImageRepository, ImageTag) {
-			return fmt.Errorf("%s %s already has the tag %s:%s", ContainerImageProductSlug, version.Number, ImageRepository, ImageTag)
-		}
-
-		product.PrepForUpdate()
-		product.DockerLinkVersions = append(product.DockerLinkVersions, &models.DockerVersionList{
-			AppVersion: version.Number,
-			DockerURLs: []*models.DockerURLDetails{
-				{
-					Url: ImageRepository,
-					ImageTags: []*models.DockerImageTag{
-						{
-							Tag:  ImageTag,
-							Type: ImageTagType,
-						},
-					},
-					DeploymentInstruction: ContainerImageDeploymentInstructions,
-					DockerType:            models.DockerTypeRegistry,
-				},
-			},
-		})
-
-		updatedProduct, err := Marketplace.PutProduct(product, version.IsNewVersion)
-		if err != nil {
-			return err
-		}
-
-		Output.PrintHeader(fmt.Sprintf("Container images for %s %s:", updatedProduct.DisplayName, version.Number))
-		return Output.RenderContainerImages(updatedProduct.GetContainerImagesForVersion(version.Number))
+		cmd.PrintErrln("mkpcli container-image attach has been deprecated and will be removed in the next major version. Please use mkpcli attach image instead.")
+		AttachProductSlug = ContainerImageProductSlug
+		AttachProductVersion = ContainerImageProductVersion
+		AttachCreateVersion = ContainerImageCreateVersion
+		AttachContainerImage = ImageRepository
+		AttachContainerImageTag = ImageTag
+		return AttachContainerImageCmd.RunE(cmd, args)
 	},
 }

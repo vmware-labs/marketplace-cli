@@ -20,6 +20,15 @@ type CredentialsResponse struct {
 	Expiration   time.Time `json:"expiration"`
 }
 
+func (c *CredentialsResponse) AWSCredentials() aws.Credentials {
+	return aws.Credentials{
+		AccessKeyID:     c.AccessID,
+		SecretAccessKey: c.AccessKey,
+		SessionToken:    c.SessionToken,
+		Expires:         c.Expiration,
+	}
+}
+
 func (m *Marketplace) GetUploadCredentials() (*CredentialsResponse, error) {
 	requestURL := m.MakeURL("/aws/credentials/generate", nil)
 	requestURL.Host = m.APIHost
@@ -45,10 +54,18 @@ func (m *Marketplace) GetUploadCredentials() (*CredentialsResponse, error) {
 	return credsResponse, nil
 }
 
-func (m *Marketplace) GetUploader(orgID string, credentials aws.Credentials) internal.Uploader {
+func (m *Marketplace) GetUploader(orgID string) (internal.Uploader, error) {
 	if m.uploader == nil {
-		client := internal.NewS3Client(m.StorageRegion, credentials)
-		return internal.NewS3Uploader(m.StorageBucket, m.StorageRegion, orgID, client)
+		credentials, err := m.GetUploadCredentials()
+		if err != nil {
+			return nil, fmt.Errorf("failed to get upload credentials: %w", err)
+		}
+		client := internal.NewS3Client(m.StorageRegion, credentials.AWSCredentials())
+		return internal.NewS3Uploader(m.StorageBucket, m.StorageRegion, orgID, client), nil
 	}
-	return m.uploader
+	return m.uploader, nil
+}
+
+func (m *Marketplace) SetUploader(uploader internal.Uploader) {
+	m.uploader = uploader
 }
