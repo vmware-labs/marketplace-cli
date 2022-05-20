@@ -175,12 +175,10 @@ var SetCmd = &cobra.Command{
 		product.PrepForUpdate()
 
 		if SetOSLFile != "" {
-			err = GetUploadCredentials(cmd, args)
+			uploader, err := Marketplace.GetUploader(product.PublisherDetails.OrgId)
 			if err != nil {
 				return err
 			}
-
-			uploader := Marketplace.GetUploader(product.PublisherDetails.OrgId, UploadCredentials)
 			_, oslUrl, err := uploader.UploadMediaFile(SetOSLFile)
 			if err != nil {
 				return err

@@ -4,13 +4,10 @@
 package cmd
 
 import (
-	"errors"
 	"fmt"
-	"net/url"
 
 	"github.com/spf13/cobra"
 	"github.com/vmware-labs/marketplace-cli/v2/internal/models"
-	"github.com/vmware-labs/marketplace-cli/v2/pkg"
 )
 
 var (
@@ -26,7 +23,7 @@ func init() {
 	rootCmd.AddCommand(ChartCmd)
 	ChartCmd.AddCommand(ListChartsCmd)
 	ChartCmd.AddCommand(GetChartCmd)
-	ChartCmd.AddCommand(AttachChartCmd)
+	ChartCmd.AddCommand(OldAttachChartCmd)
 
 	ListChartsCmd.Flags().StringVarP(&ChartProductSlug, "product", "p", "", "Product slug (required)")
 	_ = ListChartsCmd.MarkFlagRequired("product")
@@ -37,20 +34,14 @@ func init() {
 	GetChartCmd.Flags().StringVarP(&ChartProductVersion, "product-version", "v", "", "Product version (default to latest version)")
 	GetChartCmd.Flags().StringVar(&ChartID, "chart-id", "", "chart ID")
 
-	AttachChartCmd.Flags().StringVarP(&ChartProductSlug, "product", "p", "", "Product slug (required)")
-	_ = AttachChartCmd.MarkFlagRequired("product")
-	AttachChartCmd.Flags().StringVarP(&ChartProductVersion, "product-version", "v", "", "Product version (default to latest version)")
-	//AttachChartCmd.Flags().StringVarP(&ChartVersion, "chart-version", "e", "", "chart version (required)")
-	//_ = AttachChartCmd.MarkFlagRequired("chart-version")
-	AttachChartCmd.Flags().StringVarP(&ChartURL, "chart", "c", "", "path to to chart, either local tgz or public URL (required)")
-	_ = AttachChartCmd.MarkFlagRequired("chart")
-	//AttachChartCmd.Flags().StringVar(&ChartRepositoryURL, "repository-url", "", "chart public repository url")
-	//_ = AttachChartCmd.MarkFlagRequired("repository-url")
-	//AttachChartCmd.Flags().StringVar(&ChartRepositoryName, "repository-name", "", "chart public repository name")
-	//_ = AttachChartCmd.MarkFlagRequired("repository-name")
-	AttachChartCmd.Flags().StringVar(&ChartReadme, "readme", "", "readme information")
-	_ = AttachChartCmd.MarkFlagRequired("readme")
-	AttachChartCmd.Flags().BoolVar(&ChartCreateVersion, "create-version", false, "create the product version, if it doesn't already exist")
+	OldAttachChartCmd.Flags().StringVarP(&ChartProductSlug, "product", "p", "", "Product slug (required)")
+	_ = OldAttachChartCmd.MarkFlagRequired("product")
+	OldAttachChartCmd.Flags().StringVarP(&ChartProductVersion, "product-version", "v", "", "Product version (default to latest version)")
+	OldAttachChartCmd.Flags().StringVarP(&ChartURL, "chart", "c", "", "path to to chart, either local tgz or public URL (required)")
+	_ = OldAttachChartCmd.MarkFlagRequired("chart")
+	OldAttachChartCmd.Flags().StringVar(&ChartReadme, "readme", "", "readme information")
+	_ = OldAttachChartCmd.MarkFlagRequired("readme")
+	OldAttachChartCmd.Flags().BoolVar(&ChartCreateVersion, "create-version", false, "create the product version, if it doesn't already exist")
 }
 
 var ChartCmd = &cobra.Command{
@@ -59,7 +50,7 @@ var ChartCmd = &cobra.Command{
 	Short:     "List and manage Helm charts attached to a product",
 	Long:      "List and manage Helm charts attached to a product in the VMware Marketplace",
 	Args:      cobra.OnlyValidArgs,
-	ValidArgs: []string{ListChartsCmd.Use, GetChartCmd.Use, AttachChartCmd.Use},
+	ValidArgs: []string{ListChartsCmd.Use, GetChartCmd.Use, OldAttachChartCmd.Use},
 }
 
 var ListChartsCmd = &cobra.Command{
@@ -116,7 +107,7 @@ var GetChartCmd = &cobra.Command{
 	},
 }
 
-var AttachChartCmd = &cobra.Command{
+var OldAttachChartCmd = &cobra.Command{
 	Use:     "attach",
 	Short:   "Attach a chart",
 	Long:    "Attaches a Helm Chart to a product in the VMware Marketplace",
@@ -124,61 +115,12 @@ var AttachChartCmd = &cobra.Command{
 	PreRunE: GetRefreshToken,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		cmd.SilenceUsage = true
-		product, version, err := Marketplace.GetProductWithVersion(ChartProductSlug, ChartProductVersion)
-		if err != nil {
-			if errors.Is(err, &pkg.VersionDoesNotExistError{}) && ChartCreateVersion {
-				version = product.NewVersion(ChartProductVersion)
-			} else {
-				return err
-			}
-		}
-
-		product.SetDeploymentType(models.DeploymentTypeHelm)
-		product.PrepForUpdate()
-
-		chartURL, err := url.Parse(ChartURL)
-		if err != nil {
-			return fmt.Errorf("failed to parse chart URL: %w", err)
-		}
-
-		var chart *models.ChartVersion
-		if chartURL.Scheme == "" || chartURL.Scheme == "file" {
-			chart, err = pkg.LoadChart(ChartURL)
-			if err != nil {
-				return err
-			}
-
-			err = GetUploadCredentials(cmd, args)
-			if err != nil {
-				return err
-			}
-
-			uploader := Marketplace.GetUploader(product.PublisherDetails.OrgId, UploadCredentials)
-			_, uploadedChartUrl, err := uploader.UploadProductFile(ChartURL)
-			if err != nil {
-				return err
-			}
-
-			chart.HelmTarUrl = uploadedChartUrl
-		} else if chartURL.Scheme == "http" || chartURL.Scheme == "https" {
-			chart, err = Marketplace.DownloadChart(chartURL)
-			if err != nil {
-				return err
-			}
-		} else {
-			return fmt.Errorf("unsupported protocol scheme: %s", chartURL.Scheme)
-		}
-
-		chart.AppVersion = version.Number
-		chart.Readme = ChartReadme
-
-		product.ChartVersions = []*models.ChartVersion{chart}
-		updatedProduct, err := Marketplace.PutProduct(product, version.IsNewVersion)
-		if err != nil {
-			return err
-		}
-
-		Output.PrintHeader(fmt.Sprintf("Charts for %s %s:", updatedProduct.DisplayName, version.Number))
-		return Output.RenderCharts(updatedProduct.GetChartsForVersion(version.Number))
+		cmd.PrintErrln("mkpcli chart attach has been deprecated and will be removed in the next major version. Please use mkpcli attach chart instead.")
+		AttachProductSlug = ChartProductSlug
+		AttachProductVersion = ChartProductVersion
+		AttachCreateVersion = ChartCreateVersion
+		AttachChartURL = ChartURL
+		AttachInstructions = ChartReadme
+		return AttachChartCmd.RunE(cmd, args)
 	},
 }

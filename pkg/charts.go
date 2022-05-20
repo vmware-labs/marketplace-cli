@@ -10,13 +10,18 @@ import (
 	"net/url"
 	"os"
 
-	"helm.sh/helm/v3/pkg/chart/loader"
-
 	"github.com/vmware-labs/marketplace-cli/v2/internal/models"
+	helmChart "helm.sh/helm/v3/pkg/chart"
+	"helm.sh/helm/v3/pkg/chart/loader"
 )
 
+//go:generate counterfeiter . ChartLoaderFunc
+type ChartLoaderFunc func(name string) (*helmChart.Chart, error)
+
+var ChartLoader ChartLoaderFunc = loader.Load
+
 func LoadChart(chartPath string) (*models.ChartVersion, error) {
-	chart, err := loader.Load(chartPath)
+	chart, err := ChartLoader(chartPath)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read chart: %w", err)
 	}
@@ -61,4 +66,42 @@ func (m *Marketplace) DownloadChart(chartURL *url.URL) (*models.ChartVersion, er
 	chart.IsExternalUrl = true
 	chart.HelmTarUrl = chartURL.String()
 	return chart, nil
+}
+
+func (m *Marketplace) AttachLocalChart(chartPath, instructions string, product *models.Product, version *models.Version) (*models.Product, error) {
+	chart, err := LoadChart(chartPath)
+	if err != nil {
+		return nil, err
+	}
+
+	uploader, err := m.GetUploader(product.PublisherDetails.OrgId)
+	if err != nil {
+		return nil, err
+	}
+	_, uploadedChartUrl, err := uploader.UploadProductFile(chartPath)
+	if err != nil {
+		return nil, err
+	}
+
+	chart.HelmTarUrl = uploadedChartUrl
+	chart.AppVersion = version.Number
+	chart.Readme = instructions
+
+	product.PrepForUpdate()
+	product.ChartVersions = []*models.ChartVersion{chart}
+	return m.PutProduct(product, version.IsNewVersion)
+}
+
+func (m *Marketplace) AttachPublicChart(chartPath *url.URL, instructions string, product *models.Product, version *models.Version) (*models.Product, error) {
+	chart, err := m.DownloadChart(chartPath)
+	if err != nil {
+		return nil, err
+	}
+
+	chart.AppVersion = version.Number
+	chart.Readme = instructions
+
+	product.PrepForUpdate()
+	product.ChartVersions = []*models.ChartVersion{chart}
+	return m.PutProduct(product, version.IsNewVersion)
 }

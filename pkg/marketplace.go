@@ -12,7 +12,6 @@ import (
 	"net/http"
 	"net/url"
 
-	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/spf13/viper"
 	"github.com/vmware-labs/marketplace-cli/v2/internal"
 	"github.com/vmware-labs/marketplace-cli/v2/internal/models"
@@ -40,11 +39,18 @@ type MarketplaceInterface interface {
 	Put(requestURL *url.URL, content io.Reader, contentType string) (*http.Response, error)
 	PutProduct(product *models.Product, versionUpdate bool) (*models.Product, error)
 
-	GetUploadCredentials() (*CredentialsResponse, error)
-	GetUploader(orgID string, credentials aws.Credentials) internal.Uploader
+	GetUploader(orgID string) (internal.Uploader, error)
+	SetUploader(uploader internal.Uploader)
 
 	Download(productId string, filename string, payload *DownloadRequestPayload) error
+
 	DownloadChart(chartURL *url.URL) (*models.ChartVersion, error)
+	AttachLocalChart(chartPath, instructions string, product *models.Product, version *models.Version) (*models.Product, error)
+	AttachPublicChart(chartPath *url.URL, instructions string, product *models.Product, version *models.Version) (*models.Product, error)
+
+	AttachPublicContainerImage(image, tag, tagType, instructions string, product *models.Product, version *models.Version) (*models.Product, error)
+
+	UploadVM(vmFile string, product *models.Product, version *models.Version) (*models.Product, error)
 }
 
 type Marketplace struct {
