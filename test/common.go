@@ -162,10 +162,14 @@ func AddContainerImages(product *models.Product, version string, instructions st
 	return product
 }
 
-type FailingReader struct {
+type FailingReadWriter struct {
 	Message string
 }
 
-func (r *FailingReader) Read(p []byte) (n int, err error) {
+func (w *FailingReadWriter) Write(p []byte) (n int, err error) {
+	return 0, errors.New(w.Message)
+}
+
+func (r *FailingReadWriter) Read(p []byte) (n int, err error) {
 	return 0, errors.New(r.Message)
 }

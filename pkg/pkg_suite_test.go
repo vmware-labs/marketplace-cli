@@ -8,12 +8,14 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"net/http"
+	"strings"
 	"testing"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/vmware-labs/marketplace-cli/v2/internal/models"
 	"github.com/vmware-labs/marketplace-cli/v2/pkg"
+	"github.com/vmware-labs/marketplace-cli/v2/test"
 )
 
 func TestPkg(t *testing.T) {
@@ -42,4 +44,33 @@ func PutProductEchoResponse(req *http.Request) (*http.Response, error) {
 		StatusCode: http.StatusOK,
 		Body:       ioutil.NopCloser(bytes.NewReader(body)),
 	}, nil
+}
+
+func MakeJSONResponse(body interface{}) *http.Response {
+	bodyBytes, err := json.Marshal(body)
+	Expect(err).ToNot(HaveOccurred())
+	return MakeBytesResponse(bodyBytes)
+}
+
+func MakeBytesResponse(body []byte) *http.Response {
+	return &http.Response{
+		StatusCode:    http.StatusOK,
+		ContentLength: int64(len(body)),
+		Body:          ioutil.NopCloser(bytes.NewReader(body)),
+	}
+}
+
+func MakeStringResponse(body string) *http.Response {
+	return &http.Response{
+		StatusCode:    http.StatusOK,
+		ContentLength: int64(len(body)),
+		Body:          ioutil.NopCloser(strings.NewReader(body)),
+	}
+}
+
+func MakeFailingBodyResponse(errorMessage string) *http.Response {
+	return &http.Response{
+		StatusCode: http.StatusOK,
+		Body:       ioutil.NopCloser(&test.FailingReadWriter{Message: errorMessage}),
+	}
 }

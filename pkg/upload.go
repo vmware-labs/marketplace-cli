@@ -61,7 +61,7 @@ func (m *Marketplace) GetUploader(orgID string) (internal.Uploader, error) {
 			return nil, fmt.Errorf("failed to get upload credentials: %w", err)
 		}
 		client := internal.NewS3Client(m.StorageRegion, credentials.AWSCredentials())
-		return internal.NewS3Uploader(m.StorageBucket, m.StorageRegion, orgID, client), nil
+		return internal.NewS3Uploader(m.StorageBucket, m.StorageRegion, orgID, client, m.Output), nil
 	}
 	return m.uploader, nil
 }

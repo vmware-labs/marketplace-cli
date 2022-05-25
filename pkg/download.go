@@ -9,9 +9,8 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
-	"time"
 
-	"github.com/schollz/progressbar/v3"
+	"github.com/vmware-labs/marketplace-cli/v2/internal"
 )
 
 type DownloadRequestPayload struct {
@@ -29,19 +28,20 @@ type DownloadRequestPayload struct {
 	MetaFileObjectID    string `json:"metafileobjectid,omitempty"`
 }
 
+type DownloadResponseBody struct {
+	PreSignedURL string `json:"presignedurl"`
+	Message      string `json:"message"`
+	StatusCode   int    `json:"statuscode"`
+}
 type DownloadResponse struct {
-	Response struct {
-		PreSignedURL string `json:"presignedurl"`
-		Message      string `json:"message"`
-		StatusCode   int    `json:"statuscode"`
-	} `json:"response"`
+	Response *DownloadResponseBody `json:"response"`
 }
 
-func (m *Marketplace) Download(productId string, filename string, payload *DownloadRequestPayload) error {
-	requestURL := m.MakeURL(fmt.Sprintf("/api/v1/products/%s/download", productId), nil)
+func (m *Marketplace) Download(filename string, payload *DownloadRequestPayload) error {
+	requestURL := m.MakeURL(fmt.Sprintf("/api/v1/products/%s/download", payload.ProductId), nil)
 	resp, err := m.PostJSON(requestURL, payload)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to get download link: %w", err)
 	}
 
 	if resp.StatusCode != http.StatusOK {
@@ -64,40 +64,24 @@ func (m *Marketplace) Download(productId string, filename string, payload *Downl
 func (m *Marketplace) downloadFile(filename string, fileDownloadURL string) error {
 	file, err := os.Create(filename)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to create file for download: %w", err)
 	}
 	defer file.Close()
 
 	req, err := http.NewRequest("GET", fileDownloadURL, nil)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to create download file request: %w", err)
 	}
 	resp, err := m.Client.Do(req)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to download file: %w", err)
 	}
 	defer resp.Body.Close()
 
-	progressBar := m.makeDownloadProgressBar(resp.ContentLength, filename)
-	_, err = io.Copy(io.MultiWriter(file, progressBar), resp.Body)
-	return err
-}
-
-func (m *Marketplace) makeDownloadProgressBar(length int64, filename string) *progressbar.ProgressBar {
-	bar := progressbar.NewOptions64(
-		length,
-		progressbar.OptionSetDescription(fmt.Sprintf("Downloading to %s", filename)),
-		progressbar.OptionSetWriter(m.Output),
-		progressbar.OptionShowBytes(true),
-		progressbar.OptionSetWidth(10),
-		progressbar.OptionThrottle(65*time.Millisecond),
-		progressbar.OptionShowCount(),
-		progressbar.OptionOnCompletion(func() {
-			_, _ = fmt.Fprintln(m.Output, "")
-		}),
-		progressbar.OptionSpinnerType(14),
-		progressbar.OptionFullWidth(),
-	)
-	_ = bar.RenderBlank()
-	return bar
+	progressBar := internal.MakeProgressBar(fmt.Sprintf("Downloading %s", filename), resp.ContentLength, m.Output)
+	_, err = io.Copy(progressBar.WrapWriter(file), resp.Body)
+	if err != nil {
+		return fmt.Errorf("failed to download file to disk: %w", err)
+	}
+	return nil
 }

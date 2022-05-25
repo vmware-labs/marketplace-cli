@@ -81,10 +81,7 @@ var _ = Describe("Charts", func() {
 			Expect(err).ToNot(HaveOccurred())
 			chartBytes, err := ioutil.ReadFile(chartArchive)
 			Expect(err).ToNot(HaveOccurred())
-
-			httpClient.DoReturns(&http.Response{
-				Body: ioutil.NopCloser(bytes.NewReader(chartBytes)),
-			}, nil)
+			httpClient.DoReturns(MakeBytesResponse(chartBytes), nil)
 		})
 
 		It("downloads a chart", func() {
@@ -116,9 +113,7 @@ var _ = Describe("Charts", func() {
 
 		When("copying the chart fails", func() {
 			BeforeEach(func() {
-				httpClient.DoReturns(&http.Response{
-					Body: ioutil.NopCloser(&FailingReader{Message: "read fail"}),
-				}, nil)
+				httpClient.DoReturns(MakeFailingBodyResponse("read fail"), nil)
 			})
 			It("returns an error", func() {
 				chartUrl, err := url.Parse("https://charts.example.com/my-chart.tgz")
@@ -316,9 +311,7 @@ var _ = Describe("Charts", func() {
 
 		When("updating the product fails", func() {
 			BeforeEach(func() {
-				httpClient.DoReturnsOnCall(0, &http.Response{
-					Body: ioutil.NopCloser(bytes.NewReader(chartBytes)),
-				}, nil)
+				httpClient.DoReturnsOnCall(0, MakeBytesResponse(chartBytes), nil)
 				httpClient.DoReturnsOnCall(1, nil, errors.New("update product failed"))
 			})
 			It("returns an error", func() {
