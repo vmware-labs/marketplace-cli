@@ -24,8 +24,8 @@ run:
       VERSION=$(cat version/version)
 
       # Upload a chart
-      mkpcli chart attach --product "${PRODUCT_SLUG}" --product-version "${VERSION}" --create-version \
-        --chart chart/*.tgz --readme "helm install it"
+      mkpcli attach chart --product "${PRODUCT_SLUG}" --product-version "${VERSION}" --create-version \
+        --chart chart/*.tgz --instructions "helm install it"
 
       # Get the list of charts
       mkpcli chart list --product "${PRODUCT_SLUG}" --product-version "${VERSION}" | grep -v "Total count: 0"

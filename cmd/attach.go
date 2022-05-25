@@ -41,7 +41,7 @@ func init() {
 	AttachChartCmd.Flags().StringVarP(&AttachProductVersion, "product-version", "v", "", "Product version (default to latest version)")
 	AttachChartCmd.Flags().StringVarP(&AttachChartURL, "chart", "c", "", "path to to chart, either local tgz or public URL (required)")
 	_ = AttachChartCmd.MarkFlagRequired("chart")
-	AttachChartCmd.Flags().StringVar(&AttachInstructions, "instructions", "", "readme information")
+	AttachChartCmd.Flags().StringVar(&AttachInstructions, "instructions", "", "chart deployment instructions")
 	_ = AttachChartCmd.MarkFlagRequired("instructions")
 	AttachChartCmd.Flags().BoolVar(&AttachCreateVersion, "create-version", false, "create the product version, if it doesn't already exist")
 
@@ -54,8 +54,8 @@ func init() {
 	_ = AttachContainerImageCmd.MarkFlagRequired("tag")
 	AttachContainerImageCmd.Flags().StringVar(&AttachContainerImageTagType, "tag-type", "", "container repository tag type (fixed or floating)")
 	_ = AttachContainerImageCmd.MarkFlagRequired("tag-type")
-	AttachContainerImageCmd.Flags().StringVarP(&AttachInstructions, "deployment-instructions", "i", "", "deployment instructions")
-	_ = AttachContainerImageCmd.MarkFlagRequired("deployment-instructions")
+	AttachContainerImageCmd.Flags().StringVarP(&AttachInstructions, "instructions", "i", "", "image deployment instructions")
+	_ = AttachContainerImageCmd.MarkFlagRequired("instructions")
 	AttachContainerImageCmd.Flags().BoolVar(&AttachCreateVersion, "create-version", false, "create the product version, if it doesn't already exist")
 
 	AttachVMCmd.Flags().StringVarP(&AttachProductSlug, "product", "p", "", "Product slug (required)")

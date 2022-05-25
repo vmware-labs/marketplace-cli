@@ -44,10 +44,10 @@ jobs:
                 - |
                   VERSION=$(cat version/version)
 
-                  mkpcli chart attach \
+                  mkpcli attach chart \
                     --product "${PRODUCT_SLUG}" \
                     --product-version "${VERSION}" --create-version \
                     --chart hyperspace-db-chart/*.tgz \
-                    --readme "helm install it"
+                    --instructions "helm install it"
                   mkpcli chart list --product "${PRODUCT_SLUG}" --product-version "${VERSION}"
 ```
