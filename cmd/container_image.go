@@ -84,6 +84,7 @@ var OldAttachContainerImageCmd = &cobra.Command{
 		AttachCreateVersion = ContainerImageCreateVersion
 		AttachContainerImage = ImageRepository
 		AttachContainerImageTag = ImageTag
+		AttachInstructions = ContainerImageDeploymentInstructions
 		return AttachContainerImageCmd.RunE(cmd, args)
 	},
 }
