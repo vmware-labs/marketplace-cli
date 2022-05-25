@@ -62,6 +62,7 @@ var DownloadCmd = &cobra.Command{
 		if DownloadFilter == "" {
 			asset = assets[0]
 			if len(assets) > 1 {
+				_ = Output.RenderAssets(assets)
 				return fmt.Errorf("product %s %s has multiple downloadable assets, please use the --filter parameter", product.Slug, version.Number)
 			}
 		} else {
@@ -72,6 +73,7 @@ var DownloadCmd = &cobra.Command{
 
 			asset = filterAssets[0]
 			if len(filterAssets) > 1 {
+				_ = Output.RenderAssets(filterAssets)
 				return fmt.Errorf("product %s %s has multiple downloadable assets that match the filter \"%s\", please adjust the --filter parameter", product.Slug, version.Number, DownloadFilter)
 			}
 		}
@@ -92,6 +94,6 @@ var DownloadCmd = &cobra.Command{
 		}
 
 		asset.DownloadRequestPayload.EulaAccepted = DownloadAcceptEULA
-		return Marketplace.Download(product.ProductId, filename, asset.DownloadRequestPayload)
+		return Marketplace.Download(filename, asset.DownloadRequestPayload)
 	},
 }

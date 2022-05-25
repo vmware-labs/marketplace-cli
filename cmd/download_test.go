@@ -11,6 +11,7 @@ import (
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/gbytes"
 	"github.com/vmware-labs/marketplace-cli/v2/cmd"
+	"github.com/vmware-labs/marketplace-cli/v2/cmd/output/outputfakes"
 	"github.com/vmware-labs/marketplace-cli/v2/internal/models"
 	"github.com/vmware-labs/marketplace-cli/v2/pkg/pkgfakes"
 	"github.com/vmware-labs/marketplace-cli/v2/test"
@@ -19,11 +20,15 @@ import (
 var _ = Describe("DownloadCmd", func() {
 	var (
 		marketplace *pkgfakes.FakeMarketplaceInterface
+		output      *outputfakes.FakeFormat
 		product     *models.Product
 		productId   string
 	)
 
 	BeforeEach(func() {
+		output = &outputfakes.FakeFormat{}
+		cmd.Output = output
+
 		productId = uuid.New().String()
 		product = test.CreateFakeProduct(productId, "My Super Product", "my-super-product", "PENDING")
 
@@ -61,8 +66,7 @@ var _ = Describe("DownloadCmd", func() {
 
 		By("downloading the asset", func() {
 			Expect(marketplace.DownloadCallCount()).To(Equal(1))
-			downloadedProductId, filename, assetPayload := marketplace.DownloadArgsForCall(0)
-			Expect(downloadedProductId).To(Equal(productId))
+			filename, assetPayload := marketplace.DownloadArgsForCall(0)
 			Expect(filename).To(Equal("my-db.ova"))
 			Expect(assetPayload.ProductId).To(Equal(productId))
 			Expect(assetPayload.AppVersion).To(Equal("1.1.1"))
@@ -109,7 +113,7 @@ var _ = Describe("DownloadCmd", func() {
 			Expect(err).ToNot(HaveOccurred())
 
 			Expect(marketplace.DownloadCallCount()).To(Equal(1))
-			_, filename, _ := marketplace.DownloadArgsForCall(0)
+			filename, _ := marketplace.DownloadArgsForCall(0)
 			Expect(filename).To(Equal("overridden-filename.ova"))
 		})
 	})
@@ -161,6 +165,12 @@ var _ = Describe("DownloadCmd", func() {
 			err := cmd.DownloadCmd.RunE(cmd.DownloadCmd, []string{""})
 			Expect(err).To(HaveOccurred())
 			Expect(err.Error()).To(Equal("product my-super-product 3.3.3 has multiple downloadable assets, please use the --filter parameter"))
+
+			By("printing the list of assets", func() {
+				Expect(output.RenderAssetsCallCount()).To(Equal(1))
+				assets := output.RenderAssetsArgsForCall(0)
+				Expect(assets).To(HaveLen(3))
+			})
 		})
 	})
 
@@ -175,8 +185,7 @@ var _ = Describe("DownloadCmd", func() {
 
 			By("downloading the chosen asset", func() {
 				Expect(marketplace.DownloadCallCount()).To(Equal(1))
-				downloadedProductId, filename, assetPayload := marketplace.DownloadArgsForCall(0)
-				Expect(downloadedProductId).To(Equal(productId))
+				filename, assetPayload := marketplace.DownloadArgsForCall(0)
 				Expect(filename).To(Equal("bbb.txt"))
 				Expect(assetPayload.ProductId).To(Equal(productId))
 				Expect(assetPayload.AppVersion).To(Equal("3.3.3"))
@@ -205,6 +214,12 @@ var _ = Describe("DownloadCmd", func() {
 				err := cmd.DownloadCmd.RunE(cmd.DownloadCmd, []string{""})
 				Expect(err).To(HaveOccurred())
 				Expect(err.Error()).To(Equal("product my-super-product 3.3.3 has multiple downloadable assets that match the filter \"txt\", please adjust the --filter parameter"))
+
+				By("printing the list of assets", func() {
+					Expect(output.RenderAssetsCallCount()).To(Equal(1))
+					assets := output.RenderAssetsArgsForCall(0)
+					Expect(assets).To(HaveLen(3))
+				})
 			})
 		})
 	})

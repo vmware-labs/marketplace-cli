@@ -6,6 +6,7 @@ package internal
 import (
 	"context"
 	"fmt"
+	"io"
 	"os"
 	"path"
 	"path/filepath"
@@ -46,6 +47,7 @@ type S3Uploader struct {
 	region string
 	orgID  string
 	client S3Client
+	output io.Writer
 }
 
 //go:generate counterfeiter . S3Client
@@ -67,12 +69,13 @@ func NewS3Client(region string, creds aws.Credentials) S3Client {
 	return s3.NewFromConfig(s3Config)
 }
 
-func NewS3Uploader(bucket, region, orgID string, client S3Client) *S3Uploader {
+func NewS3Uploader(bucket, region, orgID string, client S3Client, output io.Writer) *S3Uploader {
 	return &S3Uploader{
 		bucket: bucket,
 		orgID:  orgID,
 		region: region,
 		client: client,
+		output: output,
 	}
 }
 
@@ -102,11 +105,12 @@ func (u *S3Uploader) upload(filePath, key string, acl types.ObjectCannedACL) err
 		return fmt.Errorf("failed to get info for %s: %w", filePath, err)
 	}
 
+	progressBar := MakeProgressBar(fmt.Sprintf("Uploading %s", path.Base(file.Name())), stat.Size(), u.output)
 	_, err = u.client.PutObject(context.Background(), &s3.PutObjectInput{
 		ACL:           acl,
 		Bucket:        aws.String(u.bucket),
 		Key:           aws.String(key),
-		Body:          file,
+		Body:          progressBar.WrapReader(file),
 		ContentLength: stat.Size(),
 	})
 	if err != nil {

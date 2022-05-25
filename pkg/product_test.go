@@ -22,14 +22,6 @@ import (
 	"github.com/vmware-labs/marketplace-cli/v2/test"
 )
 
-type FailingReader struct {
-	Message string
-}
-
-func (r *FailingReader) Read(p []byte) (n int, err error) {
-	return 0, errors.New(r.Message)
-}
-
 var _ = Describe("Product", func() {
 	var (
 		stderr      *Buffer
@@ -75,13 +67,7 @@ var _ = Describe("Product", func() {
 					Message:    "testing",
 				},
 			}
-			responseBytes, err := json.Marshal(response)
-			Expect(err).ToNot(HaveOccurred())
-
-			httpClient.DoReturns(&http.Response{
-				StatusCode: http.StatusOK,
-				Body:       ioutil.NopCloser(bytes.NewReader(responseBytes)),
-			}, nil)
+			httpClient.DoReturns(MakeJSONResponse(response), nil)
 		})
 
 		It("gets the list of products", func() {
@@ -157,21 +143,8 @@ var _ = Describe("Product", func() {
 						Message: "testing",
 					},
 				}
-				responseBytes, err := json.Marshal(response1)
-				Expect(err).ToNot(HaveOccurred())
-
-				httpClient.DoReturnsOnCall(0, &http.Response{
-					StatusCode: http.StatusOK,
-					Body:       ioutil.NopCloser(bytes.NewReader(responseBytes)),
-				}, nil)
-
-				responseBytes, err = json.Marshal(response2)
-				Expect(err).ToNot(HaveOccurred())
-
-				httpClient.DoReturnsOnCall(1, &http.Response{
-					StatusCode: http.StatusOK,
-					Body:       ioutil.NopCloser(bytes.NewReader(responseBytes)),
-				}, nil)
+				httpClient.DoReturnsOnCall(0, MakeJSONResponse(response1), nil)
+				httpClient.DoReturnsOnCall(1, MakeJSONResponse(response2), nil)
 			})
 
 			It("returns all results", func() {
@@ -199,7 +172,7 @@ var _ = Describe("Product", func() {
 
 		Context("Error fetching products", func() {
 			BeforeEach(func() {
-				httpClient.DoReturns(nil, fmt.Errorf("request failed"))
+				httpClient.DoReturns(nil, errors.New("request failed"))
 			})
 
 			It("prints the error", func() {
@@ -227,10 +200,7 @@ var _ = Describe("Product", func() {
 
 		Context("Un-parsable response", func() {
 			BeforeEach(func() {
-				httpClient.DoReturns(&http.Response{
-					StatusCode: http.StatusOK,
-					Body:       ioutil.NopCloser(strings.NewReader("This totally isn't a valid response")),
-				}, nil)
+				httpClient.DoReturns(MakeStringResponse("This totally isn't a valid response"), nil)
 			})
 
 			It("prints the error", func() {
@@ -257,13 +227,7 @@ var _ = Describe("Product", func() {
 				},
 			}
 
-			responseBytes, err := json.Marshal(response)
-			Expect(err).ToNot(HaveOccurred())
-
-			httpClient.DoReturns(&http.Response{
-				StatusCode: http.StatusOK,
-				Body:       ioutil.NopCloser(bytes.NewReader(responseBytes)),
-			}, nil)
+			httpClient.DoReturns(MakeJSONResponse(response), nil)
 		})
 
 		It("gets the product", func() {
@@ -298,7 +262,7 @@ var _ = Describe("Product", func() {
 
 		Context("Error fetching product", func() {
 			BeforeEach(func() {
-				httpClient.DoReturns(nil, fmt.Errorf("request failed"))
+				httpClient.DoReturns(nil, errors.New("request failed"))
 			})
 
 			It("prints the error", func() {
@@ -326,10 +290,7 @@ var _ = Describe("Product", func() {
 
 		Context("Un-parsable response", func() {
 			BeforeEach(func() {
-				httpClient.DoReturns(&http.Response{
-					StatusCode: http.StatusOK,
-					Body:       ioutil.NopCloser(strings.NewReader("This totally isn't a valid response")),
-				}, nil)
+				httpClient.DoReturns(MakeStringResponse("This totally isn't a valid response"), nil)
 			})
 
 			It("prints the error", func() {
@@ -362,13 +323,7 @@ var _ = Describe("Product", func() {
 				},
 			}
 
-			responseBytes, err := json.Marshal(response)
-			Expect(err).ToNot(HaveOccurred())
-
-			httpClient.DoReturnsOnCall(0, &http.Response{
-				StatusCode: http.StatusOK,
-				Body:       ioutil.NopCloser(bytes.NewReader(responseBytes)),
-			}, nil)
+			httpClient.DoReturnsOnCall(0, MakeJSONResponse(response), nil)
 
 			versionSpecificDetails := &pkg.VersionSpecificDetailsPayloadResponse{
 				Response: &pkg.VersionSpecificDetailsPayload{
@@ -383,13 +338,7 @@ var _ = Describe("Product", func() {
 				},
 			}
 
-			versionSpecificDetailsResponseBytes, err := json.Marshal(versionSpecificDetails)
-			Expect(err).ToNot(HaveOccurred())
-
-			httpClient.DoReturnsOnCall(1, &http.Response{
-				StatusCode: http.StatusOK,
-				Body:       ioutil.NopCloser(bytes.NewReader(versionSpecificDetailsResponseBytes)),
-			}, nil)
+			httpClient.DoReturnsOnCall(1, MakeJSONResponse(versionSpecificDetails), nil)
 		})
 
 		It("returns the product with version specific details", func() {
@@ -493,10 +442,7 @@ var _ = Describe("Product", func() {
 		})
 		Context("version specific details returns bad data", func() {
 			BeforeEach(func() {
-				httpClient.DoReturnsOnCall(1, &http.Response{
-					StatusCode: http.StatusOK,
-					Body:       ioutil.NopCloser(&FailingReader{"bad response body"}),
-				}, nil)
+				httpClient.DoReturnsOnCall(1, MakeFailingBodyResponse("bad response body"), nil)
 			})
 
 			It("returns an error", func() {
@@ -507,10 +453,7 @@ var _ = Describe("Product", func() {
 		})
 		Context("version specific details returns malformed json", func() {
 			BeforeEach(func() {
-				httpClient.DoReturnsOnCall(1, &http.Response{
-					StatusCode: http.StatusOK,
-					Body:       ioutil.NopCloser(bytes.NewReader([]byte("}}} this is bad json! {{{"))),
-				}, nil)
+				httpClient.DoReturnsOnCall(1, MakeBytesResponse([]byte("}}} this is bad json! {{{")), nil)
 			})
 
 			It("returns an error", func() {

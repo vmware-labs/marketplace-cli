@@ -42,7 +42,7 @@ type MarketplaceInterface interface {
 	GetUploader(orgID string) (internal.Uploader, error)
 	SetUploader(uploader internal.Uploader)
 
-	Download(productId string, filename string, payload *DownloadRequestPayload) error
+	Download(filename string, payload *DownloadRequestPayload) error
 
 	DownloadChart(chartURL *url.URL) (*models.ChartVersion, error)
 	AttachLocalChart(chartPath, instructions string, product *models.Product, version *models.Version) (*models.Product, error)

@@ -75,12 +75,11 @@ type FakeMarketplaceInterface struct {
 	decodeJsonReturnsOnCall map[int]struct {
 		result1 error
 	}
-	DownloadStub        func(string, string, *pkg.DownloadRequestPayload) error
+	DownloadStub        func(string, *pkg.DownloadRequestPayload) error
 	downloadMutex       sync.RWMutex
 	downloadArgsForCall []struct {
 		arg1 string
-		arg2 string
-		arg3 *pkg.DownloadRequestPayload
+		arg2 *pkg.DownloadRequestPayload
 	}
 	downloadReturns struct {
 		result1 error
@@ -561,20 +560,19 @@ func (fake *FakeMarketplaceInterface) DecodeJsonReturnsOnCall(i int, result1 err
 	}{result1}
 }
 
-func (fake *FakeMarketplaceInterface) Download(arg1 string, arg2 string, arg3 *pkg.DownloadRequestPayload) error {
+func (fake *FakeMarketplaceInterface) Download(arg1 string, arg2 *pkg.DownloadRequestPayload) error {
 	fake.downloadMutex.Lock()
 	ret, specificReturn := fake.downloadReturnsOnCall[len(fake.downloadArgsForCall)]
 	fake.downloadArgsForCall = append(fake.downloadArgsForCall, struct {
 		arg1 string
-		arg2 string
-		arg3 *pkg.DownloadRequestPayload
-	}{arg1, arg2, arg3})
+		arg2 *pkg.DownloadRequestPayload
+	}{arg1, arg2})
 	stub := fake.DownloadStub
 	fakeReturns := fake.downloadReturns
-	fake.recordInvocation("Download", []interface{}{arg1, arg2, arg3})
+	fake.recordInvocation("Download", []interface{}{arg1, arg2})
 	fake.downloadMutex.Unlock()
 	if stub != nil {
-		return stub(arg1, arg2, arg3)
+		return stub(arg1, arg2)
 	}
 	if specificReturn {
 		return ret.result1
@@ -588,17 +586,17 @@ func (fake *FakeMarketplaceInterface) DownloadCallCount() int {
 	return len(fake.downloadArgsForCall)
 }
 
-func (fake *FakeMarketplaceInterface) DownloadCalls(stub func(string, string, *pkg.DownloadRequestPayload) error) {
+func (fake *FakeMarketplaceInterface) DownloadCalls(stub func(string, *pkg.DownloadRequestPayload) error) {
 	fake.downloadMutex.Lock()
 	defer fake.downloadMutex.Unlock()
 	fake.DownloadStub = stub
 }
 
-func (fake *FakeMarketplaceInterface) DownloadArgsForCall(i int) (string, string, *pkg.DownloadRequestPayload) {
+func (fake *FakeMarketplaceInterface) DownloadArgsForCall(i int) (string, *pkg.DownloadRequestPayload) {
 	fake.downloadMutex.RLock()
 	defer fake.downloadMutex.RUnlock()
 	argsForCall := fake.downloadArgsForCall[i]
-	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3
+	return argsForCall.arg1, argsForCall.arg2
 }
 
 func (fake *FakeMarketplaceInterface) DownloadReturns(result1 error) {
