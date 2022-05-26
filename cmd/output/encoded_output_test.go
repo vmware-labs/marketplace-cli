@@ -55,7 +55,7 @@ var _ = Describe("EncodedOutput", func() {
 
 				err := encodedOutput.Print(data)
 				Expect(err).ToNot(HaveOccurred())
-				Expect(writer).To(Say("a: some data\nawesome: true\nmismatchedkey:\n- 1\n- 2\n- 3\n"))
+				Expect(writer).To(Say("a: some data\nawesome: true\nmismatchedkey:\n    - 1\n    - 2\n    - 3\n"))
 			})
 		})
 
