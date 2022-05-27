@@ -49,5 +49,5 @@ jobs:
                     --product-version "${VERSION}" --create-version \
                     --chart hyperspace-db-chart/*.tgz \
                     --instructions "helm install it"
-                  mkpcli chart list --product "${PRODUCT_SLUG}" --product-version "${VERSION}"
+                  mkpcli product list-assets --type chart --product "${PRODUCT_SLUG}" --product-version "${VERSION}"
 ```

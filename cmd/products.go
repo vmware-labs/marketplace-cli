@@ -5,23 +5,42 @@ package cmd
 
 import (
 	"fmt"
+	"sort"
+	"strings"
 
 	"github.com/spf13/cobra"
 	"github.com/vmware-labs/marketplace-cli/v2/internal/models"
+	"github.com/vmware-labs/marketplace-cli/v2/pkg"
 )
 
 var (
-	allOrgs        = false
-	searchTerm     string
-	ProductSlug    string
-	ProductVersion string
-	SetOSLFile     string
+	allOrgs          = false
+	searchTerm       string
+	ProductSlug      string
+	ProductVersion   string
+	ListAssetsByType string
+	SetOSLFile       string
+	typeMapping      = map[string]string{
+		"chart":    pkg.AssetTypeChart,
+		"image":    pkg.AssetTypeContainerImage,
+		"metafile": pkg.AssetTypeMetaFile,
+		"vm":       pkg.AssetTypeVM,
+	}
+	assetTypesList string
 )
 
 func init() {
+	var assetTypes []string
+	for assetType := range typeMapping {
+		assetTypes = append(assetTypes, assetType)
+	}
+	sort.Strings(assetTypes)
+	assetTypesList = strings.Join(assetTypes, ", ")
+
 	rootCmd.AddCommand(ProductCmd)
 	ProductCmd.AddCommand(ListProductsCmd)
 	ProductCmd.AddCommand(GetProductCmd)
+	ProductCmd.AddCommand(ListAssetsCmd)
 	ProductCmd.AddCommand(ListProductVersionsCmd)
 	ProductCmd.AddCommand(SetCmd)
 
@@ -31,6 +50,11 @@ func init() {
 	GetProductCmd.Flags().StringVarP(&ProductSlug, "product", "p", "", "Product slug (required)")
 	_ = GetProductCmd.MarkFlagRequired("product")
 	GetProductCmd.Flags().StringVarP(&ProductVersion, "product-version", "v", "", "Product version")
+
+	ListAssetsCmd.Flags().StringVarP(&ProductSlug, "product", "p", "", "Product slug (required)")
+	_ = ListAssetsCmd.MarkFlagRequired("product")
+	ListAssetsCmd.Flags().StringVarP(&ProductVersion, "product-version", "v", "", "Product version")
+	ListAssetsCmd.Flags().StringVarP(&ListAssetsByType, "type", "t", "", fmt.Sprintf("Filter assets by type, one of (%s)", assetTypesList))
 
 	ListProductVersionsCmd.Flags().StringVarP(&ProductSlug, "product", "p", "", "Product slug (required)")
 	_ = ListProductVersionsCmd.MarkFlagRequired("product")
@@ -105,35 +129,40 @@ var GetProductCmd = &cobra.Command{
 	},
 }
 
-var AddProductVersionCmd = &cobra.Command{
-	Use:     "add-version",
-	Short:   "Add a new version",
-	Long:    "Adds a new version to the given product",
+func ValidateAssetTypeFilter(cmd *cobra.Command, args []string) error {
+	if ListAssetsByType == "" {
+		return nil
+	}
+	if typeMapping[ListAssetsByType] != "" {
+		return nil
+	}
+	return fmt.Errorf("Unknown asset type: %s\nPlease use one of %s", ListAssetsByType, assetTypesList)
+}
+
+var ListAssetsCmd = &cobra.Command{
+	Use:     "list-assets",
+	Short:   "List attached assets",
+	Long:    "Print the list of assets attached to the given product",
 	Args:    cobra.NoArgs,
-	PreRunE: GetRefreshToken,
+	PreRunE: RunSerially(ValidateAssetTypeFilter, GetRefreshToken),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		cmd.SilenceUsage = true
-
-		product, err := Marketplace.GetProduct(ProductSlug)
+		product, version, err := Marketplace.GetProductWithVersion(ProductSlug, ProductVersion)
 		if err != nil {
 			return err
 		}
 
-		if product.HasVersion(ProductVersion) {
-			return fmt.Errorf("product \"%s\" already has version %s", ProductSlug, ProductVersion)
-		}
-		product.Versions = append(product.AllVersions, &models.Version{
-			Number: ProductVersion,
-		})
-
-		product.PrepForUpdate()
-		updatedProduct, err := Marketplace.PutProduct(product, true)
-		if err != nil {
-			return err
+		var assets []*pkg.Asset
+		if ListAssetsByType == "" {
+			assets = pkg.GetAssets(product, version.Number)
+			Output.PrintHeader(fmt.Sprintf("Assets for for %s %s:", product.DisplayName, version.Number))
+		} else {
+			assetType := typeMapping[ListAssetsByType]
+			assets = pkg.GetAssetsByType(assetType, product, version.Number)
+			Output.PrintHeader(fmt.Sprintf("%s assets for for %s %s:", assetType, product.DisplayName, version.Number))
 		}
 
-		Output.PrintHeader(fmt.Sprintf("Versions for %s:", updatedProduct.DisplayName))
-		return Output.RenderVersions(updatedProduct)
+		return Output.RenderAssets(assets)
 	},
 }
 

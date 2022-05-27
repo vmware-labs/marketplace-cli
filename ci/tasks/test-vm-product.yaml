@@ -29,4 +29,4 @@ run:
         --file "${VM_FILE}"
 
       # Get the list of virtual machine files
-      mkpcli vm list --product "${PRODUCT_SLUG}" --product-version "${VERSION}" | grep -v "Total count: 0"
+      mkpcli product list-assets --type vm --product "${PRODUCT_SLUG}" --product-version "${VERSION}" | grep $(basename "$VM_FILE")

@@ -61,6 +61,7 @@ var ListChartsCmd = &cobra.Command{
 	PreRunE: GetRefreshToken,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		cmd.SilenceUsage = true
+		cmd.PrintErrln("mkpcli chart list has been deprecated and will be removed in the next major version. Please use mkpcli product list-assets --type chart instead.")
 		product, version, err := Marketplace.GetProductWithVersion(ChartProductSlug, ChartProductVersion)
 		if err != nil {
 			return err

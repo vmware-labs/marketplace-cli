@@ -15,11 +15,12 @@ if [ -z "${PRODUCT_VERSION}" ] ; then
 fi
 
 # Get the name for the first vm
-FILES=$(mkpcli vm list --product "${PRODUCT_SLUG}" --product-version "${PRODUCT_VERSION}" --output json)
-NAME=$(echo "${FILES}" | jq -r .[0].name)
-STATUS=$(echo "${FILES}" | jq -r .[0].status)
+ASSETS=$(mkpcli product list-assets --type vm --product "${PRODUCT_SLUG}" --product-version "${PRODUCT_VERSION}" --output json)
+NAME=$(echo "${ASSETS}" | jq -r .[0].displayname)
+DOWNLOADABLE=$(echo "${ASSETS}" | jq -r .[0].downloadable)
+ERROR=$(echo "${ASSETS}" | jq -r .[0].error)
 
-if [ "${STATUS}" == "APPROVAL_PENDING" ] || [ "${STATUS}" == "ACTIVE" ] ; then
+if [ "${DOWNLOADABLE}" == "true" ]; then
   mkpcli download --product "${PRODUCT_SLUG}" --product-version "${PRODUCT_VERSION}" \
     --filter "${NAME}" \
     --filename my-file \
@@ -29,11 +30,7 @@ if [ "${STATUS}" == "APPROVAL_PENDING" ] || [ "${STATUS}" == "ACTIVE" ] ; then
   test -f my-file
 
   rm -f my-file
-elif [ "${STATUS}" == "INACTIVE" ] ; then
-  echo "VM file is not downloadable"
-  echo "${FILES}" | jq -r .[0].comment
-  exit 1
 else
-  echo "Unknown status"
+  echo "VM file is not downloadable: ${ERROR}"
   exit 1
 fi

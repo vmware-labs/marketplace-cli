@@ -28,4 +28,4 @@ run:
         --chart chart/*.tgz --instructions "helm install it"
 
       # Get the list of charts
-      mkpcli chart list --product "${PRODUCT_SLUG}" --product-version "${VERSION}" | grep -v "Total count: 0"
+      mkpcli product list-assets --type chart --product "${PRODUCT_SLUG}" --product-version "${VERSION}" | grep $(basename -s .tgz chart/*.tgz) 

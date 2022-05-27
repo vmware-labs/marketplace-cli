@@ -3,6 +3,10 @@
 
 package models
 
+import (
+	"encoding/json"
+)
+
 type ProductDeploymentFile struct {
 	Id              string   `json:"id,omitempty"` // uuid
 	Name            string   `json:"name,omitempty"`
@@ -55,4 +59,22 @@ func (product *Product) GetFile(fileId string) *ProductDeploymentFile {
 
 func (product *Product) AddFile(file *ProductDeploymentFile) {
 	product.ProductDeploymentFiles = append(product.ProductDeploymentFiles, file)
+}
+
+func (f *ProductDeploymentFile) CalculateSize() int64 {
+	if f.Size > 0 {
+		return f.Size
+	}
+
+	details := &ProductItemDetails{}
+	err := json.Unmarshal([]byte(f.ItemJson), details)
+	if err != nil {
+		return 0
+	}
+
+	var size int64 = 0
+	for _, file := range details.Files {
+		size += int64(file.Size)
+	}
+	return size
 }

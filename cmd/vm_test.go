@@ -8,6 +8,7 @@ import (
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	"github.com/onsi/gomega/gbytes"
 	"github.com/vmware-labs/marketplace-cli/v2/cmd"
 	"github.com/vmware-labs/marketplace-cli/v2/cmd/output/outputfakes"
 	"github.com/vmware-labs/marketplace-cli/v2/internal/models"
@@ -45,6 +46,7 @@ var _ = Describe("Virtual Machines", func() {
 				"PENDING")
 			test.AddVerions(product, "1.2.3", "2.3.4")
 			product.ProductDeploymentFiles = append(product.ProductDeploymentFiles, test.CreateFakeOVA("fake-ova", "1.2.3"))
+			cmd.ListVMCmd.SetErr(gbytes.NewBuffer())
 		})
 
 		It("outputs the vm files", func() {
