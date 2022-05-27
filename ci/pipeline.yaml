@@ -335,6 +335,8 @@ jobs:
           - get: version
             passed: [build]
           - get: test-container-image
+            params:
+              format: oci
       - task: get-current-product
         image: mkpcli
         params:
