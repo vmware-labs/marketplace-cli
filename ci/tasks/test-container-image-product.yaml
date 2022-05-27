@@ -10,6 +10,7 @@ params:
   PRODUCT_SLUG:
   TEST_IMAGE_REPO:
   TEST_IMAGE_TAG:
+  TEST_IMAGE_FILE:
   MKPCLI_DEBUG: true
   MKPCLI_DEBUG_REQUEST_PAYLOADS: true
 
@@ -24,10 +25,18 @@ run:
       set -ex
       VERSION=$(cat version/version)
 
-      # Upload a docker image
-      mkpcli attach image --product "${PRODUCT_SLUG}" --product-version "${VERSION}" --create-version \
-        --image-repository "${TEST_IMAGE_REPO}" --tag "${TEST_IMAGE_TAG}" --tag-type FIXED \
-        --instructions "docker run ${TEST_IMAGE_REPO}:${TEST_IMAGE_TAG}"
+      if [ -z "${TEST_IMAGE_FILE}" ]; then
+        # Attach a public container image
+        mkpcli attach image --product "${PRODUCT_SLUG}" --product-version "${VERSION}" --create-version \
+          --image-repository "${TEST_IMAGE_REPO}" --tag "${TEST_IMAGE_TAG}" --tag-type FIXED \
+          --instructions "docker run ${TEST_IMAGE_REPO}:${TEST_IMAGE_TAG}"
+      else
+        # Attach a local container image
+        mkpcli attach image --product "${PRODUCT_SLUG}" --product-version "${VERSION}" --create-version \
+          --image-repository "${TEST_IMAGE_REPO}" --file "${TEST_IMAGE_FILE}" \
+          --tag "${TEST_IMAGE_TAG}" --tag-type FIXED \
+          --instructions "docker run ${TEST_IMAGE_REPO}:${TEST_IMAGE_TAG}"
+      fi
 
       # Get the list of container images
       mkpcli container-image list --product "${PRODUCT_SLUG}" --product-version "${VERSION}" | grep "${TEST_IMAGE_REPO} *${TEST_IMAGE_TAG}"

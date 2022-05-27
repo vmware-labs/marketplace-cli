@@ -48,6 +48,7 @@ type MarketplaceInterface interface {
 	AttachLocalChart(chartPath, instructions string, product *models.Product, version *models.Version) (*models.Product, error)
 	AttachPublicChart(chartPath *url.URL, instructions string, product *models.Product, version *models.Version) (*models.Product, error)
 
+	AttachLocalContainerImage(imageFile, image, tag, tagType, instructions string, product *models.Product, version *models.Version) (*models.Product, error)
 	AttachPublicContainerImage(image, tag, tagType, instructions string, product *models.Product, version *models.Version) (*models.Product, error)
 
 	UploadVM(vmFile string, product *models.Product, version *models.Version) (*models.Product, error)

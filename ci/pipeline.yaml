@@ -88,6 +88,15 @@ resources:
       repository: marketplace-cli
       access_token: ((github.access_token))
 
+  - name: test-container-image
+    type: registry-image
+    icon: docker
+    source:
+      repository: harbor-repo.vmware.com/dockerhub-proxy-cache/library/ubuntu
+      tag: 20.04
+      username: ((harbor.username))
+      password: ((harbor.token))
+
   - name: test-container-product-version
     type: semver
     icon: gitlab
@@ -316,6 +325,7 @@ jobs:
     max_in_flight: 1
     plan:
       - in_parallel:
+          - get: test-container-image
           - get: test-container-product-version
             params: { bump: patch }
           - get: mkpcli
@@ -352,8 +362,9 @@ jobs:
         params:
           MARKETPLACE_ENV: staging
           PRODUCT_SLUG: test-container-product-41
-          TEST_IMAGE_REPO: bitnami/nginx
-          TEST_IMAGE_TAG: 1.21.6
+          TEST_IMAGE_REPO: ubuntu
+          TEST_IMAGE_TAG: 20.04
+          TEST_IMAGE_FILE: test-container-image/image.tar
       - task: set-osl
         image: mkpcli
         file: source/ci/tasks/set-osl-file.yaml

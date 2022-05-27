@@ -282,7 +282,10 @@ var _ = Describe("AttachCmd", func() {
 			test.AddVerions(updatedProduct, "1.1.1")
 			nginx := test.CreateFakeContainerImage("nginx", "1.21.6")
 			test.AddContainerImages(updatedProduct, "1.1.1", "docker run it", nginx)
+			marketplace.AttachLocalContainerImageReturns(updatedProduct, nil)
 			marketplace.AttachPublicContainerImageReturns(updatedProduct, nil)
+
+			cmd.AttachContainerImageFile = ""
 		})
 
 		It("attaches the container image", func() {
@@ -302,7 +305,7 @@ var _ = Describe("AttachCmd", func() {
 				Expect(version).To(Equal("1.1.1"))
 			})
 
-			By("uploading the vm", func() {
+			By("attaching the container image", func() {
 				Expect(marketplace.AttachPublicContainerImageCallCount()).To(Equal(1))
 				image, tag, tagType, instructions, product, version := marketplace.AttachPublicContainerImageArgsForCall(0)
 				Expect(image).To(Equal("bitnami/nginx"))
@@ -326,6 +329,33 @@ var _ = Describe("AttachCmd", func() {
 				Expect(images[0].DockerURLs[0].Url).To(Equal("nginx"))
 				Expect(images[0].DockerURLs[0].ImageTags[0].Tag).To(Equal("1.21.6"))
 				Expect(images[0].DockerURLs[0].ImageTags[0].Type).To(Equal("FIXED"))
+			})
+		})
+
+		Context("local image file", func() {
+			It("uploads and attaches the container image", func() {
+				cmd.AttachProductSlug = "my-super-product"
+				cmd.AttachProductVersion = "1.1.1"
+				cmd.AttachContainerImage = "bitnami/nginx"
+				cmd.AttachContainerImageFile = "/path/tp/image.tar"
+				cmd.AttachContainerImageTag = "1.21.6"
+				cmd.AttachContainerImageTagType = "FIXED"
+				cmd.AttachInstructions = "docker run it"
+				err := cmd.AttachContainerImageCmd.RunE(cmd.DownloadCmd, []string{""})
+				Expect(err).ToNot(HaveOccurred())
+
+				By("uploadings and attaching the container image", func() {
+					Expect(marketplace.AttachLocalContainerImageCallCount()).To(Equal(1))
+					imageFile, image, tag, tagType, instructions, product, version := marketplace.AttachLocalContainerImageArgsForCall(0)
+					Expect(imageFile).To(Equal("/path/tp/image.tar"))
+					Expect(image).To(Equal("bitnami/nginx"))
+					Expect(tag).To(Equal("1.21.6"))
+					Expect(tagType).To(Equal("FIXED"))
+					Expect(instructions).To(Equal("docker run it"))
+					Expect(product.Slug).To(Equal("my-super-product"))
+					Expect(version.Number).To(Equal("1.1.1"))
+					Expect(version.IsNewVersion).To(BeFalse())
+				})
 			})
 		})
 
@@ -388,7 +418,7 @@ var _ = Describe("AttachCmd", func() {
 
 		When("attaching the container image fails", func() {
 			BeforeEach(func() {
-				marketplace.AttachPublicContainerImageReturns(nil, errors.New("upload vm failed"))
+				marketplace.AttachPublicContainerImageReturns(nil, errors.New("attach container image failed"))
 			})
 			It("returns an error", func() {
 				cmd.AttachProductSlug = "my-super-product"
@@ -399,7 +429,7 @@ var _ = Describe("AttachCmd", func() {
 				cmd.AttachInstructions = "docker run it"
 				err := cmd.AttachContainerImageCmd.RunE(cmd.DownloadCmd, []string{""})
 				Expect(err).To(HaveOccurred())
-				Expect(err.Error()).To(Equal("upload vm failed"))
+				Expect(err.Error()).To(Equal("attach container image failed"))
 			})
 		})
 
