@@ -57,6 +57,7 @@ var ListVMCmd = &cobra.Command{
 	PreRunE: GetRefreshToken,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		cmd.SilenceUsage = true
+		cmd.PrintErrln("mkpcli vm list has been deprecated and will be removed in the next major version. Please use mkpcli product list-assets --type vm instead.")
 
 		product, version, err := Marketplace.GetProductWithVersion(VMProductSlug, VMProductVersion)
 		if err != nil {

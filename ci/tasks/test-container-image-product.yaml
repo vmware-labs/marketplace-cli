@@ -40,4 +40,4 @@ run:
       fi
 
       # Get the list of container images
-      mkpcli container-image list --product "${PRODUCT_SLUG}" --product-version "${VERSION}" | grep "${TEST_IMAGE_REPO} *${TEST_IMAGE_TAG}"
+      mkpcli product list-assets --type image --product "${PRODUCT_SLUG}" --product-version "${VERSION}" | grep "${TEST_IMAGE_REPO}:${TEST_IMAGE_TAG}"

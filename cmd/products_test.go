@@ -148,6 +148,81 @@ var _ = Describe("Products", func() {
 		})
 	})
 
+	Describe("ValidateAssetTypeFilter", func() {
+		It("allows valid asset types", func() {
+			cmd.ListAssetsByType = "chart"
+			Expect(cmd.ValidateAssetTypeFilter(nil, nil)).To(Succeed())
+			cmd.ListAssetsByType = "image"
+			Expect(cmd.ValidateAssetTypeFilter(nil, nil)).To(Succeed())
+			cmd.ListAssetsByType = "metafile"
+			Expect(cmd.ValidateAssetTypeFilter(nil, nil)).To(Succeed())
+			cmd.ListAssetsByType = "vm"
+			Expect(cmd.ValidateAssetTypeFilter(nil, nil)).To(Succeed())
+		})
+
+		When("an invalid asset type is used", func() {
+			It("returns an error", func() {
+				cmd.ListAssetsByType = "dogfood"
+				err := cmd.ValidateAssetTypeFilter(nil, nil)
+				Expect(err).To(HaveOccurred())
+				Expect(err.Error()).To(Equal("Unknown asset type: dogfood\nPlease use one of chart, image, metafile, vm"))
+			})
+		})
+	})
+
+	Describe("ListAssetsCmd", func() {
+		var product *models.Product
+		BeforeEach(func() {
+			product = test.CreateFakeProduct("", "Hyperspace Database", "hyperspace-database", "PENDING")
+			version := &models.Version{Number: "1"}
+			test.AddVerions(product, "1")
+			vm := test.CreateFakeOVA("hyperspace-database.ova", "1")
+			product.ProductDeploymentFiles = append(product.ProductDeploymentFiles, vm)
+
+			metafile := test.CreateFakeMetaFile("deploy.sh", "0.0.1", "1")
+			product.MetaFiles = append(product.MetaFiles, metafile)
+
+			marketplace.GetProductWithVersionReturns(product, version, nil)
+		})
+
+		It("outputs the list of assets", func() {
+			cmd.ProductSlug = "my-super-product"
+			cmd.ProductVersion = "1"
+			cmd.ListAssetsByType = ""
+			err := cmd.ListAssetsCmd.RunE(cmd.ListAssetsCmd, []string{})
+			Expect(err).ToNot(HaveOccurred())
+
+			By("getting the product from the Marketplace", func() {
+				Expect(marketplace.GetProductWithVersionCallCount()).To(Equal(1))
+				slug, version := marketplace.GetProductWithVersionArgsForCall(0)
+				Expect(slug).To(Equal("my-super-product"))
+				Expect(version).To(Equal("1"))
+			})
+
+			By("outputting the response", func() {
+				Expect(output.RenderAssetsCallCount()).To(Equal(1))
+				assets := output.RenderAssetsArgsForCall(0)
+				Expect(assets).To(HaveLen(2))
+			})
+		})
+
+		Context("an asset type filter is used", func() {
+			It("outputs the filtered list of assets", func() {
+				cmd.ProductSlug = "my-super-product"
+				cmd.ProductVersion = "1"
+				cmd.ListAssetsByType = "vm"
+				err := cmd.ListAssetsCmd.RunE(cmd.ListAssetsCmd, []string{})
+				Expect(err).ToNot(HaveOccurred())
+
+				By("outputting the filtered response", func() {
+					Expect(output.RenderAssetsCallCount()).To(Equal(1))
+					assets := output.RenderAssetsArgsForCall(0)
+					Expect(assets).To(HaveLen(1))
+				})
+			})
+		})
+	})
+
 	Describe("ListProductVersionsCmd", func() {
 		BeforeEach(func() {
 			product := test.CreateFakeProduct(
@@ -166,6 +241,7 @@ var _ = Describe("Products", func() {
 
 			By("getting the product from the Marketplace", func() {
 				Expect(marketplace.GetProductCallCount()).To(Equal(1))
+				Expect(marketplace.GetProductArgsForCall(0)).To(Equal("my-super-product"))
 			})
 
 			By("outputting the response", func() {

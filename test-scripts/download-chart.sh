@@ -15,18 +15,14 @@ if [ -z "${PRODUCT_VERSION}" ] ; then
 fi
 
 # Get the name for the first chart
-CHARTS=$(mkpcli chart list --product "${PRODUCT_SLUG}" --product-version "${PRODUCT_VERSION}" --output json)
-CHART_NAME=$(echo "${CHARTS}" | jq -r .[0].helmtarurl)
-IS_IN_MKP_REGISTRY=$(echo "${CHARTS}" | jq -r .[0].isupdatedinmarketplaceregistry)
-PROCESSING_ERROR=$(echo "${CHARTS}" | jq -r .[0].processingerror)
+ASSETS=$(mkpcli product list-assets --type chart --product "${PRODUCT_SLUG}" --product-version "${PRODUCT_VERSION}" --output json)
+NAME=$(echo "${ASSETS}" | jq -r .[0].displayname)
+DOWNLOADABLE=$(echo "${ASSETS}" | jq -r .[0].downloadable)
+ERROR=$(echo "${ASSETS}" | jq -r .[0].error)
 
-while [ "${IS_IN_MKP_REGISTRY}" == "false" ] && [ -z "${PROCESSING_ERROR}" ] ; do
-  sleep 60
-done
-
-if [ "${IS_IN_MKP_REGISTRY}" == "true" ] ; then
+if [ "${DOWNLOADABLE}" == "true" ] ; then
   mkpcli download --product "${PRODUCT_SLUG}" --product-version "${PRODUCT_VERSION}" \
-    --filter "${CHART_NAME}" \
+    --filter "${NAME}" \
     --filename my-chart.tgz \
     --accept-eula
 
@@ -35,10 +31,7 @@ if [ "${IS_IN_MKP_REGISTRY}" == "true" ] ; then
   tar tvf my-chart.tgz | grep Chart.yaml
 
   rm -f my-chart.tgz
-elif [ "${IS_IN_MKP_REGISTRY}" == "false" ] && [ -n "${PROCESSING_ERROR}" ] ; then
-  echo "Chart is not downloadable"
-  exit 1
 else
-  echo "Unknown status"
+  echo "Chart is not downloadable: ${ERROR}"
   exit 1
 fi

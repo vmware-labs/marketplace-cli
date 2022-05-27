@@ -156,4 +156,28 @@ var _ = Describe("Asset", func() {
 			})
 		})
 	})
+
+	Describe("GetAssetsByType", func() {
+		var product *models.Product
+		BeforeEach(func() {
+			product = test.CreateFakeProduct("", "Hyperspace Database", "hyperspace-database", "PENDING")
+			test.AddVerions(product, "1")
+			vm := test.CreateFakeOVA("hyperspace-database.ova", "1")
+			product.ProductDeploymentFiles = append(product.ProductDeploymentFiles, vm)
+
+			metafile := test.CreateFakeMetaFile("deploy.sh", "0.0.1", "1")
+			product.MetaFiles = append(product.MetaFiles, metafile)
+		})
+
+		It("returns the filtered list of assets", func() {
+			vmAssets := pkg.GetAssetsByType(pkg.AssetTypeVM, product, "1")
+			Expect(vmAssets).To(HaveLen(1))
+			Expect(vmAssets[0].Type).To(Equal(pkg.AssetTypeVM))
+			metafileAssets := pkg.GetAssetsByType(pkg.AssetTypeMetaFile, product, "1")
+			Expect(metafileAssets).To(HaveLen(1))
+			Expect(metafileAssets[0].Type).To(Equal(pkg.AssetTypeMetaFile))
+			chartAssets := pkg.GetAssetsByType(pkg.AssetTypeChart, product, "1")
+			Expect(chartAssets).To(BeEmpty())
+		})
+	})
 })

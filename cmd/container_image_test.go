@@ -8,6 +8,7 @@ import (
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	"github.com/onsi/gomega/gbytes"
 	"github.com/vmware-labs/marketplace-cli/v2/cmd"
 	"github.com/vmware-labs/marketplace-cli/v2/cmd/output/outputfakes"
 	"github.com/vmware-labs/marketplace-cli/v2/internal/models"
@@ -51,6 +52,7 @@ var _ = Describe("ContainerImage", func() {
 				"PENDING")
 			test.AddVerions(product, "1.2.3", "2.3.4")
 			test.AddContainerImages(product, "1.2.3", "Machine wash cold with like colors", container)
+			cmd.ListContainerImageCmd.SetErr(gbytes.NewBuffer())
 		})
 
 		It("outputs the container images", func() {

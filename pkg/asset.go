@@ -10,14 +10,16 @@ import (
 )
 
 type Asset struct {
-	DisplayName            string `json:"displayname"`
-	Filename               string `json:"filename"`
-	Version                string `json:"version"`
-	Type                   string `json:"type"`
-	Size                   int64  `json:"size"`
-	Downloadable           bool   `json:"downloadable"`
-	Downloads              int64  `json:"downloads"`
-	DownloadRequestPayload *DownloadRequestPayload
+	DisplayName            string                  `json:"displayname"`
+	Filename               string                  `json:"filename"`
+	Version                string                  `json:"version"`
+	Type                   string                  `json:"type"`
+	Size                   int64                   `json:"size"`
+	Downloadable           bool                    `json:"downloadable"`
+	Downloads              int64                   `json:"downloads"`
+	DownloadRequestPayload *DownloadRequestPayload `json:"-"`
+	Error                  string                  `json:"error,omitempty"`
+	Status                 string                  `json:"status,omitempty"`
 }
 
 const (
@@ -39,7 +41,7 @@ func GetAssets(product *models.Product, version string) []*Asset {
 			Filename:     file.Name,
 			Version:      "",
 			Type:         AssetTypeVM,
-			Size:         file.Size,
+			Size:         file.CalculateSize(),
 			Downloads:    file.DownloadCount,
 			Downloadable: file.Status != models.DeploymentStatusInactive,
 			DownloadRequestPayload: &DownloadRequestPayload{
@@ -47,6 +49,8 @@ func GetAssets(product *models.Product, version string) []*Asset {
 				AppVersion:       version,
 				DeploymentFileId: file.FileID,
 			},
+			Error:  file.Comment,
+			Status: file.Status,
 		})
 	}
 
@@ -64,6 +68,8 @@ func GetAssets(product *models.Product, version string) []*Asset {
 				AppVersion:   version,
 				ChartVersion: chart.Version,
 			},
+			Error:  chart.ProcessingError,
+			Status: chart.Status,
 		})
 	}
 
@@ -87,6 +93,8 @@ func GetAssets(product *models.Product, version string) []*Asset {
 							DockerUrlId:         imageURL.ID,
 							ImageTagId:          tag.ID,
 						},
+						Error:  tag.ProcessingError,
+						Status: containerImage.Status,
 					})
 				}
 			}
@@ -109,9 +117,24 @@ func GetAssets(product *models.Product, version string) []*Asset {
 					MetaFileID:       metafile.ID,
 					MetaFileObjectID: object.FileID,
 				},
+				Error:  object.ProcessingError,
+				Status: metafile.Status,
 			})
 		}
 	}
 
 	return assets
+}
+
+func GetAssetsByType(assetType string, product *models.Product, version string) []*Asset {
+	var filteredAssets []*Asset
+	unfilteredAssets := GetAssets(product, version)
+
+	for _, asset := range unfilteredAssets {
+		if asset.Type == assetType {
+			filteredAssets = append(filteredAssets, asset)
+		}
+	}
+
+	return filteredAssets
 }

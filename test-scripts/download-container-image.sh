@@ -15,28 +15,23 @@ if [ -z "${PRODUCT_VERSION}" ] ; then
 fi
 
 # Get the ID for the first container image
-IMAGES=$(mkpcli container-image list --product "${PRODUCT_SLUG}" --product-version "${PRODUCT_VERSION}" --output json)
-IMAGE_URL=$(echo "${IMAGES}" | jq -r .[0].dockerurlsList[0].url)
-IMAGE_TAG=$(echo "${IMAGES}" | jq -r .[0].dockerurlsList[0].imagetagsList[0].tag)
-IS_IN_MKP_REGISTRY=$(echo "${IMAGES}" | jq -r .[0].dockerurlsList[0].imagetagsList[0].isupdatedinmarketplaceregistry)
-PROCESSING_ERROR=$(echo "${IMAGES}" | jq -r .[0].dockerurlsList[0].imagetagsList[0].processingerror)
+ASSETS=$(mkpcli product list-assets --type image --product "${PRODUCT_SLUG}" --product-version "${PRODUCT_VERSION}" --output json)
+Name=$(echo "${ASSETS}" | jq -r .[0].displayname)
+DOWNLOADABLE=$(echo "${ASSETS}" | jq -r .[0].downloadable)
+ERROR=$(echo "${ASSETS}" | jq -r .[0].error)
 
-if [ "${IS_IN_MKP_REGISTRY}" == "true" ] ; then
-  # Download the image
+if [ "${DOWNLOADABLE}" == "true" ] ; then
   mkpcli download --product "${PRODUCT_SLUG}" --product-version "${PRODUCT_VERSION}" \
-    --filter "${IMAGE_URL}:${IMAGE_TAG}" \
+    --filter "${Name}" \
     --filename my-container-image.tar \
     --accept-eula
 
-  # Downloaded file is a real docker image
+  # Downloaded file is a real container image
   test -f my-container-image.tar
   tar tvf my-container-image.tar manifest.json
 
   rm -f my-container-image.tar
-elif [ -n "${PROCESSING_ERROR}" ] ; then
-  echo "Container image is not downloadable"
-  exit 1
 else
-  echo "Unknown status"
+  echo "Container image is not downloadable: ${ERROR}"
   exit 1
 fi
