@@ -16,6 +16,7 @@ params:
 
 inputs:
   - name: version
+  - name: test-container-image
 
 run:
   path: bash

@@ -325,7 +325,6 @@ jobs:
     max_in_flight: 1
     plan:
       - in_parallel:
-          - get: test-container-image
           - get: test-container-product-version
             params: { bump: patch }
           - get: mkpcli
@@ -335,6 +334,7 @@ jobs:
             passed: [build]
           - get: version
             passed: [build]
+          - get: test-container-image
       - task: get-current-product
         image: mkpcli
         params:
