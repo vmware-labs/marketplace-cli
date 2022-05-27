@@ -29,6 +29,25 @@ type FakeMarketplaceInterface struct {
 		result1 *models.Product
 		result2 error
 	}
+	AttachLocalContainerImageStub        func(string, string, string, string, string, *models.Product, *models.Version) (*models.Product, error)
+	attachLocalContainerImageMutex       sync.RWMutex
+	attachLocalContainerImageArgsForCall []struct {
+		arg1 string
+		arg2 string
+		arg3 string
+		arg4 string
+		arg5 string
+		arg6 *models.Product
+		arg7 *models.Version
+	}
+	attachLocalContainerImageReturns struct {
+		result1 *models.Product
+		result2 error
+	}
+	attachLocalContainerImageReturnsOnCall map[int]struct {
+		result1 *models.Product
+		result2 error
+	}
 	AttachPublicChartStub        func(*url.URL, string, *models.Product, *models.Version) (*models.Product, error)
 	attachPublicChartMutex       sync.RWMutex
 	attachPublicChartArgsForCall []struct {
@@ -357,6 +376,76 @@ func (fake *FakeMarketplaceInterface) AttachLocalChartReturnsOnCall(i int, resul
 		})
 	}
 	fake.attachLocalChartReturnsOnCall[i] = struct {
+		result1 *models.Product
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeMarketplaceInterface) AttachLocalContainerImage(arg1 string, arg2 string, arg3 string, arg4 string, arg5 string, arg6 *models.Product, arg7 *models.Version) (*models.Product, error) {
+	fake.attachLocalContainerImageMutex.Lock()
+	ret, specificReturn := fake.attachLocalContainerImageReturnsOnCall[len(fake.attachLocalContainerImageArgsForCall)]
+	fake.attachLocalContainerImageArgsForCall = append(fake.attachLocalContainerImageArgsForCall, struct {
+		arg1 string
+		arg2 string
+		arg3 string
+		arg4 string
+		arg5 string
+		arg6 *models.Product
+		arg7 *models.Version
+	}{arg1, arg2, arg3, arg4, arg5, arg6, arg7})
+	stub := fake.AttachLocalContainerImageStub
+	fakeReturns := fake.attachLocalContainerImageReturns
+	fake.recordInvocation("AttachLocalContainerImage", []interface{}{arg1, arg2, arg3, arg4, arg5, arg6, arg7})
+	fake.attachLocalContainerImageMutex.Unlock()
+	if stub != nil {
+		return stub(arg1, arg2, arg3, arg4, arg5, arg6, arg7)
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	return fakeReturns.result1, fakeReturns.result2
+}
+
+func (fake *FakeMarketplaceInterface) AttachLocalContainerImageCallCount() int {
+	fake.attachLocalContainerImageMutex.RLock()
+	defer fake.attachLocalContainerImageMutex.RUnlock()
+	return len(fake.attachLocalContainerImageArgsForCall)
+}
+
+func (fake *FakeMarketplaceInterface) AttachLocalContainerImageCalls(stub func(string, string, string, string, string, *models.Product, *models.Version) (*models.Product, error)) {
+	fake.attachLocalContainerImageMutex.Lock()
+	defer fake.attachLocalContainerImageMutex.Unlock()
+	fake.AttachLocalContainerImageStub = stub
+}
+
+func (fake *FakeMarketplaceInterface) AttachLocalContainerImageArgsForCall(i int) (string, string, string, string, string, *models.Product, *models.Version) {
+	fake.attachLocalContainerImageMutex.RLock()
+	defer fake.attachLocalContainerImageMutex.RUnlock()
+	argsForCall := fake.attachLocalContainerImageArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3, argsForCall.arg4, argsForCall.arg5, argsForCall.arg6, argsForCall.arg7
+}
+
+func (fake *FakeMarketplaceInterface) AttachLocalContainerImageReturns(result1 *models.Product, result2 error) {
+	fake.attachLocalContainerImageMutex.Lock()
+	defer fake.attachLocalContainerImageMutex.Unlock()
+	fake.AttachLocalContainerImageStub = nil
+	fake.attachLocalContainerImageReturns = struct {
+		result1 *models.Product
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeMarketplaceInterface) AttachLocalContainerImageReturnsOnCall(i int, result1 *models.Product, result2 error) {
+	fake.attachLocalContainerImageMutex.Lock()
+	defer fake.attachLocalContainerImageMutex.Unlock()
+	fake.AttachLocalContainerImageStub = nil
+	if fake.attachLocalContainerImageReturnsOnCall == nil {
+		fake.attachLocalContainerImageReturnsOnCall = make(map[int]struct {
+			result1 *models.Product
+			result2 error
+		})
+	}
+	fake.attachLocalContainerImageReturnsOnCall[i] = struct {
 		result1 *models.Product
 		result2 error
 	}{result1, result2}
@@ -1603,6 +1692,8 @@ func (fake *FakeMarketplaceInterface) Invocations() map[string][][]interface{} {
 	defer fake.invocationsMutex.RUnlock()
 	fake.attachLocalChartMutex.RLock()
 	defer fake.attachLocalChartMutex.RUnlock()
+	fake.attachLocalContainerImageMutex.RLock()
+	defer fake.attachLocalContainerImageMutex.RUnlock()
 	fake.attachPublicChartMutex.RLock()
 	defer fake.attachPublicChartMutex.RUnlock()
 	fake.attachPublicContainerImageMutex.RLock()

@@ -22,6 +22,7 @@ var (
 	AttachChartURL string
 
 	AttachContainerImage        string
+	AttachContainerImageFile    string
 	AttachContainerImageTag     string
 	AttachContainerImageTagType string
 
@@ -48,8 +49,9 @@ func init() {
 	AttachContainerImageCmd.Flags().StringVarP(&AttachProductSlug, "product", "p", "", "Product slug (required)")
 	_ = AttachContainerImageCmd.MarkFlagRequired("product")
 	AttachContainerImageCmd.Flags().StringVarP(&AttachProductVersion, "product-version", "v", "", "Product version (default to latest version)")
-	AttachContainerImageCmd.Flags().StringVarP(&AttachContainerImage, "image-repository", "r", "", "container repository")
+	AttachContainerImageCmd.Flags().StringVarP(&AttachContainerImage, "image-repository", "r", "", "container repository (e.g. registry/repository/image")
 	_ = AttachContainerImageCmd.MarkFlagRequired("image-repository")
+	AttachContainerImageCmd.Flags().StringVarP(&AttachContainerImageFile, "file", "f", "", "upload a local image tar")
 	AttachContainerImageCmd.Flags().StringVar(&AttachContainerImageTag, "tag", "", "container repository tag")
 	_ = AttachContainerImageCmd.MarkFlagRequired("tag")
 	AttachContainerImageCmd.Flags().StringVar(&AttachContainerImageTagType, "tag-type", "", "container repository tag type (fixed or floating)")
@@ -140,7 +142,12 @@ var AttachContainerImageCmd = &cobra.Command{
 			}
 		}
 
-		updatedProduct, err := Marketplace.AttachPublicContainerImage(AttachContainerImage, AttachContainerImageTag, AttachContainerImageTagType, AttachInstructions, product, version)
+		var updatedProduct *models.Product
+		if AttachContainerImageFile != "" {
+			updatedProduct, err = Marketplace.AttachLocalContainerImage(AttachContainerImageFile, AttachContainerImage, AttachContainerImageTag, AttachContainerImageTagType, AttachInstructions, product, version)
+		} else {
+			updatedProduct, err = Marketplace.AttachPublicContainerImage(AttachContainerImage, AttachContainerImageTag, AttachContainerImageTagType, AttachInstructions, product, version)
+		}
 		if err != nil {
 			return err
 		}
