@@ -69,8 +69,8 @@ func init() {
 var ProductCmd = &cobra.Command{
 	Use:       "product",
 	Aliases:   []string{"products"},
-	Short:     "Get information about products",
-	Long:      "Get information about products in the VMware Marketplace",
+	Short:     "Manage products",
+	Long:      "Manage products in the VMware Marketplace",
 	Args:      cobra.OnlyValidArgs,
 	ValidArgs: []string{ListProductsCmd.Use, GetProductCmd.Use},
 }
@@ -187,8 +187,8 @@ var ListProductVersionsCmd = &cobra.Command{
 
 var SetCmd = &cobra.Command{
 	Use:     "set",
-	Short:   "Modify the product",
-	Long:    "Modify the product",
+	Short:   "Modify product details",
+	Long:    "Modify fields in a given product",
 	Args:    cobra.NoArgs,
 	PreRunE: GetRefreshToken,
 	RunE: func(cmd *cobra.Command, args []string) error {

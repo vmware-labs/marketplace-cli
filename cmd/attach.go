@@ -40,38 +40,38 @@ func init() {
 	AttachChartCmd.Flags().StringVarP(&AttachProductSlug, "product", "p", "", "Product slug (required)")
 	_ = AttachChartCmd.MarkFlagRequired("product")
 	AttachChartCmd.Flags().StringVarP(&AttachProductVersion, "product-version", "v", "", "Product version (default to latest version)")
-	AttachChartCmd.Flags().StringVarP(&AttachChartURL, "chart", "c", "", "path to to chart, either local tgz or public URL (required)")
+	AttachChartCmd.Flags().StringVarP(&AttachChartURL, "chart", "c", "", "Path to to chart, either local tgz or public URL (required)")
 	_ = AttachChartCmd.MarkFlagRequired("chart")
-	AttachChartCmd.Flags().StringVar(&AttachInstructions, "instructions", "", "chart deployment instructions")
+	AttachChartCmd.Flags().StringVar(&AttachInstructions, "instructions", "", "Chart deployment instructions (required)")
 	_ = AttachChartCmd.MarkFlagRequired("instructions")
-	AttachChartCmd.Flags().BoolVar(&AttachCreateVersion, "create-version", false, "create the product version, if it doesn't already exist")
+	AttachChartCmd.Flags().BoolVar(&AttachCreateVersion, "create-version", false, "Create the product version, if it doesn't already exist")
 
 	AttachContainerImageCmd.Flags().StringVarP(&AttachProductSlug, "product", "p", "", "Product slug (required)")
 	_ = AttachContainerImageCmd.MarkFlagRequired("product")
 	AttachContainerImageCmd.Flags().StringVarP(&AttachProductVersion, "product-version", "v", "", "Product version (default to latest version)")
-	AttachContainerImageCmd.Flags().StringVarP(&AttachContainerImage, "image-repository", "r", "", "container repository (e.g. registry/repository/image")
+	AttachContainerImageCmd.Flags().StringVarP(&AttachContainerImage, "image-repository", "r", "", "Image repository (e.g. registry/repository/image) (required)")
 	_ = AttachContainerImageCmd.MarkFlagRequired("image-repository")
-	AttachContainerImageCmd.Flags().StringVarP(&AttachContainerImageFile, "file", "f", "", "upload a local image tar")
-	AttachContainerImageCmd.Flags().StringVar(&AttachContainerImageTag, "tag", "", "container repository tag")
+	AttachContainerImageCmd.Flags().StringVarP(&AttachContainerImageFile, "file", "f", "", "Path to a local tar file to upload")
+	AttachContainerImageCmd.Flags().StringVar(&AttachContainerImageTag, "tag", "", "Image repository tag (required)")
 	_ = AttachContainerImageCmd.MarkFlagRequired("tag")
-	AttachContainerImageCmd.Flags().StringVar(&AttachContainerImageTagType, "tag-type", "", "container repository tag type (fixed or floating)")
+	AttachContainerImageCmd.Flags().StringVar(&AttachContainerImageTagType, "tag-type", "", "Image repository tag type (fixed or floating) (required)")
 	_ = AttachContainerImageCmd.MarkFlagRequired("tag-type")
-	AttachContainerImageCmd.Flags().StringVarP(&AttachInstructions, "instructions", "i", "", "image deployment instructions")
+	AttachContainerImageCmd.Flags().StringVarP(&AttachInstructions, "instructions", "i", "", "Image deployment instructions (required)")
 	_ = AttachContainerImageCmd.MarkFlagRequired("instructions")
-	AttachContainerImageCmd.Flags().BoolVar(&AttachCreateVersion, "create-version", false, "create the product version, if it doesn't already exist")
+	AttachContainerImageCmd.Flags().BoolVar(&AttachCreateVersion, "create-version", false, "Create the product version, if it doesn't already exist")
 
 	AttachVMCmd.Flags().StringVarP(&AttachProductSlug, "product", "p", "", "Product slug (required)")
 	_ = AttachVMCmd.MarkFlagRequired("product")
 	AttachVMCmd.Flags().StringVarP(&AttachProductVersion, "product-version", "v", "", "Product version (default to latest version)")
 	AttachVMCmd.Flags().StringVar(&AttachVMFile, "file", "", "Virtual machine file to upload (required)")
 	_ = AttachVMCmd.MarkFlagRequired("file")
-	AttachVMCmd.Flags().BoolVar(&AttachCreateVersion, "create-version", false, "create the product version, if it doesn't already exist")
+	AttachVMCmd.Flags().BoolVar(&AttachCreateVersion, "create-version", false, "Create the product version, if it doesn't already exist")
 }
 
 var AttachCmd = &cobra.Command{
 	Use:       "attach",
 	Short:     "Attach assets to a product",
-	Long:      "List and manage virtual machine files attached to a product in the VMware Marketplace",
+	Long:      "Attach assets to a product in the VMware Marketplace",
 	Args:      cobra.OnlyValidArgs,
 	ValidArgs: []string{AttachChartCmd.Use, AttachContainerImageCmd.Use, AttachVMCmd.Use},
 }
@@ -80,6 +80,7 @@ var AttachChartCmd = &cobra.Command{
 	Use:     "chart",
 	Short:   "Attach a chart",
 	Long:    "Attaches a Helm Chart to a product in the VMware Marketplace",
+	Example: fmt.Sprintf("%s attach chart -p hyperspace-database-chart1 -v 1.2.3 --chart hyperspace-db-1.2.3.tgz --instructions \"helm install...\"", AppName),
 	Args:    cobra.NoArgs,
 	PreRunE: GetRefreshToken,
 	RunE: func(cmd *cobra.Command, args []string) error {
@@ -128,6 +129,7 @@ var AttachContainerImageCmd = &cobra.Command{
 	Use:     "image",
 	Short:   "Attach a container image",
 	Long:    "Attaches a container image to a product in the VMware Marketplace",
+	Example: fmt.Sprintf("%s attach image -p hyperspace-database-image1 -v 1.2.3 --image hyperspace-labs/hyperspace-db --tag 1.2.3 --tag-type fixed --instructions \"docker run...\"", AppName),
 	Args:    cobra.NoArgs,
 	PreRunE: RunSerially(ValidateTagType, GetRefreshToken),
 	RunE: func(cmd *cobra.Command, args []string) error {
@@ -159,8 +161,9 @@ var AttachContainerImageCmd = &cobra.Command{
 
 var AttachVMCmd = &cobra.Command{
 	Use:     "vm",
-	Short:   "Upload and attach a virtual machine file (ISO or OVA)",
-	Long:    "Uploads and attaches a virtual machine file (ISO or OVA) to a product in the VMware Marketplace",
+	Short:   "Attach a virtual machine file (ISO or OVA)",
+	Long:    "Upload and attach a virtual machine file (ISO or OVA) to a product in the VMware Marketplace",
+	Example: fmt.Sprintf("%s attach vm -p hyperspace-database-vm1 -v 1.2.3 --file hyperspace-db-1.2.3.iso", AppName),
 	Args:    cobra.NoArgs,
 	PreRunE: GetRefreshToken,
 	RunE: func(cmd *cobra.Command, args []string) error {

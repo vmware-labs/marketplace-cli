@@ -44,6 +44,7 @@ var DownloadCmd = &cobra.Command{
 	Use:     "download",
 	Short:   "Download an asset from a product",
 	Long:    "Download an asset attached to a product in the VMware Marketplace",
+	Example: fmt.Sprintf("%s download -p hyperspace-database-chart1 -v 1.2.3", AppName),
 	Args:    cobra.NoArgs,
 	PreRunE: GetRefreshToken,
 	RunE: func(cmd *cobra.Command, args []string) error {

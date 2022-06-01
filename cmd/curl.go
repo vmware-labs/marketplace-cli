@@ -30,6 +30,7 @@ func init() {
 var curlCmd = &cobra.Command{
 	Use:     "curl [/api/v1/path]",
 	Long:    "Sends an HTTP request to the Marketplace",
+	Example: fmt.Sprintf("%s curl /api/v1/products", AppName),
 	Hidden:  true,
 	PreRunE: GetRefreshToken,
 	Args:    cobra.ExactArgs(1),

@@ -51,7 +51,7 @@ func init() {
 
 var AuthCmd = &cobra.Command{
 	Use:     "auth",
-	Short:   "fetch and return a valid CSP refresh token",
+	Long:    "Fetch and return a valid CSP refresh token",
 	Hidden:  true,
 	PreRunE: GetRefreshToken,
 	Run: func(cmd *cobra.Command, args []string) {

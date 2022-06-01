@@ -17,7 +17,7 @@ func init() {
 
 var ConfigCmd = &cobra.Command{
 	Use:    "config",
-	Short:  "prints the current config",
+	Long:   "Prints the current config",
 	Hidden: true,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		config := viper.AllSettings()
