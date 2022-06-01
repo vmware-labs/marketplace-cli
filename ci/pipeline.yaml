@@ -79,6 +79,7 @@ resources:
       repository: projects.registry.vmware.com/tanzu_isv_engineering/mkpcli
       username: ((harbor-public.username))
       password: ((harbor-public.token))
+      tag: latest
 
   - name: release
     type: github-release
