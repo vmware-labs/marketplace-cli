@@ -18,7 +18,7 @@ type Version struct {
 	CreatedOn        int32  `json:"createdon,omitempty"`
 	HasLimitedAccess bool   `json:"haslimitedaccess,omitempty"`
 	Tag              string `json:"tag,omitempty"`
-	IsNewVersion     bool   // This is only for the CLI when adding a version
+	IsNewVersion     bool   `json:"-"` // This is only for the CLI when adding a version
 }
 
 func (product *Product) NewVersion(number string) *Version {
