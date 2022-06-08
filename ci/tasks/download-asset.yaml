@@ -7,6 +7,7 @@ platform: linux
 params:
   CSP_API_TOKEN: ((marketplace_api_token))
   MARKETPLACE_ENV:
+  ASSET_TYPE:
   PRODUCT_SLUG:
   PRODUCT_VERSION:
   MKPCLI_DEBUG: true
@@ -16,4 +17,4 @@ inputs:
   - name: source
 
 run:
-  path: source/test-scripts/download-container-image.sh
+  path: source/test-scripts/download-asset.sh

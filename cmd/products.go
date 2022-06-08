@@ -21,6 +21,7 @@ var (
 	ListAssetsByType string
 	SetOSLFile       string
 	typeMapping      = map[string]string{
+		"addon":    pkg.AssetTypeAddon,
 		"chart":    pkg.AssetTypeChart,
 		"image":    pkg.AssetTypeContainerImage,
 		"metafile": pkg.AssetTypeMetaFile,

@@ -150,6 +150,8 @@ var _ = Describe("Products", func() {
 
 	Describe("ValidateAssetTypeFilter", func() {
 		It("allows valid asset types", func() {
+			cmd.ListAssetsByType = "addon"
+			Expect(cmd.ValidateAssetTypeFilter(nil, nil)).To(Succeed())
 			cmd.ListAssetsByType = "chart"
 			Expect(cmd.ValidateAssetTypeFilter(nil, nil)).To(Succeed())
 			cmd.ListAssetsByType = "image"
@@ -165,7 +167,7 @@ var _ = Describe("Products", func() {
 				cmd.ListAssetsByType = "dogfood"
 				err := cmd.ValidateAssetTypeFilter(nil, nil)
 				Expect(err).To(HaveOccurred())
-				Expect(err.Error()).To(Equal("Unknown asset type: dogfood\nPlease use one of chart, image, metafile, vm"))
+				Expect(err.Error()).To(Equal("Unknown asset type: dogfood\nPlease use one of addon, chart, image, metafile, vm"))
 			})
 		})
 	})

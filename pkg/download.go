@@ -22,7 +22,7 @@ type DownloadRequestPayload struct {
 	ImageTagId          string `json:"imageTagId,omitempty"`
 	DeploymentFileId    string `json:"deploymentFileId,omitempty"`
 	ChartVersion        string `json:"chartVersion,omitempty"`
-	IsAddonFile         string `json:"isAddonFile,omitempty"`
+	IsAddonFile         bool   `json:"isAddonFile,omitempty"`
 	AddonFileId         string `json:"addonFileId,omitempty"`
 	MetaFileID          string `json:"metafileid,omitempty"`
 	MetaFileObjectID    string `json:"metafileobjectid,omitempty"`

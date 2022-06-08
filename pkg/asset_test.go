@@ -16,6 +16,50 @@ import (
 
 var _ = Describe("Asset", func() {
 	Describe("GetAssets", func() {
+		Context("Add-on", func() {
+			var (
+				product     *models.Product
+				addon       *models.AddOnFile
+				addonFileId string
+			)
+			BeforeEach(func() {
+				product = test.CreateFakeProduct("", "Hyperspace Database", "hyperspace-database", "PENDING")
+				test.AddVerions(product, "1")
+				addonFileId = uuid.New().String()
+				addon = &models.AddOnFile{
+					ID:               addonFileId,
+					Name:             "my-addon-file.vlcp",
+					Status:           models.DeploymentStatusActive,
+					DeploymentStatus: "",
+					FileID:           uuid.New().String(),
+					AppVersion:       "1",
+					HashDigest:       "B32D37F785AA865CF6B36EEDC65D4A81AEEC10DF6BF028CDF2F77679D2583937",
+					HashAlgorithm:    "SHA256",
+					DownloadCount:    5,
+					Size:             1000,
+				}
+				product.AddOnFiles = []*models.AddOnFile{addon}
+			})
+
+			It("returns the addon file", func() {
+				assets := pkg.GetAssets(product, "1")
+				Expect(assets).To(HaveLen(1))
+
+				Expect(assets[0].DisplayName).To(Equal("my-addon-file.vlcp"))
+				Expect(assets[0].Filename).To(Equal("my-addon-file.vlcp"))
+				Expect(assets[0].Version).To(Equal("1"))
+				Expect(assets[0].Type).To(Equal("Add-on"))
+				Expect(strconv.FormatInt(assets[0].Size, 10)).To(Equal("1000"))
+				Expect(strconv.FormatInt(assets[0].Downloads, 10)).To(Equal("5"))
+				Expect(assets[0].Downloadable).To(BeTrue())
+
+				Expect(assets[0].DownloadRequestPayload.ProductId).To(Equal(product.ProductId))
+				Expect(assets[0].DownloadRequestPayload.AppVersion).To(Equal("1"))
+				Expect(assets[0].DownloadRequestPayload.IsAddonFile).To(BeTrue())
+				Expect(assets[0].DownloadRequestPayload.AddonFileId).To(Equal(addonFileId))
+			})
+		})
+
 		Context("Chart", func() {
 			var (
 				product *models.Product
@@ -128,7 +172,7 @@ var _ = Describe("Asset", func() {
 				By("including the VM file", func() {
 					Expect(assets[0].DisplayName).To(Equal("hyperspace-database.ova"))
 					Expect(assets[0].Filename).To(Equal("hyperspace-database.ova"))
-					Expect(assets[0].Version).To(BeEmpty())
+					Expect(assets[0].Version).To(Equal("1"))
 					Expect(assets[0].Type).To(Equal("VM"))
 					Expect(strconv.FormatInt(assets[0].Size, 10)).To(Equal("1000100"))
 					Expect(strconv.FormatInt(assets[0].Downloads, 10)).To(Equal("20"))

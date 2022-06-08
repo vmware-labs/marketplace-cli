@@ -256,8 +256,8 @@ type Product struct {
 	IsAutoDraft                  bool                         `json:"isautodraft"`
 	DraftId                      string                       `json:"draftid"`
 	ChartId                      string                       `json:"chartid"`
-	AddOnFiles                   []*AddOnFiles                `json:"addonfilesList"`
-	ProductAddOnFiles            []*AddOnFiles                `json:"productaddonfilesList"`
+	AddOnFiles                   []*AddOnFile                 `json:"addonfilesList"`
+	ProductAddOnFiles            []*AddOnFile                 `json:"productaddonfilesList"`
 	Tags                         []string                     `json:"tagsList"`
 	SKUS                         []*SKUPublisherView          `json:"skusList"`
 	MetaFiles                    []*MetaFile                  `json:"metafilesList"`
@@ -276,7 +276,7 @@ type VersionSpecificProductDetails struct {
 	DockerLinkVersions     []*DockerVersionList       `json:"dockerlinkversionsList"`
 	ChartVersions          []*ChartVersion            `json:"chartversionsList"`
 	Blueprints             []*ProductBlueprintDetails `json:"blueprintsList"`
-	AddOnFiles             []*AddOnFiles              `json:"addonfilesList"`
+	AddOnFiles             []*AddOnFile               `json:"addonfilesList"`
 	CreationDate           int                        `json:"createdon"`
 	UpdatedDate            int                        `json:"updatedon"`
 	UpdatedBy              string                     `json:"updatedby"`
