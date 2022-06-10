@@ -170,6 +170,14 @@ type RateCardDimension struct {
 	DimensionUnit  string  `json:"dimensionunit"`
 }
 
+type PCADetail struct {
+	URL          string `json:"url"`
+	Version      string `json:"version"`
+	CreatedOn    int32  `json:"createdon"`
+	UpdatedOn    int32  `json:"updatedon"`
+	PresignedURL string `json:"presignedurl"`
+}
+
 //const (
 //	SolutionTypeHelm = "HELMCHARTS"
 //)
@@ -261,6 +269,7 @@ type Product struct {
 	Tags                         []string                     `json:"tagsList"`
 	SKUS                         []*SKUPublisherView          `json:"skusList"`
 	MetaFiles                    []*MetaFile                  `json:"metafilesList"`
+	PCADetails                   *PCADetail                   `json:"pcadetails"`
 }
 
 type VersionSpecificProductDetails struct {
@@ -285,6 +294,7 @@ type VersionSpecificProductDetails struct {
 	HasLimitedAccess       bool                       `json:"haslimitedaccess"`
 	Tag                    string                     `json:"tag"`
 	MetaFiles              []*MetaFile                `json:"metafilesList"`
+	PCADetails             *PCADetail                 `json:"pcadetails"`
 }
 
 func (product *Product) UpdateWithVersionSpecificDetails(version string, details *VersionSpecificProductDetails) {
@@ -309,6 +319,7 @@ func (product *Product) UpdateWithVersionSpecificDetails(version string, details
 	product.GetVersion(version).HasLimitedAccess = details.HasLimitedAccess
 	product.GetVersion(version).Tag = details.Tag
 	product.MetaFiles = details.MetaFiles
+	product.PCADetails = details.PCADetails
 }
 
 func (product *Product) PrepForUpdate() {
