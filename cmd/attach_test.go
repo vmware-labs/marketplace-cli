@@ -10,6 +10,7 @@ import (
 	. "github.com/onsi/gomega"
 	"github.com/vmware-labs/marketplace-cli/v2/cmd"
 	"github.com/vmware-labs/marketplace-cli/v2/cmd/output/outputfakes"
+	"github.com/vmware-labs/marketplace-cli/v2/internal/internalfakes"
 	"github.com/vmware-labs/marketplace-cli/v2/internal/models"
 	"github.com/vmware-labs/marketplace-cli/v2/pkg"
 	"github.com/vmware-labs/marketplace-cli/v2/pkg/pkgfakes"
@@ -57,6 +58,7 @@ var _ = Describe("AttachCmd", func() {
 		cmd.Marketplace = marketplace
 		cmd.Output = output
 		cmd.AttachCreateVersion = false
+		cmd.AttachPCAFile = ""
 	})
 
 	Describe("AttachChartCmd", func() {
@@ -134,6 +136,69 @@ var _ = Describe("AttachCmd", func() {
 					err := cmd.AttachChartCmd.RunE(cmd.DownloadCmd, []string{""})
 					Expect(err).To(HaveOccurred())
 					Expect(err.Error()).To(Equal("attach local chart failed"))
+				})
+			})
+
+			When("attaching a PCA file", func() {
+				var uploader *internalfakes.FakeUploader
+				BeforeEach(func() {
+					uploader = &internalfakes.FakeUploader{}
+					marketplace.GetUploaderReturns(uploader, nil)
+					uploader.UploadMediaFileReturns("", "https://example.com/path/to/pca.pdf", nil)
+				})
+				It("attaches the PCA file", func() {
+					cmd.AttachProductSlug = "my-super-product"
+					cmd.AttachProductVersion = "1.1.1"
+					cmd.AttachChartURL = "/path/to/my-chart"
+					cmd.AttachInstructions = "helm install it"
+					cmd.AttachPCAFile = "/path/to/pca.pdf"
+					err := cmd.AttachChartCmd.RunE(cmd.DownloadCmd, []string{""})
+					Expect(err).ToNot(HaveOccurred())
+
+					By("uploading the PCA file", func() {
+						Expect(marketplace.GetUploaderCallCount()).To(Equal(1))
+						Expect(uploader.UploadMediaFileCallCount()).To(Equal(1))
+						Expect(uploader.UploadMediaFileArgsForCall(0)).To(Equal("/path/to/pca.pdf"))
+					})
+
+					By("adding the url to the product", func() {
+						_, _, product, _ := marketplace.AttachLocalChartArgsForCall(0)
+						Expect(product.PCADetails).ToNot(BeNil())
+						Expect(product.PCADetails.URL).To(Equal("https://example.com/path/to/pca.pdf"))
+						Expect(product.PCADetails.Version).To(Equal("1.1.1"))
+					})
+				})
+
+				When("getting the uploader fails", func() {
+					BeforeEach(func() {
+						marketplace.GetUploaderReturns(nil, errors.New("get uploader failed"))
+					})
+					It("returns an error", func() {
+						cmd.AttachProductSlug = "my-super-product"
+						cmd.AttachProductVersion = "1.1.1"
+						cmd.AttachChartURL = "/path/to/my-chart"
+						cmd.AttachInstructions = "helm install it"
+						cmd.AttachPCAFile = "/path/to/pca.pdf"
+						err := cmd.AttachChartCmd.RunE(cmd.DownloadCmd, []string{""})
+						Expect(err).To(HaveOccurred())
+						Expect(err.Error()).To(Equal("get uploader failed"))
+					})
+				})
+
+				When("uploading the file fails", func() {
+					BeforeEach(func() {
+						uploader.UploadMediaFileReturns("", "", errors.New("upload media file failed"))
+					})
+					It("returns an error", func() {
+						cmd.AttachProductSlug = "my-super-product"
+						cmd.AttachProductVersion = "1.1.1"
+						cmd.AttachChartURL = "/path/to/my-chart"
+						cmd.AttachInstructions = "helm install it"
+						cmd.AttachPCAFile = "/path/to/pca.pdf"
+						err := cmd.AttachChartCmd.RunE(cmd.DownloadCmd, []string{""})
+						Expect(err).To(HaveOccurred())
+						Expect(err.Error()).To(Equal("upload media file failed"))
+					})
 				})
 			})
 		})
@@ -267,6 +332,69 @@ var _ = Describe("AttachCmd", func() {
 					Expect(err.Error()).To(Equal("render failed"))
 				})
 			})
+
+			When("attaching a PCA file", func() {
+				var uploader *internalfakes.FakeUploader
+				BeforeEach(func() {
+					uploader = &internalfakes.FakeUploader{}
+					marketplace.GetUploaderReturns(uploader, nil)
+					uploader.UploadMediaFileReturns("", "https://example.com/path/to/pca.pdf", nil)
+				})
+				It("attaches the PCA file", func() {
+					cmd.AttachProductSlug = "my-super-product"
+					cmd.AttachProductVersion = "1.1.1"
+					cmd.AttachChartURL = "https://example.com/public/my-chart.tgz"
+					cmd.AttachInstructions = "helm install it"
+					cmd.AttachPCAFile = "/path/to/pca.pdf"
+					err := cmd.AttachChartCmd.RunE(cmd.DownloadCmd, []string{""})
+					Expect(err).ToNot(HaveOccurred())
+
+					By("uploading the PCA file", func() {
+						Expect(marketplace.GetUploaderCallCount()).To(Equal(1))
+						Expect(uploader.UploadMediaFileCallCount()).To(Equal(1))
+						Expect(uploader.UploadMediaFileArgsForCall(0)).To(Equal("/path/to/pca.pdf"))
+					})
+
+					By("adding the url to the product", func() {
+						_, _, product, _ := marketplace.AttachPublicChartArgsForCall(0)
+						Expect(product.PCADetails).ToNot(BeNil())
+						Expect(product.PCADetails.URL).To(Equal("https://example.com/path/to/pca.pdf"))
+						Expect(product.PCADetails.Version).To(Equal("1.1.1"))
+					})
+				})
+
+				When("getting the uploader fails", func() {
+					BeforeEach(func() {
+						marketplace.GetUploaderReturns(nil, errors.New("get uploader failed"))
+					})
+					It("returns an error", func() {
+						cmd.AttachProductSlug = "my-super-product"
+						cmd.AttachProductVersion = "1.1.1"
+						cmd.AttachChartURL = "https://example.com/public/my-chart.tgz"
+						cmd.AttachInstructions = "helm install it"
+						cmd.AttachPCAFile = "/path/to/pca.pdf"
+						err := cmd.AttachChartCmd.RunE(cmd.DownloadCmd, []string{""})
+						Expect(err).To(HaveOccurred())
+						Expect(err.Error()).To(Equal("get uploader failed"))
+					})
+				})
+
+				When("uploading the file fails", func() {
+					BeforeEach(func() {
+						uploader.UploadMediaFileReturns("", "", errors.New("upload media file failed"))
+					})
+					It("returns an error", func() {
+						cmd.AttachProductSlug = "my-super-product"
+						cmd.AttachProductVersion = "1.1.1"
+						cmd.AttachChartURL = "https://example.com/public/my-chart.tgz"
+						cmd.AttachInstructions = "helm install it"
+						cmd.AttachPCAFile = "/path/to/pca.pdf"
+						err := cmd.AttachChartCmd.RunE(cmd.DownloadCmd, []string{""})
+						Expect(err).To(HaveOccurred())
+						Expect(err.Error()).To(Equal("upload media file failed"))
+					})
+				})
+			})
 		})
 	})
 
@@ -286,6 +414,7 @@ var _ = Describe("AttachCmd", func() {
 			marketplace.AttachPublicContainerImageReturns(updatedProduct, nil)
 
 			cmd.AttachContainerImageFile = ""
+			cmd.AttachPCAFile = ""
 		})
 
 		It("attaches the container image", func() {
@@ -329,6 +458,75 @@ var _ = Describe("AttachCmd", func() {
 				Expect(images[0].DockerURLs[0].Url).To(Equal("nginx"))
 				Expect(images[0].DockerURLs[0].ImageTags[0].Tag).To(Equal("1.21.6"))
 				Expect(images[0].DockerURLs[0].ImageTags[0].Type).To(Equal("FIXED"))
+			})
+		})
+
+		When("attaching a PCA file", func() {
+			var uploader *internalfakes.FakeUploader
+			BeforeEach(func() {
+				uploader = &internalfakes.FakeUploader{}
+				marketplace.GetUploaderReturns(uploader, nil)
+				uploader.UploadMediaFileReturns("", "https://example.com/path/to/pca.pdf", nil)
+			})
+			It("attaches the PCA file", func() {
+				cmd.AttachProductSlug = "my-super-product"
+				cmd.AttachProductVersion = "1.1.1"
+				cmd.AttachContainerImage = "bitnami/nginx"
+				cmd.AttachContainerImageTag = "1.21.6"
+				cmd.AttachContainerImageTagType = "FIXED"
+				cmd.AttachInstructions = "docker run it"
+				cmd.AttachPCAFile = "/path/to/pca.pdf"
+				err := cmd.AttachContainerImageCmd.RunE(cmd.DownloadCmd, []string{""})
+				Expect(err).ToNot(HaveOccurred())
+
+				By("uploading the PCA file", func() {
+					Expect(marketplace.GetUploaderCallCount()).To(Equal(1))
+					Expect(uploader.UploadMediaFileCallCount()).To(Equal(1))
+					Expect(uploader.UploadMediaFileArgsForCall(0)).To(Equal("/path/to/pca.pdf"))
+				})
+
+				By("adding the url to the product", func() {
+					_, _, _, _, product, _ := marketplace.AttachPublicContainerImageArgsForCall(0)
+					Expect(product.PCADetails).ToNot(BeNil())
+					Expect(product.PCADetails.URL).To(Equal("https://example.com/path/to/pca.pdf"))
+					Expect(product.PCADetails.Version).To(Equal("1.1.1"))
+				})
+			})
+
+			When("getting the uploader fails", func() {
+				BeforeEach(func() {
+					marketplace.GetUploaderReturns(nil, errors.New("get uploader failed"))
+				})
+				It("returns an error", func() {
+					cmd.AttachProductSlug = "my-super-product"
+					cmd.AttachProductVersion = "1.1.1"
+					cmd.AttachContainerImage = "bitnami/nginx"
+					cmd.AttachContainerImageTag = "1.21.6"
+					cmd.AttachContainerImageTagType = "FIXED"
+					cmd.AttachInstructions = "docker run it"
+					cmd.AttachPCAFile = "/path/to/pca.pdf"
+					err := cmd.AttachContainerImageCmd.RunE(cmd.DownloadCmd, []string{""})
+					Expect(err).To(HaveOccurred())
+					Expect(err.Error()).To(Equal("get uploader failed"))
+				})
+			})
+
+			When("uploading the file fails", func() {
+				BeforeEach(func() {
+					uploader.UploadMediaFileReturns("", "", errors.New("upload media file failed"))
+				})
+				It("returns an error", func() {
+					cmd.AttachProductSlug = "my-super-product"
+					cmd.AttachProductVersion = "1.1.1"
+					cmd.AttachContainerImage = "bitnami/nginx"
+					cmd.AttachContainerImageTag = "1.21.6"
+					cmd.AttachContainerImageTagType = "FIXED"
+					cmd.AttachInstructions = "docker run it"
+					cmd.AttachPCAFile = "/path/to/pca.pdf"
+					err := cmd.AttachContainerImageCmd.RunE(cmd.DownloadCmd, []string{""})
+					Expect(err).To(HaveOccurred())
+					Expect(err.Error()).To(Equal("upload media file failed"))
+				})
 			})
 		})
 
@@ -463,6 +661,8 @@ var _ = Describe("AttachCmd", func() {
 			test.AddVerions(updatedProduct, "1.1.1")
 			updatedProduct.ProductDeploymentFiles = append(updatedProduct.ProductDeploymentFiles, test.CreateFakeOVA("fake-ova", "1.1.1"))
 			marketplace.UploadVMReturns(updatedProduct, nil)
+
+			cmd.AttachPCAFile = ""
 		})
 
 		It("attaches the asset", func() {
@@ -497,6 +697,66 @@ var _ = Describe("AttachCmd", func() {
 				files := output.RenderFilesArgsForCall(0)
 				Expect(files).To(HaveLen(1))
 				Expect(files[0].Name).To(Equal("fake-ova"))
+			})
+		})
+
+		When("attaching a PCA file", func() {
+			var uploader *internalfakes.FakeUploader
+			BeforeEach(func() {
+				uploader = &internalfakes.FakeUploader{}
+				marketplace.GetUploaderReturns(uploader, nil)
+				uploader.UploadMediaFileReturns("", "https://example.com/path/to/pca.pdf", nil)
+			})
+			It("attaches the PCA file", func() {
+				cmd.AttachProductSlug = "my-super-product"
+				cmd.AttachProductVersion = "1.1.1"
+				cmd.AttachVMFile = "path/to/a/file.iso"
+				cmd.AttachPCAFile = "/path/to/pca.pdf"
+				err := cmd.AttachVMCmd.RunE(cmd.DownloadCmd, []string{""})
+				Expect(err).ToNot(HaveOccurred())
+
+				By("uploading the PCA file", func() {
+					Expect(marketplace.GetUploaderCallCount()).To(Equal(1))
+					Expect(uploader.UploadMediaFileCallCount()).To(Equal(1))
+					Expect(uploader.UploadMediaFileArgsForCall(0)).To(Equal("/path/to/pca.pdf"))
+				})
+
+				By("adding the url to the product", func() {
+					_, product, _ := marketplace.UploadVMArgsForCall(0)
+					Expect(product.PCADetails).ToNot(BeNil())
+					Expect(product.PCADetails.URL).To(Equal("https://example.com/path/to/pca.pdf"))
+					Expect(product.PCADetails.Version).To(Equal("1.1.1"))
+				})
+			})
+
+			When("getting the uploader fails", func() {
+				BeforeEach(func() {
+					marketplace.GetUploaderReturns(nil, errors.New("get uploader failed"))
+				})
+				It("returns an error", func() {
+					cmd.AttachProductSlug = "my-super-product"
+					cmd.AttachProductVersion = "1.1.1"
+					cmd.AttachVMFile = "path/to/a/file.iso"
+					cmd.AttachPCAFile = "/path/to/pca.pdf"
+					err := cmd.AttachVMCmd.RunE(cmd.DownloadCmd, []string{""})
+					Expect(err).To(HaveOccurred())
+					Expect(err.Error()).To(Equal("get uploader failed"))
+				})
+			})
+
+			When("uploading the file fails", func() {
+				BeforeEach(func() {
+					uploader.UploadMediaFileReturns("", "", errors.New("upload media file failed"))
+				})
+				It("returns an error", func() {
+					cmd.AttachProductSlug = "my-super-product"
+					cmd.AttachProductVersion = "1.1.1"
+					cmd.AttachVMFile = "path/to/a/file.iso"
+					cmd.AttachPCAFile = "/path/to/pca.pdf"
+					err := cmd.AttachVMCmd.RunE(cmd.DownloadCmd, []string{""})
+					Expect(err).To(HaveOccurred())
+					Expect(err.Error()).To(Equal("upload media file failed"))
+				})
 			})
 		})
 

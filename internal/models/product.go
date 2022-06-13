@@ -349,6 +349,9 @@ func (product *Product) PrepForUpdate() {
 	product.ProductDeploymentFiles = []*ProductDeploymentFile{}
 }
 
-func (product *Product) SetDeploymentType(deploymentType string) {
-	product.DeploymentTypes = []string{deploymentType}
+func (product *Product) SetPCAFile(version, pcaURL string) {
+	product.PCADetails = &PCADetail{
+		URL:     pcaURL,
+		Version: version,
+	}
 }

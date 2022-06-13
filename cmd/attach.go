@@ -29,6 +29,8 @@ var (
 	AttachVMFile string
 
 	AttachInstructions string
+
+	AttachPCAFile string
 )
 
 func init() {
@@ -45,6 +47,7 @@ func init() {
 	AttachChartCmd.Flags().StringVar(&AttachInstructions, "instructions", "", "Chart deployment instructions (required)")
 	_ = AttachChartCmd.MarkFlagRequired("instructions")
 	AttachChartCmd.Flags().BoolVar(&AttachCreateVersion, "create-version", false, "Create the product version, if it doesn't already exist")
+	AttachChartCmd.Flags().StringVar(&AttachPCAFile, "pca-file", "", "Path to a PCA file to upload")
 
 	AttachContainerImageCmd.Flags().StringVarP(&AttachProductSlug, "product", "p", "", "Product slug (required)")
 	_ = AttachContainerImageCmd.MarkFlagRequired("product")
@@ -59,6 +62,7 @@ func init() {
 	AttachContainerImageCmd.Flags().StringVarP(&AttachInstructions, "instructions", "i", "", "Image deployment instructions (required)")
 	_ = AttachContainerImageCmd.MarkFlagRequired("instructions")
 	AttachContainerImageCmd.Flags().BoolVar(&AttachCreateVersion, "create-version", false, "Create the product version, if it doesn't already exist")
+	AttachContainerImageCmd.Flags().StringVar(&AttachPCAFile, "pca-file", "", "Path to a PCA file to upload")
 
 	AttachVMCmd.Flags().StringVarP(&AttachProductSlug, "product", "p", "", "Product slug (required)")
 	_ = AttachVMCmd.MarkFlagRequired("product")
@@ -66,6 +70,7 @@ func init() {
 	AttachVMCmd.Flags().StringVar(&AttachVMFile, "file", "", "Virtual machine file to upload (required)")
 	_ = AttachVMCmd.MarkFlagRequired("file")
 	AttachVMCmd.Flags().BoolVar(&AttachCreateVersion, "create-version", false, "Create the product version, if it doesn't already exist")
+	AttachVMCmd.Flags().StringVar(&AttachPCAFile, "pca-file", "", "Path to a PCA file to upload")
 }
 
 var AttachCmd = &cobra.Command{
@@ -92,6 +97,19 @@ var AttachChartCmd = &cobra.Command{
 			} else {
 				return err
 			}
+		}
+
+		if AttachPCAFile != "" {
+			uploader, err := Marketplace.GetUploader(product.PublisherDetails.OrgId)
+			if err != nil {
+				return err
+			}
+			_, pcaUrl, err := uploader.UploadMediaFile(AttachPCAFile)
+			if err != nil {
+				return err
+			}
+
+			product.SetPCAFile(version.Number, pcaUrl)
 		}
 
 		chartURL, err := url.Parse(AttachChartURL)
@@ -144,6 +162,19 @@ var AttachContainerImageCmd = &cobra.Command{
 			}
 		}
 
+		if AttachPCAFile != "" {
+			uploader, err := Marketplace.GetUploader(product.PublisherDetails.OrgId)
+			if err != nil {
+				return err
+			}
+			_, pcaUrl, err := uploader.UploadMediaFile(AttachPCAFile)
+			if err != nil {
+				return err
+			}
+
+			product.SetPCAFile(version.Number, pcaUrl)
+		}
+
 		var updatedProduct *models.Product
 		if AttachContainerImageFile != "" {
 			updatedProduct, err = Marketplace.AttachLocalContainerImage(AttachContainerImageFile, AttachContainerImage, AttachContainerImageTag, AttachContainerImageTagType, AttachInstructions, product, version)
@@ -176,6 +207,19 @@ var AttachVMCmd = &cobra.Command{
 			} else {
 				return err
 			}
+		}
+
+		if AttachPCAFile != "" {
+			uploader, err := Marketplace.GetUploader(product.PublisherDetails.OrgId)
+			if err != nil {
+				return err
+			}
+			_, pcaUrl, err := uploader.UploadMediaFile(AttachPCAFile)
+			if err != nil {
+				return err
+			}
+
+			product.SetPCAFile(version.Number, pcaUrl)
 		}
 
 		updatedProduct, err := Marketplace.UploadVM(AttachVMFile, product, version)
