@@ -223,5 +223,12 @@ var _ = Describe("Asset", func() {
 			chartAssets := pkg.GetAssetsByType(pkg.AssetTypeChart, product, "1")
 			Expect(chartAssets).To(BeEmpty())
 		})
+
+		When("the asset type filter is empty", func() {
+			It("returns the unfiltered list", func() {
+				vmAssets := pkg.GetAssetsByType("", product, "1")
+				Expect(vmAssets).To(HaveLen(2))
+			})
+		})
 	})
 })

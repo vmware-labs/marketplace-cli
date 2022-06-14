@@ -150,6 +150,9 @@ func GetAssets(product *models.Product, version string) []*Asset {
 func GetAssetsByType(assetType string, product *models.Product, version string) []*Asset {
 	var filteredAssets []*Asset
 	unfilteredAssets := GetAssets(product, version)
+	if assetType == "" {
+		return unfilteredAssets
+	}
 
 	for _, asset := range unfilteredAssets {
 		if asset.Type == assetType {

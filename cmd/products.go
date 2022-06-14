@@ -5,7 +5,6 @@ package cmd
 
 import (
 	"fmt"
-	"sort"
 	"strings"
 
 	"github.com/spf13/cobra"
@@ -20,24 +19,9 @@ var (
 	ProductVersion   string
 	ListAssetsByType string
 	SetOSLFile       string
-	typeMapping      = map[string]string{
-		"addon":    pkg.AssetTypeAddon,
-		"chart":    pkg.AssetTypeChart,
-		"image":    pkg.AssetTypeContainerImage,
-		"metafile": pkg.AssetTypeMetaFile,
-		"vm":       pkg.AssetTypeVM,
-	}
-	assetTypesList string
 )
 
 func init() {
-	var assetTypes []string
-	for assetType := range typeMapping {
-		assetTypes = append(assetTypes, assetType)
-	}
-	sort.Strings(assetTypes)
-	assetTypesList = strings.Join(assetTypes, ", ")
-
 	rootCmd.AddCommand(ProductCmd)
 	ProductCmd.AddCommand(ListProductsCmd)
 	ProductCmd.AddCommand(GetProductCmd)
@@ -55,7 +39,7 @@ func init() {
 	ListAssetsCmd.Flags().StringVarP(&ProductSlug, "product", "p", "", "Product slug (required)")
 	_ = ListAssetsCmd.MarkFlagRequired("product")
 	ListAssetsCmd.Flags().StringVarP(&ProductVersion, "product-version", "v", "", "Product version")
-	ListAssetsCmd.Flags().StringVarP(&ListAssetsByType, "type", "t", "", fmt.Sprintf("Filter assets by type, one of (%s)", assetTypesList))
+	ListAssetsCmd.Flags().StringVarP(&ListAssetsByType, "type", "t", "", "Filter assets by type (one of "+strings.Join(assetTypesList(), ", ")+")")
 
 	ListProductVersionsCmd.Flags().StringVarP(&ProductSlug, "product", "p", "", "Product slug (required)")
 	_ = ListProductVersionsCmd.MarkFlagRequired("product")
@@ -128,16 +112,6 @@ var GetProductCmd = &cobra.Command{
 			return Output.RenderProduct(product, version)
 		}
 	},
-}
-
-func ValidateAssetTypeFilter(cmd *cobra.Command, args []string) error {
-	if ListAssetsByType == "" {
-		return nil
-	}
-	if typeMapping[ListAssetsByType] != "" {
-		return nil
-	}
-	return fmt.Errorf("Unknown asset type: %s\nPlease use one of %s", ListAssetsByType, assetTypesList)
 }
 
 var ListAssetsCmd = &cobra.Command{
