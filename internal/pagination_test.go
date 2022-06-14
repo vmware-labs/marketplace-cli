@@ -14,7 +14,7 @@ import (
 var _ = Describe("Pagination", func() {
 	Describe("Apply", func() {
 		It("modifies a URL to add pagination with a very specific encoding format", func() {
-			pagination := internal.Pagination{
+			pagination := &internal.Pagination{
 				Page:     1,
 				PageSize: 25,
 			}
@@ -48,7 +48,7 @@ var _ = Describe("Pagination", func() {
 
 	Describe("QueryString", func() {
 		It("returns the specific string that works in the query parameter", func() {
-			pagination := internal.Pagination{
+			pagination := &internal.Pagination{
 				Page:     1,
 				PageSize: 25,
 			}
