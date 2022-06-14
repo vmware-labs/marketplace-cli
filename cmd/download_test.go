@@ -32,14 +32,21 @@ var _ = Describe("DownloadCmd", func() {
 		productId = uuid.New().String()
 		product = test.CreateFakeProduct(productId, "My Super Product", "my-super-product", "PENDING")
 
-		// Version 0.0.0 has no assets, 1.1.1 has one asset, 3.3.3 has multiple assets
-		test.AddVerions(product, "0.0.0", "1.1.1", "3.3.3")
+		test.AddVerions(product,
+			"0.0.0", // No assets
+			"1.1.1", // One asset
+			"3.3.3", // Multiple assets
+			"4.4.4", // VMs and Metafiles
+		)
 
 		product.AddFile(test.CreateFakeOVA("my-db.ova", "1.1.1"))
 
 		product.AddFile(test.CreateFakeOVA("aaa.txt", "3.3.3"))
 		product.AddFile(test.CreateFakeOVA("bbb.txt", "3.3.3"))
 		product.AddFile(test.CreateFakeOVA("ccc.txt", "3.3.3"))
+
+		product.AddFile(test.CreateFakeOVA("ova.txt", "4.4.4"))
+		product.MetaFiles = append(product.MetaFiles, test.CreateFakeMetaFile("deploy.sh", "0.0.1", "4.4.4"))
 
 		marketplace = &pkgfakes.FakeMarketplaceInterface{}
 		cmd.Marketplace = marketplace
@@ -51,6 +58,7 @@ var _ = Describe("DownloadCmd", func() {
 
 		cmd.DownloadFilename = ""
 		cmd.DownloadFilter = ""
+		cmd.DownloadType = ""
 	})
 
 	It("downloads the asset", func() {
@@ -103,7 +111,19 @@ var _ = Describe("DownloadCmd", func() {
 		})
 	})
 
-	Context("Filename parameter used", func() {
+	When("a type filter eliminates all the assets", func() {
+		It("returns an error saying there are no assets", func() {
+			cmd.DownloadProductSlug = "my-super-product"
+			cmd.DownloadProductVersion = "1.1.1"
+			cmd.DownloadType = "addon"
+			cmd.DownloadAcceptEULA = true
+			err := cmd.DownloadCmd.RunE(cmd.DownloadCmd, []string{""})
+			Expect(err).To(HaveOccurred())
+			Expect(err.Error()).To(Equal("product my-super-product 1.1.1 does not have any downloadable Add-on assets"))
+		})
+	})
+
+	When("the filename parameter is used", func() {
 		It("downloads the asset using the given filename", func() {
 			cmd.DownloadProductSlug = "my-super-product"
 			cmd.DownloadProductVersion = "1.1.1"
@@ -118,7 +138,7 @@ var _ = Describe("DownloadCmd", func() {
 		})
 	})
 
-	Context("Failed to get the product", func() {
+	When("getting the product fails", func() {
 		BeforeEach(func() {
 			marketplace.GetProductWithVersionReturns(nil, nil, fmt.Errorf("get product failed"))
 		})
@@ -155,6 +175,18 @@ var _ = Describe("DownloadCmd", func() {
 			Expect(err).To(HaveOccurred())
 			Expect(err.Error()).To(Equal("product my-super-product 0.0.0 does not have any downloadable assets"))
 		})
+
+		When("using a type filter", func() {
+			It("returns a more specific error", func() {
+				cmd.DownloadProductSlug = "my-super-product"
+				cmd.DownloadProductVersion = "0.0.0"
+				cmd.DownloadType = "vm"
+				cmd.DownloadAcceptEULA = true
+				err := cmd.DownloadCmd.RunE(cmd.DownloadCmd, []string{""})
+				Expect(err).To(HaveOccurred())
+				Expect(err.Error()).To(Equal("product my-super-product 0.0.0 does not have any downloadable VM assets"))
+			})
+		})
 	})
 
 	Context("Multiple assets attached to the product", func() {
@@ -170,6 +202,18 @@ var _ = Describe("DownloadCmd", func() {
 				Expect(output.RenderAssetsCallCount()).To(Equal(1))
 				assets := output.RenderAssetsArgsForCall(0)
 				Expect(assets).To(HaveLen(3))
+			})
+		})
+
+		When("using a type filter", func() {
+			It("returns a more specific error", func() {
+				cmd.DownloadProductSlug = "my-super-product"
+				cmd.DownloadProductVersion = "3.3.3"
+				cmd.DownloadType = "vm"
+				cmd.DownloadAcceptEULA = true
+				err := cmd.DownloadCmd.RunE(cmd.DownloadCmd, []string{""})
+				Expect(err).To(HaveOccurred())
+				Expect(err.Error()).To(Equal("product my-super-product 3.3.3 has multiple downloadable VM assets, please use the --filter parameter"))
 			})
 		})
 	})
@@ -220,6 +264,42 @@ var _ = Describe("DownloadCmd", func() {
 					assets := output.RenderAssetsArgsForCall(0)
 					Expect(assets).To(HaveLen(3))
 				})
+			})
+
+			When("using a type filter", func() {
+				It("returns a more specific error", func() {
+					cmd.DownloadProductSlug = "my-super-product"
+					cmd.DownloadProductVersion = "3.3.3"
+					cmd.DownloadFilter = "txt"
+					cmd.DownloadType = "vm"
+					cmd.DownloadAcceptEULA = true
+					err := cmd.DownloadCmd.RunE(cmd.DownloadCmd, []string{""})
+					Expect(err).To(HaveOccurred())
+					Expect(err.Error()).To(Equal("product my-super-product 3.3.3 has multiple downloadable VM assets that match the filter \"txt\", please adjust the --filter parameter"))
+				})
+			})
+		})
+	})
+
+	When("using a type filter", func() {
+		It("downloads the asset of the given type", func() {
+			cmd.DownloadProductSlug = "my-super-product"
+			cmd.DownloadProductVersion = "4.4.4"
+			cmd.DownloadType = "metafile"
+			cmd.DownloadAcceptEULA = true
+			err := cmd.DownloadCmd.RunE(cmd.DownloadCmd, []string{""})
+			Expect(err).ToNot(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
+
+			By("downloading the chosen asset", func() {
+				Expect(marketplace.DownloadCallCount()).To(Equal(1))
+				filename, assetPayload := marketplace.DownloadArgsForCall(0)
+				Expect(filename).To(Equal("deploy.sh"))
+				Expect(assetPayload.ProductId).To(Equal(productId))
+				Expect(assetPayload.AppVersion).To(Equal("4.4.4"))
+				Expect(assetPayload.EulaAccepted).To(BeTrue())
+				Expect(assetPayload.MetaFileID).ToNot(BeEmpty())
+				Expect(assetPayload.MetaFileObjectID).ToNot(BeEmpty())
 			})
 		})
 	})

@@ -16,6 +16,7 @@ var (
 	DownloadProductVersion string
 	DownloadFilter         string
 	DownloadFilename       string
+	DownloadType           string
 	DownloadAcceptEULA     bool
 )
 
@@ -25,7 +26,8 @@ func init() {
 	DownloadCmd.Flags().StringVarP(&DownloadProductSlug, "product", "p", "", "Product slug (required)")
 	_ = DownloadCmd.MarkFlagRequired("product")
 	DownloadCmd.Flags().StringVarP(&DownloadProductVersion, "product-version", "v", "", "Product version (default to latest version)")
-	DownloadCmd.Flags().StringVar(&DownloadFilter, "filter", "", "Filter to select from multiple files")
+	DownloadCmd.Flags().StringVar(&DownloadFilter, "filter", "", "Filter assets by display name")
+	DownloadCmd.Flags().StringVarP(&DownloadType, "type", "t", "", "Filter assets by type (one of "+strings.Join(assetTypesList(), ", ")+")")
 	DownloadCmd.Flags().StringVarP(&DownloadFilename, "filename", "f", "", "Output file name")
 	DownloadCmd.Flags().BoolVar(&DownloadAcceptEULA, "accept-eula", false, "Accept the product EULA")
 }
@@ -46,7 +48,7 @@ var DownloadCmd = &cobra.Command{
 	Long:    "Download an asset attached to a product in the VMware Marketplace",
 	Example: fmt.Sprintf("%s download -p hyperspace-database-chart1 -v 1.2.3", AppName),
 	Args:    cobra.NoArgs,
-	PreRunE: GetRefreshToken,
+	PreRunE: RunSerially(ValidateAssetTypeFilter, GetRefreshToken),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		cmd.SilenceUsage = true
 		product, version, err := Marketplace.GetProductWithVersion(DownloadProductSlug, DownloadProductVersion)
@@ -54,28 +56,32 @@ var DownloadCmd = &cobra.Command{
 			return err
 		}
 
+		assetType := ""
+		if DownloadType != "" {
+			assetType = typeMapping[DownloadType] + " "
+		}
 		var asset *pkg.Asset
-		assets := pkg.GetAssets(product, version.Number)
+		assets := pkg.GetAssetsByType(typeMapping[DownloadType], product, version.Number)
 		if len(assets) == 0 {
-			return fmt.Errorf("product %s %s does not have any downloadable assets", product.Slug, version.Number)
+			return fmt.Errorf("product %s %s does not have any downloadable %sassets", product.Slug, version.Number, assetType)
 		}
 
 		if DownloadFilter == "" {
 			asset = assets[0]
 			if len(assets) > 1 {
 				_ = Output.RenderAssets(assets)
-				return fmt.Errorf("product %s %s has multiple downloadable assets, please use the --filter parameter", product.Slug, version.Number)
+				return fmt.Errorf("product %s %s has multiple downloadable %sassets, please use the --filter parameter", product.Slug, version.Number, assetType)
 			}
 		} else {
 			filterAssets := filterAssets(DownloadFilter, assets)
 			if len(filterAssets) == 0 {
-				return fmt.Errorf("product %s %s does not have any downloadable assets that match the filter \"%s\", please adjust the --filter parameter", product.Slug, version.Number, DownloadFilter)
+				return fmt.Errorf("product %s %s does not have any downloadable %sassets that match the filter \"%s\", please adjust the --filter parameter", product.Slug, version.Number, assetType, DownloadFilter)
 			}
 
 			asset = filterAssets[0]
 			if len(filterAssets) > 1 {
 				_ = Output.RenderAssets(filterAssets)
-				return fmt.Errorf("product %s %s has multiple downloadable assets that match the filter \"%s\", please adjust the --filter parameter", product.Slug, version.Number, DownloadFilter)
+				return fmt.Errorf("product %s %s has multiple downloadable %sassets that match the filter \"%s\", please adjust the --filter parameter", product.Slug, version.Number, assetType, DownloadFilter)
 			}
 		}
 

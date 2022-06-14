@@ -121,6 +121,7 @@ func CreateFakeMetaFile(name, version, productVersion string) *models.MetaFile {
 		AppVersion: productVersion,
 		Objects: []*models.MetaFileObject{
 			{
+				FileID:         uuid.New().String(),
 				FileName:       name,
 				Size:           123,
 				DownloadCount:  25,
