@@ -42,7 +42,7 @@ type ListProductResponseParams struct {
 	Pagination   *internal.Pagination     `json:"pagination"`
 	ProductCount int                      `json:"itemsnumber"`
 	Search       string                   `json:"search"`
-	SortingList  []interface{}            `json:"sortinglist"`
+	SortingList  []*internal.Sorting      `json:"sortinglist"`
 	SelectList   []interface{}            `json:"selectlist"`
 }
 
@@ -69,11 +69,17 @@ func (m *Marketplace) ListProducts(allOrgs bool, searchTerm string) ([]*models.P
 		Page:     1,
 		PageSize: 20,
 	}
+	sorting := &internal.Sorting{
+		Order:     1,
+		Key:       internal.SortKeyDisplayName,
+		Direction: internal.SortDirectionAscending,
+	}
 
 	var progressBar *progressbar.ProgressBar
 	for ; firstTime || len(products) < totalProducts; pagination.Page++ {
 		requestURL := m.MakeURL("/api/v1/products", values)
 		requestURL = pagination.Apply(requestURL)
+		requestURL = sorting.Apply(requestURL)
 		resp, err := m.Get(requestURL)
 		if err != nil {
 			return nil, fmt.Errorf("sending the request for the list of products failed: %w", err)
