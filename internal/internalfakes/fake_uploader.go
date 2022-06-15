@@ -23,6 +23,21 @@ type FakeUploader struct {
 		result2 string
 		result3 error
 	}
+	UploadMetaFileStub        func(string) (string, string, error)
+	uploadMetaFileMutex       sync.RWMutex
+	uploadMetaFileArgsForCall []struct {
+		arg1 string
+	}
+	uploadMetaFileReturns struct {
+		result1 string
+		result2 string
+		result3 error
+	}
+	uploadMetaFileReturnsOnCall map[int]struct {
+		result1 string
+		result2 string
+		result3 error
+	}
 	UploadProductFileStub        func(string) (string, string, error)
 	uploadProductFileMutex       sync.RWMutex
 	uploadProductFileArgsForCall []struct {
@@ -48,15 +63,16 @@ func (fake *FakeUploader) UploadMediaFile(arg1 string) (string, string, error) {
 	fake.uploadMediaFileArgsForCall = append(fake.uploadMediaFileArgsForCall, struct {
 		arg1 string
 	}{arg1})
+	stub := fake.UploadMediaFileStub
+	fakeReturns := fake.uploadMediaFileReturns
 	fake.recordInvocation("UploadMediaFile", []interface{}{arg1})
 	fake.uploadMediaFileMutex.Unlock()
-	if fake.UploadMediaFileStub != nil {
-		return fake.UploadMediaFileStub(arg1)
+	if stub != nil {
+		return stub(arg1)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2, ret.result3
 	}
-	fakeReturns := fake.uploadMediaFileReturns
 	return fakeReturns.result1, fakeReturns.result2, fakeReturns.result3
 }
 
@@ -108,21 +124,89 @@ func (fake *FakeUploader) UploadMediaFileReturnsOnCall(i int, result1 string, re
 	}{result1, result2, result3}
 }
 
+func (fake *FakeUploader) UploadMetaFile(arg1 string) (string, string, error) {
+	fake.uploadMetaFileMutex.Lock()
+	ret, specificReturn := fake.uploadMetaFileReturnsOnCall[len(fake.uploadMetaFileArgsForCall)]
+	fake.uploadMetaFileArgsForCall = append(fake.uploadMetaFileArgsForCall, struct {
+		arg1 string
+	}{arg1})
+	stub := fake.UploadMetaFileStub
+	fakeReturns := fake.uploadMetaFileReturns
+	fake.recordInvocation("UploadMetaFile", []interface{}{arg1})
+	fake.uploadMetaFileMutex.Unlock()
+	if stub != nil {
+		return stub(arg1)
+	}
+	if specificReturn {
+		return ret.result1, ret.result2, ret.result3
+	}
+	return fakeReturns.result1, fakeReturns.result2, fakeReturns.result3
+}
+
+func (fake *FakeUploader) UploadMetaFileCallCount() int {
+	fake.uploadMetaFileMutex.RLock()
+	defer fake.uploadMetaFileMutex.RUnlock()
+	return len(fake.uploadMetaFileArgsForCall)
+}
+
+func (fake *FakeUploader) UploadMetaFileCalls(stub func(string) (string, string, error)) {
+	fake.uploadMetaFileMutex.Lock()
+	defer fake.uploadMetaFileMutex.Unlock()
+	fake.UploadMetaFileStub = stub
+}
+
+func (fake *FakeUploader) UploadMetaFileArgsForCall(i int) string {
+	fake.uploadMetaFileMutex.RLock()
+	defer fake.uploadMetaFileMutex.RUnlock()
+	argsForCall := fake.uploadMetaFileArgsForCall[i]
+	return argsForCall.arg1
+}
+
+func (fake *FakeUploader) UploadMetaFileReturns(result1 string, result2 string, result3 error) {
+	fake.uploadMetaFileMutex.Lock()
+	defer fake.uploadMetaFileMutex.Unlock()
+	fake.UploadMetaFileStub = nil
+	fake.uploadMetaFileReturns = struct {
+		result1 string
+		result2 string
+		result3 error
+	}{result1, result2, result3}
+}
+
+func (fake *FakeUploader) UploadMetaFileReturnsOnCall(i int, result1 string, result2 string, result3 error) {
+	fake.uploadMetaFileMutex.Lock()
+	defer fake.uploadMetaFileMutex.Unlock()
+	fake.UploadMetaFileStub = nil
+	if fake.uploadMetaFileReturnsOnCall == nil {
+		fake.uploadMetaFileReturnsOnCall = make(map[int]struct {
+			result1 string
+			result2 string
+			result3 error
+		})
+	}
+	fake.uploadMetaFileReturnsOnCall[i] = struct {
+		result1 string
+		result2 string
+		result3 error
+	}{result1, result2, result3}
+}
+
 func (fake *FakeUploader) UploadProductFile(arg1 string) (string, string, error) {
 	fake.uploadProductFileMutex.Lock()
 	ret, specificReturn := fake.uploadProductFileReturnsOnCall[len(fake.uploadProductFileArgsForCall)]
 	fake.uploadProductFileArgsForCall = append(fake.uploadProductFileArgsForCall, struct {
 		arg1 string
 	}{arg1})
+	stub := fake.UploadProductFileStub
+	fakeReturns := fake.uploadProductFileReturns
 	fake.recordInvocation("UploadProductFile", []interface{}{arg1})
 	fake.uploadProductFileMutex.Unlock()
-	if fake.UploadProductFileStub != nil {
-		return fake.UploadProductFileStub(arg1)
+	if stub != nil {
+		return stub(arg1)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2, ret.result3
 	}
-	fakeReturns := fake.uploadProductFileReturns
 	return fakeReturns.result1, fakeReturns.result2, fakeReturns.result3
 }
 
@@ -179,6 +263,8 @@ func (fake *FakeUploader) Invocations() map[string][][]interface{} {
 	defer fake.invocationsMutex.RUnlock()
 	fake.uploadMediaFileMutex.RLock()
 	defer fake.uploadMediaFileMutex.RUnlock()
+	fake.uploadMetaFileMutex.RLock()
+	defer fake.uploadMetaFileMutex.RUnlock()
 	fake.uploadProductFileMutex.RLock()
 	defer fake.uploadProductFileMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}

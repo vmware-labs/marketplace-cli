@@ -26,6 +26,9 @@ var (
 	AttachContainerImageTag     string
 	AttachContainerImageTagType string
 
+	AttachMetaFile        string
+	AttachMetaFileVersion string
+
 	AttachVMFile string
 
 	AttachInstructions string
@@ -37,6 +40,7 @@ func init() {
 	rootCmd.AddCommand(AttachCmd)
 	AttachCmd.AddCommand(AttachChartCmd)
 	AttachCmd.AddCommand(AttachContainerImageCmd)
+	AttachCmd.AddCommand(AttachMetaFileCmd)
 	AttachCmd.AddCommand(AttachVMCmd)
 
 	AttachChartCmd.Flags().StringVarP(&AttachProductSlug, "product", "p", "", "Product slug (required)")
@@ -63,6 +67,14 @@ func init() {
 	_ = AttachContainerImageCmd.MarkFlagRequired("instructions")
 	AttachContainerImageCmd.Flags().BoolVar(&AttachCreateVersion, "create-version", false, "Create the product version, if it doesn't already exist")
 	AttachContainerImageCmd.Flags().StringVar(&AttachPCAFile, "pca-file", "", "Path to a PCA file to upload")
+
+	AttachMetaFileCmd.Flags().StringVarP(&AttachProductSlug, "product", "p", "", "Product slug (required)")
+	_ = AttachMetaFileCmd.MarkFlagRequired("product")
+	AttachMetaFileCmd.Flags().StringVarP(&AttachProductVersion, "product-version", "v", "", "Product version (default to latest version)")
+	AttachMetaFileCmd.Flags().StringVar(&AttachMetaFile, "metafile", "", "Meta file to upload (required)")
+	_ = AttachMetaFileCmd.MarkFlagRequired("metafile")
+	AttachMetaFileCmd.Flags().StringVar(&MetaFileType, "metafile-type", "", "Meta file version (required, one of "+strings.Join(metaFileTypesList(), ", ")+")")
+	AttachMetaFileCmd.Flags().StringVar(&AttachMetaFileVersion, "metafile-version", "", "Meta file type (default is the product version)")
 
 	AttachVMCmd.Flags().StringVarP(&AttachProductSlug, "product", "p", "", "Product slug (required)")
 	_ = AttachVMCmd.MarkFlagRequired("product")
@@ -187,6 +199,37 @@ var AttachContainerImageCmd = &cobra.Command{
 
 		Output.PrintHeader(fmt.Sprintf("Container images for %s %s:", updatedProduct.DisplayName, version.Number))
 		return Output.RenderContainerImages(updatedProduct.GetContainerImagesForVersion(version.Number))
+	},
+}
+
+var AttachMetaFileCmd = &cobra.Command{
+	Use:     "metafile",
+	Short:   "Attach a meta file",
+	Long:    "Upload and attach a meta file to a product in the VMware Marketplace",
+	Example: fmt.Sprintf("%s attach metafile -p hyperspace-database-vm1 -v 1.2.3 --file deploy.sh", AppName),
+	Args:    cobra.NoArgs,
+	PreRunE: RunSerially(ValidateMetaFileType, GetRefreshToken),
+	RunE: func(cmd *cobra.Command, args []string) error {
+		cmd.SilenceUsage = true
+
+		product, version, err := Marketplace.GetProductWithVersion(AttachProductSlug, AttachProductVersion)
+		if err != nil {
+			if errors.Is(err, &pkg.VersionDoesNotExistError{}) && AttachCreateVersion {
+				version = product.NewVersion(AttachProductVersion)
+			} else {
+				return err
+			}
+		}
+
+		if AttachMetaFileVersion == "" {
+			AttachMetaFileVersion = version.Number
+		}
+		updatedProduct, err := Marketplace.AttachMetaFile(AttachMetaFile, metaFileTypeMapping[MetaFileType], AttachMetaFileVersion, product, version)
+		if err != nil {
+			return err
+		}
+
+		return Output.RenderAssets(pkg.GetAssets(updatedProduct, version.Number))
 	},
 }
 

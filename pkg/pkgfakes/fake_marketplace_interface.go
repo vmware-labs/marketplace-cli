@@ -48,6 +48,23 @@ type FakeMarketplaceInterface struct {
 		result1 *models.Product
 		result2 error
 	}
+	AttachMetaFileStub        func(string, string, string, *models.Product, *models.Version) (*models.Product, error)
+	attachMetaFileMutex       sync.RWMutex
+	attachMetaFileArgsForCall []struct {
+		arg1 string
+		arg2 string
+		arg3 string
+		arg4 *models.Product
+		arg5 *models.Version
+	}
+	attachMetaFileReturns struct {
+		result1 *models.Product
+		result2 error
+	}
+	attachMetaFileReturnsOnCall map[int]struct {
+		result1 *models.Product
+		result2 error
+	}
 	AttachPublicChartStub        func(*url.URL, string, *models.Product, *models.Version) (*models.Product, error)
 	attachPublicChartMutex       sync.RWMutex
 	attachPublicChartArgsForCall []struct {
@@ -446,6 +463,74 @@ func (fake *FakeMarketplaceInterface) AttachLocalContainerImageReturnsOnCall(i i
 		})
 	}
 	fake.attachLocalContainerImageReturnsOnCall[i] = struct {
+		result1 *models.Product
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeMarketplaceInterface) AttachMetaFile(arg1 string, arg2 string, arg3 string, arg4 *models.Product, arg5 *models.Version) (*models.Product, error) {
+	fake.attachMetaFileMutex.Lock()
+	ret, specificReturn := fake.attachMetaFileReturnsOnCall[len(fake.attachMetaFileArgsForCall)]
+	fake.attachMetaFileArgsForCall = append(fake.attachMetaFileArgsForCall, struct {
+		arg1 string
+		arg2 string
+		arg3 string
+		arg4 *models.Product
+		arg5 *models.Version
+	}{arg1, arg2, arg3, arg4, arg5})
+	stub := fake.AttachMetaFileStub
+	fakeReturns := fake.attachMetaFileReturns
+	fake.recordInvocation("AttachMetaFile", []interface{}{arg1, arg2, arg3, arg4, arg5})
+	fake.attachMetaFileMutex.Unlock()
+	if stub != nil {
+		return stub(arg1, arg2, arg3, arg4, arg5)
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	return fakeReturns.result1, fakeReturns.result2
+}
+
+func (fake *FakeMarketplaceInterface) AttachMetaFileCallCount() int {
+	fake.attachMetaFileMutex.RLock()
+	defer fake.attachMetaFileMutex.RUnlock()
+	return len(fake.attachMetaFileArgsForCall)
+}
+
+func (fake *FakeMarketplaceInterface) AttachMetaFileCalls(stub func(string, string, string, *models.Product, *models.Version) (*models.Product, error)) {
+	fake.attachMetaFileMutex.Lock()
+	defer fake.attachMetaFileMutex.Unlock()
+	fake.AttachMetaFileStub = stub
+}
+
+func (fake *FakeMarketplaceInterface) AttachMetaFileArgsForCall(i int) (string, string, string, *models.Product, *models.Version) {
+	fake.attachMetaFileMutex.RLock()
+	defer fake.attachMetaFileMutex.RUnlock()
+	argsForCall := fake.attachMetaFileArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3, argsForCall.arg4, argsForCall.arg5
+}
+
+func (fake *FakeMarketplaceInterface) AttachMetaFileReturns(result1 *models.Product, result2 error) {
+	fake.attachMetaFileMutex.Lock()
+	defer fake.attachMetaFileMutex.Unlock()
+	fake.AttachMetaFileStub = nil
+	fake.attachMetaFileReturns = struct {
+		result1 *models.Product
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeMarketplaceInterface) AttachMetaFileReturnsOnCall(i int, result1 *models.Product, result2 error) {
+	fake.attachMetaFileMutex.Lock()
+	defer fake.attachMetaFileMutex.Unlock()
+	fake.AttachMetaFileStub = nil
+	if fake.attachMetaFileReturnsOnCall == nil {
+		fake.attachMetaFileReturnsOnCall = make(map[int]struct {
+			result1 *models.Product
+			result2 error
+		})
+	}
+	fake.attachMetaFileReturnsOnCall[i] = struct {
 		result1 *models.Product
 		result2 error
 	}{result1, result2}
@@ -1694,6 +1779,8 @@ func (fake *FakeMarketplaceInterface) Invocations() map[string][][]interface{} {
 	defer fake.attachLocalChartMutex.RUnlock()
 	fake.attachLocalContainerImageMutex.RLock()
 	defer fake.attachLocalContainerImageMutex.RUnlock()
+	fake.attachMetaFileMutex.RLock()
+	defer fake.attachMetaFileMutex.RUnlock()
 	fake.attachPublicChartMutex.RLock()
 	defer fake.attachPublicChartMutex.RUnlock()
 	fake.attachPublicContainerImageMutex.RLock()

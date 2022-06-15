@@ -23,6 +23,7 @@ import (
 
 const (
 	FolderMediaFiles   = "media-files"
+	FolderMetaFiles    = "meta-files"
 	FolderProductFiles = "marketplace-product-files"
 )
 
@@ -39,6 +40,7 @@ func MakeUniqueFilename(filename string) string {
 //go:generate counterfeiter . Uploader
 type Uploader interface {
 	UploadMediaFile(filePath string) (string, string, error)
+	UploadMetaFile(filePath string) (string, string, error)
 	UploadProductFile(filePath string) (string, string, error)
 }
 
@@ -84,6 +86,15 @@ func (u *S3Uploader) UploadMediaFile(filePath string) (string, string, error) {
 	key := path.Join(u.orgID, FolderMediaFiles, now(), filename)
 	url := fmt.Sprintf("https://%s.s3.%s.amazonaws.com/%s", u.bucket, u.region, key)
 	err := u.upload(filePath, key, types.ObjectCannedACLPublicRead)
+	return filename, url, err
+}
+
+func (u *S3Uploader) UploadMetaFile(filePath string) (string, string, error) {
+	filename := filepath.Base(filePath)
+	datestamp := now()
+	key := path.Join(u.orgID, FolderMetaFiles, datestamp, filename)
+	url := fmt.Sprintf("https://%s.s3.%s.amazonaws.com/%s", u.bucket, u.region, key)
+	err := u.upload(filePath, key, types.ObjectCannedACLPrivate)
 	return filename, url, err
 }
 

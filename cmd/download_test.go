@@ -36,7 +36,7 @@ var _ = Describe("DownloadCmd", func() {
 			"0.0.0", // No assets
 			"1.1.1", // One asset
 			"3.3.3", // Multiple assets
-			"4.4.4", // VMs and Metafiles
+			"4.4.4", // VMs and MetaFiles
 		)
 
 		product.AddFile(test.CreateFakeOVA("my-db.ova", "1.1.1"))
@@ -58,7 +58,7 @@ var _ = Describe("DownloadCmd", func() {
 
 		cmd.DownloadFilename = ""
 		cmd.DownloadFilter = ""
-		cmd.DownloadType = ""
+		cmd.AssetType = ""
 	})
 
 	It("downloads the asset", func() {
@@ -115,7 +115,7 @@ var _ = Describe("DownloadCmd", func() {
 		It("returns an error saying there are no assets", func() {
 			cmd.DownloadProductSlug = "my-super-product"
 			cmd.DownloadProductVersion = "1.1.1"
-			cmd.DownloadType = "addon"
+			cmd.AssetType = "addon"
 			cmd.DownloadAcceptEULA = true
 			err := cmd.DownloadCmd.RunE(cmd.DownloadCmd, []string{""})
 			Expect(err).To(HaveOccurred())
@@ -180,7 +180,7 @@ var _ = Describe("DownloadCmd", func() {
 			It("returns a more specific error", func() {
 				cmd.DownloadProductSlug = "my-super-product"
 				cmd.DownloadProductVersion = "0.0.0"
-				cmd.DownloadType = "vm"
+				cmd.AssetType = "vm"
 				cmd.DownloadAcceptEULA = true
 				err := cmd.DownloadCmd.RunE(cmd.DownloadCmd, []string{""})
 				Expect(err).To(HaveOccurred())
@@ -209,7 +209,7 @@ var _ = Describe("DownloadCmd", func() {
 			It("returns a more specific error", func() {
 				cmd.DownloadProductSlug = "my-super-product"
 				cmd.DownloadProductVersion = "3.3.3"
-				cmd.DownloadType = "vm"
+				cmd.AssetType = "vm"
 				cmd.DownloadAcceptEULA = true
 				err := cmd.DownloadCmd.RunE(cmd.DownloadCmd, []string{""})
 				Expect(err).To(HaveOccurred())
@@ -271,7 +271,7 @@ var _ = Describe("DownloadCmd", func() {
 					cmd.DownloadProductSlug = "my-super-product"
 					cmd.DownloadProductVersion = "3.3.3"
 					cmd.DownloadFilter = "txt"
-					cmd.DownloadType = "vm"
+					cmd.AssetType = "vm"
 					cmd.DownloadAcceptEULA = true
 					err := cmd.DownloadCmd.RunE(cmd.DownloadCmd, []string{""})
 					Expect(err).To(HaveOccurred())
@@ -285,7 +285,7 @@ var _ = Describe("DownloadCmd", func() {
 		It("downloads the asset of the given type", func() {
 			cmd.DownloadProductSlug = "my-super-product"
 			cmd.DownloadProductVersion = "4.4.4"
-			cmd.DownloadType = "metafile"
+			cmd.AssetType = "metafile"
 			cmd.DownloadAcceptEULA = true
 			err := cmd.DownloadCmd.RunE(cmd.DownloadCmd, []string{""})
 			Expect(err).ToNot(HaveOccurred())

@@ -28,5 +28,10 @@ run:
       mkpcli attach vm --product "${PRODUCT_SLUG}" --product-version "${VERSION}" --create-version \
         --file "${VM_FILE}"
 
+      # Also attach a meta file
+      echo "some other virtual machine" > other-vm.iso
+      mkpcli attach metafile --product "${PRODUCT_SLUG}" --product-version "${VERSION}" \
+        --metafile other-vm.iso --metafile-type other --metafile-version 1.0.0
+
       # Get the list of virtual machine files
       mkpcli product list-assets --type vm --product "${PRODUCT_SLUG}" --product-version "${VERSION}" | grep $(basename -s .iso $(basename -s .ova "$VM_FILE"))
