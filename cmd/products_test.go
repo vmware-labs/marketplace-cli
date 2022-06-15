@@ -166,7 +166,7 @@ var _ = Describe("Products", func() {
 		It("outputs the list of assets", func() {
 			cmd.ProductSlug = "my-super-product"
 			cmd.ProductVersion = "1"
-			cmd.ListAssetsByType = ""
+			cmd.AssetType = ""
 			err := cmd.ListAssetsCmd.RunE(cmd.ListAssetsCmd, []string{})
 			Expect(err).ToNot(HaveOccurred())
 
@@ -188,7 +188,7 @@ var _ = Describe("Products", func() {
 			It("outputs the filtered list of assets", func() {
 				cmd.ProductSlug = "my-super-product"
 				cmd.ProductVersion = "1"
-				cmd.ListAssetsByType = "vm"
+				cmd.AssetType = "vm"
 				err := cmd.ListAssetsCmd.RunE(cmd.ListAssetsCmd, []string{})
 				Expect(err).ToNot(HaveOccurred())
 

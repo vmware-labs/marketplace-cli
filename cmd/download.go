@@ -16,7 +16,6 @@ var (
 	DownloadProductVersion string
 	DownloadFilter         string
 	DownloadFilename       string
-	DownloadType           string
 	DownloadAcceptEULA     bool
 )
 
@@ -27,7 +26,7 @@ func init() {
 	_ = DownloadCmd.MarkFlagRequired("product")
 	DownloadCmd.Flags().StringVarP(&DownloadProductVersion, "product-version", "v", "", "Product version (default to latest version)")
 	DownloadCmd.Flags().StringVar(&DownloadFilter, "filter", "", "Filter assets by display name")
-	DownloadCmd.Flags().StringVarP(&DownloadType, "type", "t", "", "Filter assets by type (one of "+strings.Join(assetTypesList(), ", ")+")")
+	DownloadCmd.Flags().StringVarP(&AssetType, "type", "t", "", "Filter assets by type (one of "+strings.Join(assetTypesList(), ", ")+")")
 	DownloadCmd.Flags().StringVarP(&DownloadFilename, "filename", "f", "", "Output file name")
 	DownloadCmd.Flags().BoolVar(&DownloadAcceptEULA, "accept-eula", false, "Accept the product EULA")
 }
@@ -57,11 +56,11 @@ var DownloadCmd = &cobra.Command{
 		}
 
 		assetType := ""
-		if DownloadType != "" {
-			assetType = typeMapping[DownloadType] + " "
+		if AssetType != "" {
+			assetType = assetTypeMapping[AssetType] + " "
 		}
 		var asset *pkg.Asset
-		assets := pkg.GetAssetsByType(typeMapping[DownloadType], product, version.Number)
+		assets := pkg.GetAssetsByType(assetTypeMapping[AssetType], product, version.Number)
 		if len(assets) == 0 {
 			return fmt.Errorf("product %s %s does not have any downloadable %sassets", product.Slug, version.Number, assetType)
 		}

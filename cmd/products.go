@@ -13,12 +13,11 @@ import (
 )
 
 var (
-	allOrgs          = false
-	searchTerm       string
-	ProductSlug      string
-	ProductVersion   string
-	ListAssetsByType string
-	SetOSLFile       string
+	allOrgs        = false
+	searchTerm     string
+	ProductSlug    string
+	ProductVersion string
+	SetOSLFile     string
 )
 
 func init() {
@@ -39,7 +38,7 @@ func init() {
 	ListAssetsCmd.Flags().StringVarP(&ProductSlug, "product", "p", "", "Product slug (required)")
 	_ = ListAssetsCmd.MarkFlagRequired("product")
 	ListAssetsCmd.Flags().StringVarP(&ProductVersion, "product-version", "v", "", "Product version")
-	ListAssetsCmd.Flags().StringVarP(&ListAssetsByType, "type", "t", "", "Filter assets by type (one of "+strings.Join(assetTypesList(), ", ")+")")
+	ListAssetsCmd.Flags().StringVarP(&AssetType, "type", "t", "", "Filter assets by type (one of "+strings.Join(assetTypesList(), ", ")+")")
 
 	ListProductVersionsCmd.Flags().StringVarP(&ProductSlug, "product", "p", "", "Product slug (required)")
 	_ = ListProductVersionsCmd.MarkFlagRequired("product")
@@ -128,11 +127,11 @@ var ListAssetsCmd = &cobra.Command{
 		}
 
 		var assets []*pkg.Asset
-		if ListAssetsByType == "" {
+		if AssetType == "" {
 			assets = pkg.GetAssets(product, version.Number)
 			Output.PrintHeader(fmt.Sprintf("Assets for for %s %s:", product.DisplayName, version.Number))
 		} else {
-			assetType := typeMapping[ListAssetsByType]
+			assetType := assetTypeMapping[AssetType]
 			assets = pkg.GetAssetsByType(assetType, product, version.Number)
 			Output.PrintHeader(fmt.Sprintf("%s assets for for %s %s:", assetType, product.DisplayName, version.Number))
 		}

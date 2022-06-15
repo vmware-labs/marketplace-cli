@@ -37,15 +37,16 @@ func (fake *FakeS3Client) PutObject(arg1 context.Context, arg2 *s3.PutObjectInpu
 		arg2 *s3.PutObjectInput
 		arg3 []func(*s3.Options)
 	}{arg1, arg2, arg3})
+	stub := fake.PutObjectStub
+	fakeReturns := fake.putObjectReturns
 	fake.recordInvocation("PutObject", []interface{}{arg1, arg2, arg3})
 	fake.putObjectMutex.Unlock()
-	if fake.PutObjectStub != nil {
-		return fake.PutObjectStub(arg1, arg2, arg3...)
+	if stub != nil {
+		return stub(arg1, arg2, arg3...)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.putObjectReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 

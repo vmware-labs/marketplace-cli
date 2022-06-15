@@ -51,6 +51,8 @@ type MarketplaceInterface interface {
 	AttachLocalContainerImage(imageFile, image, tag, tagType, instructions string, product *models.Product, version *models.Version) (*models.Product, error)
 	AttachPublicContainerImage(image, tag, tagType, instructions string, product *models.Product, version *models.Version) (*models.Product, error)
 
+	AttachMetaFile(metafile, metafileType, metafileVersion string, product *models.Product, version *models.Version) (*models.Product, error)
+
 	UploadVM(vmFile string, product *models.Product, version *models.Version) (*models.Product, error)
 }
 
