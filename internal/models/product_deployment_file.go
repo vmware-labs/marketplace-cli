@@ -57,10 +57,6 @@ func (product *Product) GetFile(fileId string) *ProductDeploymentFile {
 	return nil
 }
 
-func (product *Product) AddFile(file *ProductDeploymentFile) {
-	product.ProductDeploymentFiles = append(product.ProductDeploymentFiles, file)
-}
-
 func (f *ProductDeploymentFile) CalculateSize() int64 {
 	if f.Size > 0 {
 		return f.Size

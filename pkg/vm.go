@@ -31,16 +31,18 @@ func (m *Marketplace) UploadVM(vmFile string, product *models.Product, version *
 	}
 
 	product.PrepForUpdate()
-	product.AddFile(&models.ProductDeploymentFile{
-		Name:          filename,
-		AppVersion:    version.Number,
-		Url:           fileUrl,
-		HashAlgo:      models.HashAlgoSHA1,
-		HashDigest:    hashString,
-		IsRedirectUrl: false,
-		UniqueFileID:  makeUniqueFileID(),
-		VersionList:   []string{},
-	})
+	product.ProductDeploymentFiles = []*models.ProductDeploymentFile{
+		{
+			Name:          filename,
+			AppVersion:    version.Number,
+			Url:           fileUrl,
+			HashAlgo:      models.HashAlgoSHA1,
+			HashDigest:    hashString,
+			IsRedirectUrl: false,
+			UniqueFileID:  makeUniqueFileID(),
+			VersionList:   []string{},
+		},
+	}
 
 	return m.PutProduct(product, version.IsNewVersion)
 }

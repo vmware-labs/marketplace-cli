@@ -39,13 +39,13 @@ var _ = Describe("DownloadCmd", func() {
 			"4.4.4", // VMs and MetaFiles
 		)
 
-		product.AddFile(test.CreateFakeOVA("my-db.ova", "1.1.1"))
-
-		product.AddFile(test.CreateFakeOVA("aaa.txt", "3.3.3"))
-		product.AddFile(test.CreateFakeOVA("bbb.txt", "3.3.3"))
-		product.AddFile(test.CreateFakeOVA("ccc.txt", "3.3.3"))
-
-		product.AddFile(test.CreateFakeOVA("ova.txt", "4.4.4"))
+		product.ProductDeploymentFiles = []*models.ProductDeploymentFile{
+			test.CreateFakeOVA("my-db.ova", "1.1.1"),
+			test.CreateFakeOVA("aaa.txt", "3.3.3"),
+			test.CreateFakeOVA("bbb.txt", "3.3.3"),
+			test.CreateFakeOVA("ccc.txt", "3.3.3"),
+			test.CreateFakeOVA("ova.txt", "4.4.4"),
+		}
 		product.MetaFiles = append(product.MetaFiles, test.CreateFakeMetaFile("deploy.sh", "0.0.1", "4.4.4"))
 
 		marketplace = &pkgfakes.FakeMarketplaceInterface{}

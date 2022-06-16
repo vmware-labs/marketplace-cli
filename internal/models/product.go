@@ -345,8 +345,6 @@ func (product *Product) PrepForUpdate() {
 		}
 	}
 	product.Versions = product.AllVersions
-
-	//product.ProductDeploymentFiles = []*ProductDeploymentFile{}
 }
 
 func (product *Product) SetPCAFile(version, pcaURL string) {
