@@ -206,7 +206,7 @@ var AttachMetaFileCmd = &cobra.Command{
 	Use:     "metafile",
 	Short:   "Attach a meta file",
 	Long:    "Upload and attach a meta file to a product in the VMware Marketplace",
-	Example: fmt.Sprintf("%s attach metafile -p hyperspace-database-vm1 -v 1.2.3 --file deploy.sh", AppName),
+	Example: fmt.Sprintf("%s attach metafile -p hyperspace-database-vm1 -v 1.2.3 --metafile deploy.sh --metafile-type cli", AppName),
 	Args:    cobra.NoArgs,
 	PreRunE: RunSerially(ValidateMetaFileType, GetRefreshToken),
 	RunE: func(cmd *cobra.Command, args []string) error {
@@ -229,6 +229,7 @@ var AttachMetaFileCmd = &cobra.Command{
 			return err
 		}
 
+		Output.PrintHeader(fmt.Sprintf("Assets for %s %s:", updatedProduct.DisplayName, version.Number))
 		return Output.RenderAssets(pkg.GetAssets(updatedProduct, version.Number))
 	},
 }

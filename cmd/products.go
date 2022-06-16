@@ -129,11 +129,11 @@ var ListAssetsCmd = &cobra.Command{
 		var assets []*pkg.Asset
 		if AssetType == "" {
 			assets = pkg.GetAssets(product, version.Number)
-			Output.PrintHeader(fmt.Sprintf("Assets for for %s %s:", product.DisplayName, version.Number))
+			Output.PrintHeader(fmt.Sprintf("Assets for %s %s:", product.DisplayName, version.Number))
 		} else {
 			assetType := assetTypeMapping[AssetType]
 			assets = pkg.GetAssetsByType(assetType, product, version.Number)
-			Output.PrintHeader(fmt.Sprintf("%s assets for for %s %s:", assetType, product.DisplayName, version.Number))
+			Output.PrintHeader(fmt.Sprintf("%s assets for %s %s:", assetType, product.DisplayName, version.Number))
 		}
 
 		return Output.RenderAssets(assets)

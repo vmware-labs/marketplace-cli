@@ -48,7 +48,7 @@ var _ = Describe("product list-assets", func() {
 		DefineCommonSteps(define)
 
 		define.Then(`^the table of charts is printed$`, func() {
-			Eventually(CommandSession.Out).Should(Say("Chart assets for for NGINX Open Source Helm Chart packaged by Bitnami 1.21.1_0:"))
+			Eventually(CommandSession.Out).Should(Say("Chart assets for NGINX Open Source Helm Chart packaged by Bitnami 1.21.1_0:"))
 			Eventually(CommandSession.Out).Should(Say("NAME"))
 			Eventually(CommandSession.Out).Should(Say("TYPE"))
 			Eventually(CommandSession.Out).Should(Say("VERSION"))
@@ -62,7 +62,7 @@ var _ = Describe("product list-assets", func() {
 		})
 
 		define.Then(`^the table of container images is printed$`, func() {
-			Eventually(CommandSession.Out).Should(Say("Container Image assets for for Cloudian S3 compatible object storage for Tanzu 1.2.1:"))
+			Eventually(CommandSession.Out).Should(Say("Container Image assets for Cloudian S3 compatible object storage for Tanzu 1.2.1:"))
 			Eventually(CommandSession.Out).Should(Say("NAME"))
 			Eventually(CommandSession.Out).Should(Say("TYPE"))
 			Eventually(CommandSession.Out).Should(Say("VERSION"))
@@ -76,7 +76,7 @@ var _ = Describe("product list-assets", func() {
 		})
 
 		define.Then(`^the table of virtual machine files is printed$`, func() {
-			Eventually(CommandSession.Out).Should(Say("VM assets for for NGINX Open Source Virtual Appliance packaged by Bitnami 1.21.0_1:"))
+			Eventually(CommandSession.Out).Should(Say("VM assets for NGINX Open Source Virtual Appliance packaged by Bitnami 1.21.0_1:"))
 			Eventually(CommandSession.Out).Should(Say("NAME"))
 			Eventually(CommandSession.Out).Should(Say("TYPE"))
 			Eventually(CommandSession.Out).Should(Say("VERSION"))
