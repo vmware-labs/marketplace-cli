@@ -27,7 +27,7 @@ run:
       mkpcli attach chart --product "${PRODUCT_SLUG}" --product-version "${VERSION}" --create-version \
         --chart chart/*.tgz --instructions "helm install it"
 
-      # Get the list of assets
+      # Get the list of charts
       mkpcli product list-assets --type chart --product "${PRODUCT_SLUG}" --product-version "${VERSION}" | grep $(basename -s .tgz chart/*.tgz) 
 
       # Also attach a meta file
@@ -35,5 +35,5 @@ run:
       mkpcli attach metafile --product "${PRODUCT_SLUG}" --product-version "${VERSION}" \
         --metafile config.json --metafile-type config
 
-      # Get the list of assets
-      mkpcli product list-assets --type chart --product "${PRODUCT_SLUG}" --product-version "${VERSION}" | grep config.json
+      # Get the list of meta files
+      mkpcli product list-assets --type metafile --product "${PRODUCT_SLUG}" --product-version "${VERSION}" | grep config.json

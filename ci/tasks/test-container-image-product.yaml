@@ -39,12 +39,12 @@ run:
           --instructions "docker run ${TEST_IMAGE_REPO}:${TEST_IMAGE_TAG}"
       fi
 
-      # Get the list of assets
+      # Get the list of images
       mkpcli product list-assets --type image --product "${PRODUCT_SLUG}" --product-version "${VERSION}" | grep "${TEST_IMAGE_REPO}:${TEST_IMAGE_TAG}"
 
       # Also attach a meta file
       mkpcli attach metafile --product "${PRODUCT_SLUG}" --product-version "${VERSION}" \
         --metafile $(which ls) --metafile-type cli --metafile-version 1.0.0
 
-      # Get the list of assets
-      mkpcli product list-assets --type image --product "${PRODUCT_SLUG}" --product-version "${VERSION}" | grep ls
+      # Get the list of meta file
+      mkpcli product list-assets --type metafile --product "${PRODUCT_SLUG}" --product-version "${VERSION}" | grep ls
