@@ -1,0 +1,40 @@
+# Copyright 2022 VMware, Inc.
+# SPDX-License-Identifier: BSD-2-Clause
+
+---
+platform: linux
+
+params:
+  CSP_API_TOKEN: ((marketplace_api_token))
+  MARKETPLACE_ENV:
+  PRODUCT_SLUG:
+  METAFILE_TYPE:
+  MKPCLI_DEBUG: true
+  MKPCLI_DEBUG_REQUEST_PAYLOADS: true
+
+inputs:
+  - name: version
+
+run:
+  path: bash
+  args:
+    - -exc
+    - |
+      set -ex
+      VERSION=$(cat version/version)
+
+      if [ "${METAFILE_TYPE}" == "config" ]; then
+        METAFILE_NAME=config.json
+        echo "{\"data\": \"totally a real config file\"}" > "${METAFILE_NAME}"
+        mkpcli attach metafile --product "${PRODUCT_SLUG}" --product-version "${VERSION}" --metafile "${METAFILE_NAME}" --metafile-type config
+      elif [ "${METAFILE_TYPE}" == "cli" ]; then
+        METAFILE_NAME=ls
+        mkpcli attach metafile --product "${PRODUCT_SLUG}" --product-version "${VERSION}" --metafile $(which "${METAFILE_NAME}") --metafile-type cli --metafile-version 1.0.0
+      elif [ "${METAFILE_TYPE}" == "other" ]; then
+        METAFILE_NAME=other-vm.iso
+        echo "some other virtual machine" > other-vm.iso
+        mkpcli attach metafile --product "${PRODUCT_SLUG}" --product-version "${VERSION}" --metafile "${METAFILE_NAME}" --metafile-type other --metafile-version 1.0.0
+      fi
+
+      # Get the list of meta files
+      mkpcli product list-assets --type metafile --product "${PRODUCT_SLUG}" --product-version "${VERSION}" | grep "${METAFILE_NAME}"

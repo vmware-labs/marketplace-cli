@@ -358,6 +358,14 @@ jobs:
           PRODUCT_SLUG: test-container-product-41
           TEST_IMAGE_REPO: bitnami/nginx
           TEST_IMAGE_TAG: 1.21.1
+      - task: add-metafile
+        image: mkpcli
+        file: source/ci/tasks/attach-metafile.yaml
+        input_mapping: {version: test-container-product-version}
+        params:
+          MARKETPLACE_ENV: staging
+          PRODUCT_SLUG: test-container-product-41
+          METAFILE_TYPE: cli
       - task: add-container-image-to-existing-version
         image: mkpcli
         file: source/ci/tasks/test-container-image-product.yaml
@@ -472,6 +480,14 @@ jobs:
         params:
           MARKETPLACE_ENV: staging
           PRODUCT_SLUG: test-chart-product-42
+      - task: add-metafile
+        image: mkpcli
+        file: source/ci/tasks/attach-metafile.yaml
+        input_mapping: {version: test-chart-product-version}
+        params:
+          MARKETPLACE_ENV: staging
+          PRODUCT_SLUG: test-chart-product-42
+          METAFILE_TYPE: config
       - task: set-osl
         image: mkpcli
         file: source/ci/tasks/set-osl-file.yaml
@@ -565,6 +581,14 @@ jobs:
         params:
           MARKETPLACE_ENV: staging
           PRODUCT_SLUG: test-iso-product1
+      - task: add-metafile
+        image: mkpcli
+        file: source/ci/tasks/attach-metafile.yaml
+        input_mapping: {version: test-iso-product-version}
+        params:
+          MARKETPLACE_ENV: staging
+          PRODUCT_SLUG: test-iso-product1
+          METAFILE_TYPE: other
       - task: set-osl
         image: mkpcli
         file: source/ci/tasks/set-osl-file.yaml
@@ -658,6 +682,14 @@ jobs:
         params:
           MARKETPLACE_ENV: staging
           PRODUCT_SLUG: test-ova-product-201
+      - task: add-metafile
+        image: mkpcli
+        file: source/ci/tasks/attach-metafile.yaml
+        input_mapping: {version: test-ova-product-version}
+        params:
+          MARKETPLACE_ENV: staging
+          PRODUCT_SLUG: test-ova-product-201
+          METAFILE_TYPE: other
       - task: set-osl
         image: mkpcli
         file: source/ci/tasks/set-osl-file.yaml
