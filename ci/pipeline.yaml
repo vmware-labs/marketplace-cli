@@ -408,7 +408,7 @@ jobs:
         params:
           MARKETPLACE_ENV: production
           ASSET_TYPE: image
-          PRODUCT_SLUG: vmware-tanzu-rabbitmq1
+          PRODUCT_SLUG: datastax-kubernetes-operator-for-apache-cassandra
           PRODUCT_VERSION: "1.0.0"
     on_error:
       put: slack

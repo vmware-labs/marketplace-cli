@@ -4,8 +4,6 @@
 package external_test
 
 import (
-	"os"
-
 	. "github.com/bunniesandbeatings/goerkin"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -37,13 +35,6 @@ var _ = Describe("Download", func() {
 
 	steps.Define(func(define Definitions) {
 		DefineCommonSteps(define)
-
-		define.Then(`^yq is downloaded$`, func() {
-			_, err := os.Stat("yq")
-			Expect(err).ToNot(HaveOccurred())
-		}, func() {
-			_ = os.Remove("yq")
-		})
 
 		define.Then(`^a message saying that there are multiple assets available to download$`, func() {
 			Eventually(CommandSession.Err).Should(Say("product " + ProductSlug + " " + ProductVersion + " has multiple downloadable assets, please use the --filter parameter"))

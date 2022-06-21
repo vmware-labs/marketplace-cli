@@ -54,8 +54,9 @@ func unsetEnvVars(envVars []string, varsToUnset []string) []string {
 
 func DefineCommonSteps(define Definitions) {
 	var (
-		envVars   []string
-		unsetVars []string
+		envVars        []string
+		unsetVars      []string
+		downloadedFile string
 	)
 
 	define.Given(`^targeting the (.*) environment$`, func(environment string) {
@@ -91,5 +92,16 @@ func DefineCommonSteps(define Definitions) {
 		configOutput := string(CommandSession.Wait().Out.Contents())
 		value := gjson.Get(configOutput, keyPath)
 		Expect(value.String()).To(Equal(expectedValue))
+	})
+
+	define.Then(`^(.*) is downloaded$`, func(filename string) {
+		downloadedFile = filename
+		_, err := os.Stat(filename)
+		Expect(err).ToNot(HaveOccurred())
+	}, func() {
+		if downloadedFile != "" {
+			Expect(os.Remove(downloadedFile)).To(Succeed())
+			downloadedFile = ""
+		}
 	})
 }

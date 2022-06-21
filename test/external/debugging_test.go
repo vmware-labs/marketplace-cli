@@ -19,7 +19,7 @@ var _ = Describe("Debugging", func() {
 
 	Scenario("Debugging enabled", func() {
 		steps.Given("targeting the production environment")
-		steps.When("running mkpcli --debug product get --product vmware-tanzu-rabbitmq1")
+		steps.When("running mkpcli --debug product get --product nginx")
 		steps.Then("the command exits without error")
 		steps.And("the request is printed")
 	})
@@ -27,16 +27,16 @@ var _ = Describe("Debugging", func() {
 	Scenario("Debugging enabled with environment variable", func() {
 		steps.Given("targeting the production environment")
 		steps.And("the environment variable MKPCLI_DEBUG is set to true")
-		steps.When("running mkpcli product get --product vmware-tanzu-rabbitmq1")
+		steps.When("running mkpcli product get --product nginx")
 		steps.Then("the command exits without error")
 		steps.And("the request is printed")
 	})
 
 	Scenario("Debugging enabled with request payloads", func() {
 		steps.Given("targeting the production environment")
-		steps.When("running mkpcli --debug --debug-request-payloads download -p vmware-tanzu-rabbitmq1 -v 1.0.0 --accept-eula")
+		steps.When("running mkpcli --debug --debug-request-payloads download -p nginx -v 1.22.0_150_r04 --filename chart.tgz --accept-eula")
 		steps.Then("the command exits without error")
-		steps.And("the container image is downloaded")
+		steps.And("chart.tgz is downloaded")
 		steps.And("the requests are printed with request payloads")
 	})
 
@@ -44,9 +44,9 @@ var _ = Describe("Debugging", func() {
 		steps.Given("targeting the production environment")
 		steps.And("the environment variable MKPCLI_DEBUG is set to true")
 		steps.And("the environment variable MKPCLI_DEBUG_REQUEST_PAYLOADS is set to true")
-		steps.When("running mkpcli download -p vmware-tanzu-rabbitmq1 -v 1.0.0 --accept-eula")
+		steps.When("running mkpcli download -p nginx -v 1.22.0_150_r04 --filename chart.tgz --accept-eula")
 		steps.Then("the command exits without error")
-		steps.And("the container image is downloaded")
+		steps.And("chart.tgz is downloaded")
 		steps.And("the requests are printed with request payloads")
 	})
 
@@ -54,12 +54,12 @@ var _ = Describe("Debugging", func() {
 		DefineCommonSteps(define)
 
 		define.Then(`^the request is printed$`, func() {
-			Eventually(CommandSession.Err).Should(Say(regexp.QuoteMeta("Request #0: GET https://gtw.marketplace.cloud.vmware.com/api/v1/products/vmware-tanzu-rabbitmq1?increaseViewCount=false&isSlug=true")))
+			Eventually(CommandSession.Err).Should(Say(regexp.QuoteMeta("Request #0: GET https://gtw.marketplace.cloud.vmware.com/api/v1/products/nginx?increaseViewCount=false&isSlug=true")))
 			Eventually(CommandSession.Err).Should(Say("Request #0 Response: 200 OK"))
-			Eventually(CommandSession.Out).Should(Say("Name:      VMware Tanzu RabbitMQ"))
-			Eventually(CommandSession.Out).Should(Say("Publisher: VMware Inc"))
-			Eventually(CommandSession.Out).Should(Say("Assets for 1.0.0:"))
-			Eventually(CommandSession.Out).Should(Say("registry.pivotal.io/rabbitmq/vmware-tanzu-rabbitmq:2020.12"))
+			Eventually(CommandSession.Out).Should(Say("Name:      NGINX Open Source Helm Chart packaged by Bitnami"))
+			Eventually(CommandSession.Out).Should(Say("Publisher: Bitnami"))
+			Eventually(CommandSession.Out).Should(Say("Assets for 1.22.0_150_r04:"))
+			Eventually(CommandSession.Out).Should(Say("https://charts.bitnami.com/bitnami/nginx-12.0.4.tgz"))
 		})
 
 		define.Then(`^the container image is downloaded$`, func() {
@@ -68,16 +68,16 @@ var _ = Describe("Debugging", func() {
 		})
 
 		define.Then(`^the requests are printed with request payloads$`, func() {
-			Eventually(CommandSession.Err).Should(Say(regexp.QuoteMeta("Request #0: GET https://gtw.marketplace.cloud.vmware.com/api/v1/products/vmware-tanzu-rabbitmq1?increaseViewCount=false&isSlug=true")))
+			Eventually(CommandSession.Err).Should(Say(regexp.QuoteMeta("Request #0: GET https://gtw.marketplace.cloud.vmware.com/api/v1/products/nginx?increaseViewCount=false&isSlug=true")))
 			Eventually(CommandSession.Err).Should(Say("Request #0 Response: 200 OK"))
-			Eventually(CommandSession.Err).Should(Say(regexp.QuoteMeta("Request #1: POST https://gtw.marketplace.cloud.vmware.com/api/v1/products/5f99a9d5-dbfd-4cfc-a564-b1a67d092b4f/version-details?versionNumber=1.0.0")))
+			Eventually(CommandSession.Err).Should(Say(regexp.QuoteMeta("Request #1: POST https://gtw.marketplace.cloud.vmware.com/api/v1/products/89431c5d-ddb7-45df-a544-2c81a370e17b/version-details?versionNumber=1.22.0_150_r04")))
 			Eventually(CommandSession.Err).Should(Say("Request #1 Response: 200 OK"))
-			Eventually(CommandSession.Err).Should(Say(regexp.QuoteMeta("Request #2: POST https://gtw.marketplace.cloud.vmware.com/api/v1/products/5f99a9d5-dbfd-4cfc-a564-b1a67d092b4f/download")))
+			Eventually(CommandSession.Err).Should(Say(regexp.QuoteMeta("Request #2: POST https://gtw.marketplace.cloud.vmware.com/api/v1/products/89431c5d-ddb7-45df-a544-2c81a370e17b/download")))
 			Eventually(CommandSession.Err).Should(Say("--- Start of request #2 body payload ---"))
-			Eventually(CommandSession.Err).Should(Say(regexp.QuoteMeta("{\"productid\":\"5f99a9d5-dbfd-4cfc-a564-b1a67d092b4f\",\"appVersion\":\"1.0.0\",\"eulaAccepted\":true,\"dockerlinkVersionId\":\"d333021c-6e7d-4a15-b87a-2f66eda9d30c\",\"dockerUrlId\":\"f1702bcd-5634-4983-a652-653b6aedbe1d\",\"imageTagId\":\"83fa36ea-4ebc-4499-b68d-b95bc185dd65\"}")))
+			Eventually(CommandSession.Err).Should(Say(regexp.QuoteMeta("{\"productid\":\"89431c5d-ddb7-45df-a544-2c81a370e17b\",\"appVersion\":\"1.22.0_150_r04\",\"eulaAccepted\":true,\"chartVersion\":\"12.0.4\"}")))
 			Eventually(CommandSession.Err).Should(Say("--- End of request #2 body payload ---"))
 			Eventually(CommandSession.Err).Should(Say("Request #2 Response: 200 OK"))
-			Eventually(CommandSession.Err).Should(Say(regexp.QuoteMeta("Request #3: GET https://cmpprdcontainersolutions.s3.us-west-2.amazonaws.com/containerImageTars/")))
+			Eventually(CommandSession.Err).Should(Say(regexp.QuoteMeta("Request #3: GET https://cmpprdhelmsolutions.s3.us-west-2.amazonaws.com/marketplace-product-files/89431c5d-ddb7-45df-a544-2c81a370e17b/")))
 			Eventually(CommandSession.Err).Should(Say("Request #3 Response: 200 OK"))
 		})
 	})
