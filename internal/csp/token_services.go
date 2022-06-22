@@ -9,7 +9,7 @@ import (
 	"net/http"
 	"net/url"
 
-	jwt "github.com/golang-jwt/jwt"
+	"github.com/golang-jwt/jwt"
 )
 
 type TokenServices struct {
@@ -27,13 +27,25 @@ func (csp *TokenServices) Redeem(refreshToken string) (*Claims, error) {
 		"refresh_token": []string{refreshToken},
 	}
 
+	retried := false
 	resp, err := http.PostForm(csp.CSPHost+"/csp/gateway/am/api/auth/api-tokens/authorize", formData)
 	if err != nil {
 		return nil, fmt.Errorf("failed to redeem token: %w", err)
 	}
 
-	if resp.StatusCode != 200 {
-		return nil, fmt.Errorf("failed to exchange refresh token for access token: %d", resp.StatusCode)
+	if resp.StatusCode == http.StatusServiceUnavailable {
+		retried = true
+		resp, err = http.PostForm(csp.CSPHost+"/csp/gateway/am/api/auth/api-tokens/authorize", formData)
+		if err != nil {
+			return nil, fmt.Errorf("failed to redeem token on second attempt: %w", err)
+		}
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		if !retried {
+			return nil, fmt.Errorf("failed to exchange refresh token for access token: %s", resp.Status)
+		}
+		return nil, fmt.Errorf("failed twice to exchange refresh token for access token: %s", resp.Status)
 	}
 
 	var body RedeemResponse

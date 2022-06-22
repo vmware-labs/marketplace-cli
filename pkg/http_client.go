@@ -29,23 +29,30 @@ type DebuggingClient struct {
 	requestID            int
 }
 
-func (c *DebuggingClient) Do(req *http.Request) (*http.Response, error) {
-	currentRequest := c.requestID
+func (c *DebuggingClient) printRequest(req *http.Request) int {
+	requestID := c.requestID
 	c.requestID++
-	c.logger.Printf("Request #%d: %s %s\n", currentRequest, req.Method, req.URL.String())
+	c.logger.Printf("Request #%d: %s %s\n", requestID, req.Method, req.URL.String())
 	if c.printRequestPayloads && req.ContentLength > 0 {
-		req.Body = c.printPayload(fmt.Sprintf("request #%d body", currentRequest), req.Body)
+		req.Body = c.printPayload(fmt.Sprintf("request #%d body", requestID), req.Body)
 	}
 
-	resp, err := c.client.Do(req)
+	return requestID
+}
 
+func (c *DebuggingClient) printResponse(requestID int, resp *http.Response) {
 	if resp != nil {
-		c.logger.Printf("Request #%d Response: %s", currentRequest, resp.Status)
+		c.logger.Printf("Request #%d Response: %s", requestID, resp.Status)
 		if c.printResposePayloads {
-			resp.Body = c.printPayload(fmt.Sprintf("request #%d response body", currentRequest), resp.Body)
+			resp.Body = c.printPayload(fmt.Sprintf("request #%d response body", requestID), resp.Body)
 		}
 	}
+}
 
+func (c *DebuggingClient) Do(req *http.Request) (*http.Response, error) {
+	requestID := c.printRequest(req)
+	resp, err := c.client.Do(req)
+	c.printResponse(requestID, resp)
 	return resp, err
 }
 
