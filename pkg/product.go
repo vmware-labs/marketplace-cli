@@ -78,8 +78,7 @@ func (m *Marketplace) ListProducts(allOrgs bool, searchTerm string) ([]*models.P
 	var progressBar *progressbar.ProgressBar
 	for ; firstTime || len(products) < totalProducts; pagination.Page++ {
 		requestURL := m.MakeURL("/api/v1/products", values)
-		requestURL = pagination.Apply(requestURL)
-		requestURL = sorting.Apply(requestURL)
+		ApplyParameters(requestURL, pagination, sorting)
 		resp, err := m.Get(requestURL)
 		if err != nil {
 			return nil, fmt.Errorf("sending the request for the list of products failed: %w", err)

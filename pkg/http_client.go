@@ -10,6 +10,8 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"net/url"
+	"strings"
 )
 
 //go:generate counterfeiter . HTTPClient
@@ -63,4 +65,19 @@ func (c *DebuggingClient) printPayload(name string, payload io.ReadCloser) io.Re
 	c.logger.Printf("--- End of %s payload ---", name)
 
 	return io.NopCloser(bytes.NewReader(content))
+}
+
+type QueryStringParameter interface {
+	QueryString() string
+}
+
+func ApplyParameters(url *url.URL, parameters ...QueryStringParameter) {
+	var queryStrings []string
+	if url.RawQuery != "" {
+		queryStrings = append(queryStrings, url.RawQuery)
+	}
+	for _, param := range parameters {
+		queryStrings = append(queryStrings, param.QueryString())
+	}
+	url.RawQuery = strings.Join(queryStrings, "&")
 }
