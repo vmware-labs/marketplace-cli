@@ -816,7 +816,7 @@ jobs:
       - put: test-other-product-version
         inputs: detect
         params:
-          file: test-ova-product-version/version
+          file: test-other-product-version/version
       - task: add-other-file-to-marketplace
         image: mkpcli
         file: source/ci/tasks/test-other-product.yaml
