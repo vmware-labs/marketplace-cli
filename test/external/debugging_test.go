@@ -19,7 +19,7 @@ var _ = Describe("Debugging", func() {
 
 	Scenario("Debugging enabled", func() {
 		steps.Given("targeting the production environment")
-		steps.When("running mkpcli --debug product get --product nginx")
+		steps.When("running mkpcli --debug product get --product nginx --product-version 1.22.0_150_r04")
 		steps.Then("the command exits without error")
 		steps.And("the request is printed")
 	})
@@ -27,7 +27,7 @@ var _ = Describe("Debugging", func() {
 	Scenario("Debugging enabled with environment variable", func() {
 		steps.Given("targeting the production environment")
 		steps.And("the environment variable MKPCLI_DEBUG is set to true")
-		steps.When("running mkpcli product get --product nginx")
+		steps.When("running mkpcli product get --product nginx --product-version 1.22.0_150_r04")
 		steps.Then("the command exits without error")
 		steps.And("the request is printed")
 	})
