@@ -1,0 +1,30 @@
+# Copyright 2022 VMware, Inc.
+# SPDX-License-Identifier: BSD-2-Clause
+
+---
+platform: linux
+
+params:
+  CSP_API_TOKEN: ((marketplace_api_token))
+  MARKETPLACE_ENV:
+  PRODUCT_SLUG:
+  MKPCLI_DEBUG: true
+  MKPCLI_DEBUG_REQUEST_PAYLOADS: true
+
+inputs:
+  - name: version
+  - name: other
+
+run:
+  path: bash
+  args:
+    - -exc
+    - |
+      set -ex
+      VERSION=$(cat version/version)
+
+      # Attach an other file
+      mkpcli attach other --product "${PRODUCT_SLUG}" --product-version "${VERSION}" --create-version --file other/file.tgz
+
+      # Get the list of other files
+      mkpcli product list-assets --type other --product "${PRODUCT_SLUG}" --product-version "${VERSION}" | grep file.tgz)

@@ -149,6 +149,17 @@ resources:
       file: test-iso-product-version
       commit_message: "[ci skip] Updating test iso product to version %version%"
 
+  - name: test-other-product-version
+    type: semver
+    icon: gitlab
+    source:
+      driver: git
+      uri: git@gitlab.eng.vmware.com:marketplace-partner-eng/test-products.git
+      private_key: ((gitlab.private_key))
+      branch: master
+      file: test-other-version
+      commit_message: "[ci skip] Updating test other product to version %version%"
+
   - name: test-ova-product-version
     type: semver
     icon: gitlab
@@ -767,7 +778,86 @@ jobs:
       params:
         alert_type: failed
 
-  - name: test-download-addon-product
+  - name: test-publish-other-product
+    public: true
+    max_in_flight: 1
+    plan:
+      - in_parallel:
+          - get: test-other-product-version
+            params: { bump: patch }
+          - get: mkpcli
+            trigger: true
+            passed: [build]
+          - get: source
+            passed: [build]
+          - get: version
+            passed: [build]
+      - task: make-other-file
+        image: mkpcli
+        config:
+          platform: linux
+          outputs:
+            - name: other
+          run:
+            path: bash
+            dir: other
+            args:
+              - -exc
+              - |
+                echo "this is a very important file" > file.txt
+                tar czvf file.tgz file.txt
+      - task: get-current-product
+        image: mkpcli
+        params:
+          MARKETPLACE_ENV: staging
+          PRODUCT_SLUG: test-other-product-1-1
+        file: source/ci/tasks/get-current-product.yaml
+        output_mapping: {output: previous}
+      - put: test-other-product-version
+        inputs: detect
+        params:
+          file: test-ova-product-version/version
+      - task: add-other-file-to-marketplace
+        image: mkpcli
+        file: source/ci/tasks/test-other-product.yaml
+        input_mapping: {version: test-other-product-version}
+        params:
+          MARKETPLACE_ENV: staging
+          PRODUCT_SLUG: test-other-product-1-1
+      - task: add-metafile
+        image: mkpcli
+        file: source/ci/tasks/attach-metafile.yaml
+        input_mapping: {version: test-other-product-version}
+        params:
+          MARKETPLACE_ENV: staging
+          PRODUCT_SLUG: test-other-product-1-1
+          METAFILE_TYPE: cli
+      - task: set-osl
+        image: mkpcli
+        file: source/ci/tasks/set-osl-file.yaml
+        input_mapping: {version: test-other-product-version}
+        params:
+          MARKETPLACE_ENV: staging
+          PRODUCT_SLUG: test-other-product-1-1
+      - task: download-attached-file
+        image: mkpcli
+        file: source/ci/tasks/download-asset.yaml
+        params:
+          MARKETPLACE_ENV: staging
+          ASSET_TYPE: other
+          PRODUCT_SLUG: test-other-product-1-1
+    on_error:
+      put: slack-dev
+      inputs: detect
+      params:
+        alert_type: errored
+    on_failure:
+      put: slack-dev
+      inputs: detect
+      params:
+        alert_type: failed
+
+  - name: test-download-other-product
     public: true
     plan:
       - in_parallel:
@@ -778,12 +868,12 @@ jobs:
             passed: [build]
           - get: version
             passed: [build]
-      - task: download-addon
+      - task: download-file
         image: mkpcli
         file: source/ci/tasks/download-asset.yaml
         params:
           MARKETPLACE_ENV: production
-          ASSET_TYPE: addon
+          ASSET_TYPE: other
           PRODUCT_SLUG: vrealize-orchestrator-8-0-log-insight-content-pack-dist-1-1
           PRODUCT_VERSION: "1.0"
     on_error:
@@ -806,23 +896,25 @@ jobs:
             - test-publish-chart-product
             - test-publish-container-product
             - test-publish-iso-product
+            - test-publish-other-product
             - test-publish-ova-product
             - test-download-chart-product
             - test-download-container-product
             - test-download-iso-product
             - test-download-ova-product
-            - test-download-addon-product
+            - test-download-other-product
         - get: version
           passed:
             - test-publish-chart-product
             - test-publish-container-product
             - test-publish-iso-product
+            - test-publish-other-product
             - test-publish-ova-product
             - test-download-chart-product
             - test-download-container-product
             - test-download-iso-product
             - test-download-ova-product
-            - test-download-addon-product
+            - test-download-other-product
         - get: release
       - task: make-notes
         config:
