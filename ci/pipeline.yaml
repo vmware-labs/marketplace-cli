@@ -809,7 +809,7 @@ jobs:
         image: mkpcli
         params:
           MARKETPLACE_ENV: staging
-          PRODUCT_SLUG: test-other-product-1-1
+          PRODUCT_SLUG: test-other-product-2-1
         file: source/ci/tasks/get-current-product.yaml
         output_mapping: {output: previous}
       - put: test-other-product-version
@@ -822,14 +822,14 @@ jobs:
         input_mapping: {version: test-other-product-version}
         params:
           MARKETPLACE_ENV: staging
-          PRODUCT_SLUG: test-other-product-1-1
+          PRODUCT_SLUG: test-other-product-2-1
       - task: add-metafile
         image: mkpcli
         file: source/ci/tasks/attach-metafile.yaml
         input_mapping: {version: test-other-product-version}
         params:
           MARKETPLACE_ENV: staging
-          PRODUCT_SLUG: test-other-product-1-1
+          PRODUCT_SLUG: test-other-product-2-1
           METAFILE_TYPE: cli
       - task: set-osl
         image: mkpcli
@@ -837,14 +837,14 @@ jobs:
         input_mapping: {version: test-other-product-version}
         params:
           MARKETPLACE_ENV: staging
-          PRODUCT_SLUG: test-other-product-1-1
+          PRODUCT_SLUG: test-other-product-2-1
       - task: download-attached-file
         image: mkpcli
         file: source/ci/tasks/download-asset.yaml
         params:
           MARKETPLACE_ENV: staging
           ASSET_TYPE: other
-          PRODUCT_SLUG: test-other-product-1-1
+          PRODUCT_SLUG: test-other-product-2-1
     on_error:
       put: slack-dev
       inputs: detect
