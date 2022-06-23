@@ -23,13 +23,13 @@ func (m *Marketplace) AttachOtherFile(file string, product *models.Product, vers
 	}
 
 	product.PrepForUpdate()
-	product.AddOnFiles = append(product.AddOnFiles, &models.AddOnFile{
+	product.AddOnFiles = []*models.AddOnFile{{
 		Name:          filename,
 		URL:           fileUrl,
 		AppVersion:    version.Number,
 		HashDigest:    hashString,
 		HashAlgorithm: models.HashAlgoSHA1,
-	})
+	}}
 
 	return m.PutProduct(product, version.IsNewVersion)
 }
