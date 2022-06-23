@@ -183,15 +183,15 @@ resources:
     type: slack-alert
     icon: slack
     source:
-      url: ((marketplace-cli-ci-cd-notifier-slack-webhook-url))
+      url: ((marketplace-cli-ci-cd-notifier-slack-webhook-url.marketplace-cli-developers))
       channel: marketplace-cli-developers
 
   - name: slack-prod
     type: slack-alert
     icon: slack
     source:
-      url: ((marketplace-cli-ci-cd-notifier-slack-webhook-url))
-      channel: marketplace-cl
+      url: ((marketplace-cli-ci-cd-notifier-slack-webhook-url.marketplace-cli))
+      channel: marketplace-cli
 
 jobs:
   - name: test
@@ -1018,6 +1018,7 @@ jobs:
               inputs:
                 - name: release
                 - name: source
+                - name: version
               outputs:
                 - name: release-notes
               run:
@@ -1026,6 +1027,7 @@ jobs:
                 args:
                   - -exc
                   - |
+                    export VERSION=$(cat ../version/version)
                     git log $(cat ../release/tag)..HEAD --oneline | grep -v "\[ci skip\] bump version" > ../release-notes/notes.txt
                     echo "Just released: Marketplace CLI ${VERSION}!" > ../release-notes/message.txt
                     echo "Changes include:" >> ../release-notes/message.txt
