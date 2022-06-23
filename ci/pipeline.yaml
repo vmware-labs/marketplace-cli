@@ -804,8 +804,7 @@ jobs:
             args:
               - -exc
               - |
-                echo "this is a very important file" > file.txt
-                tar czvf file.tgz file.txt
+                tar czvf file.tgz $(which mkpcli)
       - task: get-current-product
         image: mkpcli
         params:

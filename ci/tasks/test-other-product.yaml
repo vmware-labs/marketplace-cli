@@ -27,4 +27,4 @@ run:
       mkpcli attach other --product "${PRODUCT_SLUG}" --product-version "${VERSION}" --create-version --file other/file.tgz
 
       # Get the list of other files
-      mkpcli product list-assets --type other --product "${PRODUCT_SLUG}" --product-version "${VERSION}" | grep file.tgz)
+      mkpcli product list-assets --type other --product "${PRODUCT_SLUG}" --product-version "${VERSION}" | grep "file-*.tgz"
