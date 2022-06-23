@@ -20,14 +20,14 @@ if [ -z "${PRODUCT_VERSION}" ] ; then
 fi
 
 filename=""
-if [ "${ASSET_TYPE}" == "addon" ]; then
-  filename="my-addon.vlcp"
-elif [ "${ASSET_TYPE}" == "chart" ]; then
+if [ "${ASSET_TYPE}" == "chart" ]; then
   filename="my-chart.tgz"
 elif [ "${ASSET_TYPE}" == "image" ]; then
   filename="my-container-image.tar"
 elif [ "${ASSET_TYPE}" == "metafile" ]; then
   filename="my-metafile"
+elif [ "${ASSET_TYPE}" == "other" ]; then
+  filename="my-addon.vlcp"
 elif [ "${ASSET_TYPE}" == "vm" ]; then
   filename="my-vm-image"
 fi
