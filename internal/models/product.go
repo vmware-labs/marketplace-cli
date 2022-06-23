@@ -178,9 +178,13 @@ type PCADetail struct {
 	PresignedURL string `json:"presignedurl"`
 }
 
-//const (
-//	SolutionTypeHelm = "HELMCHARTS"
-//)
+const (
+	SolutionTypeChart  = "HELMCHARTS"
+	SolutionTypeImage  = "CONTAINER"
+	SolutionTypeISO    = "ISO"
+	SolutionTypeOthers = "OTHERS"
+	SolutionTypeOVA    = "OVA"
+)
 
 type Product struct {
 	ProductId                    string                       `json:"productid"`

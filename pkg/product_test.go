@@ -44,13 +44,13 @@ var _ = Describe("Product", func() {
 				"",
 				"My Super Product",
 				"my-super-product",
-				"PENDING")
+				models.SolutionTypeImage)
 			test.AddVerions(product1, "1.1.1")
 			product2 := test.CreateFakeProduct(
 				"",
 				"My Other Product",
 				"my-other-product",
-				"PENDING")
+				models.SolutionTypeImage)
 			test.AddVerions(product2, "2.2.2")
 			products := []*models.Product{
 				product1,
@@ -108,7 +108,7 @@ var _ = Describe("Product", func() {
 						"",
 						fmt.Sprintf("My Super Product %d", i),
 						fmt.Sprintf("my-super-product-%d", i),
-						"PENDING")
+						models.SolutionTypeImage)
 					test.AddVerions(product, "1.0.0")
 					products = append(products, product)
 				}
@@ -217,7 +217,7 @@ var _ = Describe("Product", func() {
 				"",
 				"My Super Product",
 				"my-super-product",
-				"PENDING")
+				models.SolutionTypeImage)
 			test.AddVerions(product, "0.1.2", "1.2.3")
 			response := &pkg.GetProductResponse{
 				Response: &pkg.GetProductResponsePayload{
@@ -308,7 +308,7 @@ var _ = Describe("Product", func() {
 				"",
 				"My Super Product",
 				"my-super-product",
-				"PENDING")
+				models.SolutionTypeImage)
 			productId = product.ProductId
 			product.EulaURL = "https://example.com/eula.txt"
 			product.OpenSourceDisclosure = &models.OpenSourceDisclosureURLS{

@@ -13,7 +13,7 @@ import (
 var _ = Describe("NewVersion", func() {
 	var product *models.Product
 	BeforeEach(func() {
-		product = test.CreateFakeProduct("", "My Product", "my-product", "PENDING")
+		product = test.CreateFakeProduct("", "My Product", "my-product", models.SolutionTypeOVA)
 		test.AddVerions(product, "1.2.3")
 	})
 	It("creates a new version object and adds it to the product", func() {
@@ -34,7 +34,7 @@ var _ = Describe("NewVersion", func() {
 
 var _ = Describe("GetVersion", func() {
 	It("gets the version object from the version number", func() {
-		product := test.CreateFakeProduct("", "My Product", "my-product", "PENDING")
+		product := test.CreateFakeProduct("", "My Product", "my-product", models.SolutionTypeOVA)
 		test.AddVerions(product, "1.2.3")
 
 		version := product.GetVersion("1.2.3")
@@ -44,7 +44,7 @@ var _ = Describe("GetVersion", func() {
 
 	Context("version does not exist", func() {
 		It("returns nil", func() {
-			product := test.CreateFakeProduct("", "My Product", "my-product", "PENDING")
+			product := test.CreateFakeProduct("", "My Product", "my-product", models.SolutionTypeOVA)
 			test.AddVerions(product, "1.2.3")
 
 			version := product.GetVersion("9.9.9")
@@ -54,7 +54,7 @@ var _ = Describe("GetVersion", func() {
 
 	Context("Argument is empty", func() {
 		It("returns the latest version", func() {
-			product := test.CreateFakeProduct("", "My Product", "my-product", "PENDING")
+			product := test.CreateFakeProduct("", "My Product", "my-product", models.SolutionTypeOVA)
 			test.AddVerions(product, "1.2.3", "2.3.4", "0.0.1")
 
 			version := product.GetVersion("")
@@ -64,7 +64,7 @@ var _ = Describe("GetVersion", func() {
 
 		Context("The product has no versions", func() {
 			It("returns nil", func() {
-				product := test.CreateFakeProduct("", "My Product", "my-product", "PENDING")
+				product := test.CreateFakeProduct("", "My Product", "my-product", models.SolutionTypeOVA)
 
 				version := product.GetVersion("")
 				Expect(version).To(BeNil())
