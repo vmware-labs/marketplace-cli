@@ -68,11 +68,11 @@ var _ = Describe("AttachCmd", func() {
 		)
 
 		BeforeEach(func() {
-			testProduct = test.CreateFakeProduct("", "My Super Product", "my-super-product", "PENDING")
+			testProduct = test.CreateFakeProduct("", "My Super Product", "my-super-product", models.SolutionTypeChart)
 			test.AddVerions(testProduct, "1.1.1")
 			marketplace.GetProductWithVersionReturns(testProduct, &models.Version{Number: "1.1.1"}, nil)
 
-			updatedProduct = test.CreateFakeProduct(testProduct.ProductId, "My Super Product", "my-super-product", "PENDING")
+			updatedProduct = test.CreateFakeProduct(testProduct.ProductId, "My Super Product", "my-super-product", models.SolutionTypeChart)
 			test.AddVerions(updatedProduct, "1.1.1")
 		})
 
@@ -318,6 +318,21 @@ var _ = Describe("AttachCmd", func() {
 				})
 			})
 
+			When("product is the wrong solution type", func() {
+				BeforeEach(func() {
+					testProduct.SolutionType = models.SolutionTypeOthers
+				})
+				It("returns an error", func() {
+					cmd.AttachProductSlug = "my-super-product"
+					cmd.AttachProductVersion = "1.1.1"
+					cmd.AttachChartURL = "https://example.com/public/my-chart.tgz"
+					cmd.AttachInstructions = "helm install it"
+					err := cmd.AttachChartCmd.RunE(cmd.DownloadCmd, []string{""})
+					Expect(err).To(HaveOccurred())
+					Expect(err.Error()).To(Equal("cannot attach a chart to my-super-product which is of type OTHERS"))
+				})
+			})
+
 			When("rendering fails", func() {
 				BeforeEach(func() {
 					output.RenderChartsReturns(errors.New("render failed"))
@@ -402,11 +417,11 @@ var _ = Describe("AttachCmd", func() {
 		var testProduct *models.Product
 
 		BeforeEach(func() {
-			testProduct = test.CreateFakeProduct("", "My Super Product", "my-super-product", "PENDING")
+			testProduct = test.CreateFakeProduct("", "My Super Product", "my-super-product", models.SolutionTypeImage)
 			test.AddVerions(testProduct, "1.1.1")
 			marketplace.GetProductWithVersionReturns(testProduct, &models.Version{Number: "1.1.1"}, nil)
 
-			updatedProduct := test.CreateFakeProduct(testProduct.ProductId, "My Super Product", "my-super-product", "PENDING")
+			updatedProduct := test.CreateFakeProduct(testProduct.ProductId, "My Super Product", "my-super-product", models.SolutionTypeImage)
 			test.AddVerions(updatedProduct, "1.1.1")
 			nginx := test.CreateFakeContainerImage("nginx", "1.21.6")
 			test.AddContainerImages(updatedProduct, "1.1.1", "docker run it", nginx)
@@ -614,6 +629,23 @@ var _ = Describe("AttachCmd", func() {
 			})
 		})
 
+		When("product is the wrong solution type", func() {
+			BeforeEach(func() {
+				testProduct.SolutionType = models.SolutionTypeOthers
+			})
+			It("returns an error", func() {
+				cmd.AttachProductSlug = "my-super-product"
+				cmd.AttachProductVersion = "1.1.1"
+				cmd.AttachContainerImage = "bitnami/nginx"
+				cmd.AttachContainerImageTag = "1.21.6"
+				cmd.AttachContainerImageTagType = "FIXED"
+				cmd.AttachInstructions = "docker run it"
+				err := cmd.AttachContainerImageCmd.RunE(cmd.DownloadCmd, []string{""})
+				Expect(err).To(HaveOccurred())
+				Expect(err.Error()).To(Equal("cannot attach an image to my-super-product which is of type OTHERS"))
+			})
+		})
+
 		When("attaching the container image fails", func() {
 			BeforeEach(func() {
 				marketplace.AttachPublicContainerImageReturns(nil, errors.New("attach container image failed"))
@@ -653,11 +685,11 @@ var _ = Describe("AttachCmd", func() {
 		var testProduct *models.Product
 
 		BeforeEach(func() {
-			testProduct = test.CreateFakeProduct("", "My Super Product", "my-super-product", "PENDING")
+			testProduct = test.CreateFakeProduct("", "My Super Product", "my-super-product", models.SolutionTypeOthers)
 			test.AddVerions(testProduct, "1.1.1")
 			marketplace.GetProductWithVersionReturns(testProduct, &models.Version{Number: "1.1.1"}, nil)
 
-			updatedProduct := test.CreateFakeProduct(testProduct.ProductId, "My Super Product", "my-super-product", "PENDING")
+			updatedProduct := test.CreateFakeProduct(testProduct.ProductId, "My Super Product", "my-super-product", models.SolutionTypeOthers)
 			test.AddVerions(updatedProduct, "1.1.1")
 			updatedProduct.AddOnFiles = append(updatedProduct.AddOnFiles, test.CreateFakeOtherFile("fake-file", "1.1.1"))
 			marketplace.AttachOtherFileReturns(updatedProduct, nil)
@@ -808,6 +840,20 @@ var _ = Describe("AttachCmd", func() {
 			})
 		})
 
+		When("product is the wrong solution type", func() {
+			BeforeEach(func() {
+				testProduct.SolutionType = models.SolutionTypeISO
+			})
+			It("returns an error", func() {
+				cmd.AttachProductSlug = "my-super-product"
+				cmd.AttachProductVersion = "1.1.1"
+				cmd.AttachOtherFile = "path/to/a/file.tgz"
+				err := cmd.AttachOtherCmd.RunE(cmd.AttachOtherCmd, []string{""})
+				Expect(err).To(HaveOccurred())
+				Expect(err.Error()).To(Equal("cannot attach an other file to my-super-product which is of type ISO"))
+			})
+		})
+
 		When("uploading the file fails", func() {
 			BeforeEach(func() {
 				marketplace.AttachOtherFileReturns(nil, errors.New("attach other file failed"))
@@ -841,11 +887,11 @@ var _ = Describe("AttachCmd", func() {
 		var testProduct *models.Product
 
 		BeforeEach(func() {
-			testProduct = test.CreateFakeProduct("", "My Super Product", "my-super-product", "PENDING")
+			testProduct = test.CreateFakeProduct("", "My Super Product", "my-super-product", models.SolutionTypeOVA)
 			test.AddVerions(testProduct, "1.1.1")
 			marketplace.GetProductWithVersionReturns(testProduct, &models.Version{Number: "1.1.1"}, nil)
 
-			updatedProduct := test.CreateFakeProduct(testProduct.ProductId, "My Super Product", "my-super-product", "PENDING")
+			updatedProduct := test.CreateFakeProduct(testProduct.ProductId, "My Super Product", "my-super-product", models.SolutionTypeOVA)
 			test.AddVerions(updatedProduct, "1.1.1")
 			updatedProduct.ProductDeploymentFiles = append(updatedProduct.ProductDeploymentFiles, test.CreateFakeOVA("fake-ova", "1.1.1"))
 			marketplace.UploadVMReturns(updatedProduct, nil)
@@ -993,6 +1039,20 @@ var _ = Describe("AttachCmd", func() {
 						Expect(version.IsNewVersion).To(BeTrue())
 					})
 				})
+			})
+		})
+
+		When("product is the wrong solution type", func() {
+			BeforeEach(func() {
+				testProduct.SolutionType = models.SolutionTypeOthers
+			})
+			It("returns an error", func() {
+				cmd.AttachProductSlug = "my-super-product"
+				cmd.AttachProductVersion = "1.1.1"
+				cmd.AttachVMFile = "path/to/a/file.iso"
+				err := cmd.AttachVMCmd.RunE(cmd.DownloadCmd, []string{""})
+				Expect(err).To(HaveOccurred())
+				Expect(err.Error()).To(Equal("cannot attach a vm to my-super-product which is of type OTHERS"))
 			})
 		})
 

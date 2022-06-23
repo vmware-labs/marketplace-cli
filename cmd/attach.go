@@ -118,6 +118,10 @@ var AttachChartCmd = &cobra.Command{
 			}
 		}
 
+		if product.SolutionType != models.SolutionTypeChart {
+			return fmt.Errorf("cannot attach a chart to %s which is of type %s", product.Slug, product.SolutionType)
+		}
+
 		if AttachPCAFile != "" {
 			uploader, err := Marketplace.GetUploader(product.PublisherDetails.OrgId)
 			if err != nil {
@@ -181,6 +185,10 @@ var AttachContainerImageCmd = &cobra.Command{
 			}
 		}
 
+		if product.SolutionType != models.SolutionTypeImage {
+			return fmt.Errorf("cannot attach an image to %s which is of type %s", product.Slug, product.SolutionType)
+		}
+
 		if AttachPCAFile != "" {
 			uploader, err := Marketplace.GetUploader(product.PublisherDetails.OrgId)
 			if err != nil {
@@ -226,6 +234,10 @@ var AttachOtherCmd = &cobra.Command{
 			} else {
 				return err
 			}
+		}
+
+		if product.SolutionType != models.SolutionTypeOthers {
+			return fmt.Errorf("cannot attach an other file to %s which is of type %s", product.Slug, product.SolutionType)
 		}
 
 		if AttachPCAFile != "" {
@@ -300,6 +312,10 @@ var AttachVMCmd = &cobra.Command{
 			} else {
 				return err
 			}
+		}
+
+		if product.SolutionType != models.SolutionTypeISO && product.SolutionType != models.SolutionTypeOVA {
+			return fmt.Errorf("cannot attach a vm to %s which is of type %s", product.Slug, product.SolutionType)
 		}
 
 		if AttachPCAFile != "" {

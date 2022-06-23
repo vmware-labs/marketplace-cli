@@ -148,7 +148,7 @@ var _ = Describe("Charts", func() {
 		})
 
 		It("uploads and attaches a local chart", func() {
-			product := test.CreateFakeProduct("", "Hyperspace Database", "hyperspace-database", "PENDING")
+			product := test.CreateFakeProduct("", "Hyperspace Database", "hyperspace-database", models.SolutionTypeChart)
 			version := &models.Version{Number: "1.2.3"}
 			test.AddVerions(product, "1.2.3")
 			updatedProduct, err := marketplace.AttachLocalChart(chartPath, "helm install it", product, version)
@@ -183,7 +183,7 @@ var _ = Describe("Charts", func() {
 			})
 
 			It("returns an error", func() {
-				product := test.CreateFakeProduct("", "Hyperspace Database", "hyperspace-database", "PENDING")
+				product := test.CreateFakeProduct("", "Hyperspace Database", "hyperspace-database", models.SolutionTypeChart)
 				version := &models.Version{Number: "1.2.3"}
 				test.AddVerions(product, "1.2.3")
 				_, err := marketplace.AttachLocalChart(chartPath, "helm install it", product, version)
@@ -198,7 +198,7 @@ var _ = Describe("Charts", func() {
 				httpClient.DoReturns(nil, errors.New("get uploader failed"))
 			})
 			It("returns an error", func() {
-				product := test.CreateFakeProduct("", "Hyperspace Database", "hyperspace-database", "PENDING")
+				product := test.CreateFakeProduct("", "Hyperspace Database", "hyperspace-database", models.SolutionTypeChart)
 				version := &models.Version{Number: "1.2.3"}
 				test.AddVerions(product, "1.2.3")
 				_, err := marketplace.AttachLocalChart(chartPath, "helm install it", product, version)
@@ -212,7 +212,7 @@ var _ = Describe("Charts", func() {
 				uploader.UploadProductFileReturns("", "", errors.New("upload product file failed"))
 			})
 			It("returns an error", func() {
-				product := test.CreateFakeProduct("", "Hyperspace Database", "hyperspace-database", "PENDING")
+				product := test.CreateFakeProduct("", "Hyperspace Database", "hyperspace-database", models.SolutionTypeChart)
 				version := &models.Version{Number: "1.2.3"}
 				test.AddVerions(product, "1.2.3")
 				_, err := marketplace.AttachLocalChart(chartPath, "helm install it", product, version)
@@ -226,7 +226,7 @@ var _ = Describe("Charts", func() {
 				httpClient.DoReturns(nil, errors.New("update product failed"))
 			})
 			It("returns an error", func() {
-				product := test.CreateFakeProduct("", "Hyperspace Database", "hyperspace-database", "PENDING")
+				product := test.CreateFakeProduct("", "Hyperspace Database", "hyperspace-database", models.SolutionTypeChart)
 				version := &models.Version{Number: "1.2.3"}
 				test.AddVerions(product, "1.2.3")
 				_, err := marketplace.AttachLocalChart(chartPath, "helm install it", product, version)
@@ -266,7 +266,7 @@ var _ = Describe("Charts", func() {
 		})
 
 		It("attaches a public chart", func() {
-			product := test.CreateFakeProduct("", "Hyperspace Database", "hyperspace-database", "PENDING")
+			product := test.CreateFakeProduct("", "Hyperspace Database", "hyperspace-database", models.SolutionTypeChart)
 			version := &models.Version{Number: "1.2.3"}
 			test.AddVerions(product, "1.2.3")
 			updatedProduct, err := marketplace.AttachPublicChart(chartUrl, "helm install it", product, version)
@@ -300,7 +300,7 @@ var _ = Describe("Charts", func() {
 				httpClient.DoReturns(nil, errors.New("download chart failed"))
 			})
 			It("returns an error", func() {
-				product := test.CreateFakeProduct("", "Hyperspace Database", "hyperspace-database", "PENDING")
+				product := test.CreateFakeProduct("", "Hyperspace Database", "hyperspace-database", models.SolutionTypeChart)
 				version := &models.Version{Number: "1.2.3"}
 				test.AddVerions(product, "1.2.3")
 				_, err := marketplace.AttachPublicChart(chartUrl, "helm install it", product, version)
@@ -315,7 +315,7 @@ var _ = Describe("Charts", func() {
 				httpClient.DoReturnsOnCall(1, nil, errors.New("update product failed"))
 			})
 			It("returns an error", func() {
-				product := test.CreateFakeProduct("", "Hyperspace Database", "hyperspace-database", "PENDING")
+				product := test.CreateFakeProduct("", "Hyperspace Database", "hyperspace-database", models.SolutionTypeChart)
 				version := &models.Version{Number: "1.2.3"}
 				test.AddVerions(product, "1.2.3")
 				_, err := marketplace.AttachPublicChart(chartUrl, "helm install it", product, version)

@@ -30,7 +30,7 @@ var _ = Describe("DownloadCmd", func() {
 		cmd.Output = output
 
 		productId = uuid.New().String()
-		product = test.CreateFakeProduct(productId, "My Super Product", "my-super-product", "PENDING")
+		product = test.CreateFakeProduct(productId, "My Super Product", "my-super-product", models.SolutionTypeOVA)
 
 		test.AddVerions(product,
 			"0.0.0", // No assets

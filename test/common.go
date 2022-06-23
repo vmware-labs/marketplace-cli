@@ -17,16 +17,17 @@ import (
 	"helm.sh/helm/v3/pkg/chartutil"
 )
 
-func CreateFakeProduct(id, name, slug, status string) *models.Product {
+func CreateFakeProduct(id, name, slug, solutionType string) *models.Product {
 	if id == "" {
 		id = uuid.New().String()
 	}
 	return &models.Product{
-		ProductId:   id,
-		Slug:        slug,
-		DisplayName: name,
-		Status:      status,
-		AllVersions: []*models.Version{},
+		ProductId:    id,
+		Slug:         slug,
+		DisplayName:  name,
+		SolutionType: solutionType,
+		Status:       "pending",
+		AllVersions:  []*models.Version{},
 		EncryptionDetails: &models.ProductEncryptionDetails{
 			List: []string{"userAuthEncryption"},
 		},

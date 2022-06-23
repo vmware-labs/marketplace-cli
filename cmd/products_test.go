@@ -36,12 +36,12 @@ var _ = Describe("Products", func() {
 					"",
 					"My Super Product",
 					"my-super-product",
-					"PENDING"),
+					models.SolutionTypeOthers),
 				test.CreateFakeProduct(
 					"",
 					"My Other Product",
 					"my-other-product",
-					"PENDING"),
+					models.SolutionTypeOthers),
 			}
 
 			marketplace.ListProductsReturns(products, nil)
@@ -83,7 +83,7 @@ var _ = Describe("Products", func() {
 				"",
 				"My Super Product",
 				"my-super-product",
-				"PENDING")
+				models.SolutionTypeOthers)
 			test.AddVerions(product, "1.2.3", "2.3.4")
 			marketplace.GetProductReturns(product, nil)
 			marketplace.GetProductWithVersionStub = func(slug string, version string) (*models.Product, *models.Version, error) {
@@ -151,7 +151,7 @@ var _ = Describe("Products", func() {
 	Describe("ListAssetsCmd", func() {
 		var product *models.Product
 		BeforeEach(func() {
-			product = test.CreateFakeProduct("", "Hyperspace Database", "hyperspace-database", "PENDING")
+			product = test.CreateFakeProduct("", "Hyperspace Database", "hyperspace-database", models.SolutionTypeOVA)
 			version := &models.Version{Number: "1"}
 			test.AddVerions(product, "1")
 			vm := test.CreateFakeOVA("hyperspace-database.ova", "1")
@@ -207,7 +207,7 @@ var _ = Describe("Products", func() {
 				"",
 				"My Super Product",
 				"my-super-product",
-				"PENDING")
+				models.SolutionTypeOVA)
 			test.AddVerions(product, "0.1.2", "1.2.3")
 			marketplace.GetProductReturns(product, nil)
 		})
