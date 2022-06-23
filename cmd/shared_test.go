@@ -11,13 +11,13 @@ import (
 
 var _ = Describe("ValidateAssetTypeFilter", func() {
 	It("allows valid asset types", func() {
-		cmd.AssetType = "addon"
-		Expect(cmd.ValidateAssetTypeFilter(nil, nil)).To(Succeed())
 		cmd.AssetType = "chart"
 		Expect(cmd.ValidateAssetTypeFilter(nil, nil)).To(Succeed())
 		cmd.AssetType = "image"
 		Expect(cmd.ValidateAssetTypeFilter(nil, nil)).To(Succeed())
 		cmd.AssetType = "metafile"
+		Expect(cmd.ValidateAssetTypeFilter(nil, nil)).To(Succeed())
+		cmd.AssetType = "other"
 		Expect(cmd.ValidateAssetTypeFilter(nil, nil)).To(Succeed())
 		cmd.AssetType = "vm"
 		Expect(cmd.ValidateAssetTypeFilter(nil, nil)).To(Succeed())
@@ -28,7 +28,7 @@ var _ = Describe("ValidateAssetTypeFilter", func() {
 			cmd.AssetType = "dogfood"
 			err := cmd.ValidateAssetTypeFilter(nil, nil)
 			Expect(err).To(HaveOccurred())
-			Expect(err.Error()).To(Equal("Unknown asset type: dogfood\nPlease use one of addon, chart, image, metafile, vm"))
+			Expect(err.Error()).To(Equal("Unknown asset type: dogfood\nPlease use one of chart, image, metafile, other, vm"))
 		})
 	})
 })

@@ -6,7 +6,7 @@
 set -ex
 
 if [ -z "${ASSET_TYPE}" ]; then
-  echo "ASSET_TYPE not defined. Should be one of: addon, chart, image, metafile, vm"
+  echo "ASSET_TYPE not defined. Should be one of: chart, image, metafile, other, vm"
   exit 1
 fi
 

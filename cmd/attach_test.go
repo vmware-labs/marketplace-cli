@@ -90,7 +90,7 @@ var _ = Describe("AttachCmd", func() {
 				cmd.AttachProductVersion = "1.1.1"
 				cmd.AttachChartURL = "/path/to/my-chart"
 				cmd.AttachInstructions = "helm install it"
-				err := cmd.AttachChartCmd.RunE(cmd.DownloadCmd, []string{""})
+				err := cmd.AttachChartCmd.RunE(cmd.AttachChartCmd, []string{""})
 				Expect(err).ToNot(HaveOccurred())
 
 				By("getting the product details", func() {
@@ -133,7 +133,7 @@ var _ = Describe("AttachCmd", func() {
 					cmd.AttachProductVersion = "9.9.9"
 					cmd.AttachChartURL = "/path/to/my-chart"
 					cmd.AttachInstructions = "helm install it"
-					err := cmd.AttachChartCmd.RunE(cmd.DownloadCmd, []string{""})
+					err := cmd.AttachChartCmd.RunE(cmd.AttachChartCmd, []string{""})
 					Expect(err).To(HaveOccurred())
 					Expect(err.Error()).To(Equal("attach local chart failed"))
 				})
@@ -152,7 +152,7 @@ var _ = Describe("AttachCmd", func() {
 					cmd.AttachChartURL = "/path/to/my-chart"
 					cmd.AttachInstructions = "helm install it"
 					cmd.AttachPCAFile = "/path/to/pca.pdf"
-					err := cmd.AttachChartCmd.RunE(cmd.DownloadCmd, []string{""})
+					err := cmd.AttachChartCmd.RunE(cmd.AttachChartCmd, []string{""})
 					Expect(err).ToNot(HaveOccurred())
 
 					By("uploading the PCA file", func() {
@@ -179,7 +179,7 @@ var _ = Describe("AttachCmd", func() {
 						cmd.AttachChartURL = "/path/to/my-chart"
 						cmd.AttachInstructions = "helm install it"
 						cmd.AttachPCAFile = "/path/to/pca.pdf"
-						err := cmd.AttachChartCmd.RunE(cmd.DownloadCmd, []string{""})
+						err := cmd.AttachChartCmd.RunE(cmd.AttachChartCmd, []string{""})
 						Expect(err).To(HaveOccurred())
 						Expect(err.Error()).To(Equal("get uploader failed"))
 					})
@@ -195,7 +195,7 @@ var _ = Describe("AttachCmd", func() {
 						cmd.AttachChartURL = "/path/to/my-chart"
 						cmd.AttachInstructions = "helm install it"
 						cmd.AttachPCAFile = "/path/to/pca.pdf"
-						err := cmd.AttachChartCmd.RunE(cmd.DownloadCmd, []string{""})
+						err := cmd.AttachChartCmd.RunE(cmd.AttachChartCmd, []string{""})
 						Expect(err).To(HaveOccurred())
 						Expect(err.Error()).To(Equal("upload media file failed"))
 					})
@@ -217,7 +217,7 @@ var _ = Describe("AttachCmd", func() {
 				cmd.AttachProductVersion = "1.1.1"
 				cmd.AttachChartURL = "https://example.com/public/my-chart.tgz"
 				cmd.AttachInstructions = "helm install it"
-				err := cmd.AttachChartCmd.RunE(cmd.DownloadCmd, []string{""})
+				err := cmd.AttachChartCmd.RunE(cmd.AttachChartCmd, []string{""})
 				Expect(err).ToNot(HaveOccurred())
 
 				By("getting the product details", func() {
@@ -260,7 +260,7 @@ var _ = Describe("AttachCmd", func() {
 					cmd.AttachProductVersion = "9.9.9"
 					cmd.AttachChartURL = "https://example.com/public/my-chart.tgz"
 					cmd.AttachInstructions = "helm install it"
-					err := cmd.AttachChartCmd.RunE(cmd.DownloadCmd, []string{""})
+					err := cmd.AttachChartCmd.RunE(cmd.AttachChartCmd, []string{""})
 					Expect(err).To(HaveOccurred())
 					Expect(err.Error()).To(Equal("attach public chart failed"))
 				})
@@ -276,7 +276,7 @@ var _ = Describe("AttachCmd", func() {
 					cmd.AttachProductVersion = "9.9.9"
 					cmd.AttachChartURL = "https://example.com/public/my-chart.tgz"
 					cmd.AttachInstructions = "helm install it"
-					err := cmd.AttachChartCmd.RunE(cmd.DownloadCmd, []string{""})
+					err := cmd.AttachChartCmd.RunE(cmd.AttachChartCmd, []string{""})
 					Expect(err).To(HaveOccurred())
 					Expect(err.Error()).To(Equal("get product with version failed"))
 				})
@@ -294,7 +294,7 @@ var _ = Describe("AttachCmd", func() {
 					cmd.AttachProductVersion = "9.9.9"
 					cmd.AttachChartURL = "https://example.com/public/my-chart.tgz"
 					cmd.AttachInstructions = "helm install it"
-					err := cmd.AttachChartCmd.RunE(cmd.DownloadCmd, []string{""})
+					err := cmd.AttachChartCmd.RunE(cmd.AttachChartCmd, []string{""})
 					Expect(err).To(HaveOccurred())
 					Expect(err.Error()).To(Equal("product \"my-super-product\" does not have version 9.9.9"))
 				})
@@ -306,7 +306,7 @@ var _ = Describe("AttachCmd", func() {
 						cmd.AttachChartURL = "https://example.com/public/my-chart.tgz"
 						cmd.AttachInstructions = "helm install it"
 						cmd.AttachCreateVersion = true
-						err := cmd.AttachChartCmd.RunE(cmd.DownloadCmd, []string{""})
+						err := cmd.AttachChartCmd.RunE(cmd.AttachChartCmd, []string{""})
 						Expect(err).ToNot(HaveOccurred())
 
 						By("passing a new version to upload vm", func() {
@@ -327,7 +327,7 @@ var _ = Describe("AttachCmd", func() {
 					cmd.AttachProductVersion = "1.1.1"
 					cmd.AttachChartURL = "https://example.com/public/my-chart.tgz"
 					cmd.AttachInstructions = "helm install it"
-					err := cmd.AttachChartCmd.RunE(cmd.DownloadCmd, []string{""})
+					err := cmd.AttachChartCmd.RunE(cmd.AttachChartCmd, []string{""})
 					Expect(err).To(HaveOccurred())
 					Expect(err.Error()).To(Equal("render failed"))
 				})
@@ -346,7 +346,7 @@ var _ = Describe("AttachCmd", func() {
 					cmd.AttachChartURL = "https://example.com/public/my-chart.tgz"
 					cmd.AttachInstructions = "helm install it"
 					cmd.AttachPCAFile = "/path/to/pca.pdf"
-					err := cmd.AttachChartCmd.RunE(cmd.DownloadCmd, []string{""})
+					err := cmd.AttachChartCmd.RunE(cmd.AttachChartCmd, []string{""})
 					Expect(err).ToNot(HaveOccurred())
 
 					By("uploading the PCA file", func() {
@@ -373,7 +373,7 @@ var _ = Describe("AttachCmd", func() {
 						cmd.AttachChartURL = "https://example.com/public/my-chart.tgz"
 						cmd.AttachInstructions = "helm install it"
 						cmd.AttachPCAFile = "/path/to/pca.pdf"
-						err := cmd.AttachChartCmd.RunE(cmd.DownloadCmd, []string{""})
+						err := cmd.AttachChartCmd.RunE(cmd.AttachChartCmd, []string{""})
 						Expect(err).To(HaveOccurred())
 						Expect(err.Error()).To(Equal("get uploader failed"))
 					})
@@ -389,7 +389,7 @@ var _ = Describe("AttachCmd", func() {
 						cmd.AttachChartURL = "https://example.com/public/my-chart.tgz"
 						cmd.AttachInstructions = "helm install it"
 						cmd.AttachPCAFile = "/path/to/pca.pdf"
-						err := cmd.AttachChartCmd.RunE(cmd.DownloadCmd, []string{""})
+						err := cmd.AttachChartCmd.RunE(cmd.AttachChartCmd, []string{""})
 						Expect(err).To(HaveOccurred())
 						Expect(err.Error()).To(Equal("upload media file failed"))
 					})
@@ -424,7 +424,7 @@ var _ = Describe("AttachCmd", func() {
 			cmd.AttachContainerImageTag = "1.21.6"
 			cmd.AttachContainerImageTagType = "FIXED"
 			cmd.AttachInstructions = "docker run it"
-			err := cmd.AttachContainerImageCmd.RunE(cmd.DownloadCmd, []string{""})
+			err := cmd.AttachContainerImageCmd.RunE(cmd.AttachContainerImageCmd, []string{""})
 			Expect(err).ToNot(HaveOccurred())
 
 			By("getting the product details", func() {
@@ -476,7 +476,7 @@ var _ = Describe("AttachCmd", func() {
 				cmd.AttachContainerImageTagType = "FIXED"
 				cmd.AttachInstructions = "docker run it"
 				cmd.AttachPCAFile = "/path/to/pca.pdf"
-				err := cmd.AttachContainerImageCmd.RunE(cmd.DownloadCmd, []string{""})
+				err := cmd.AttachContainerImageCmd.RunE(cmd.AttachContainerImageCmd, []string{""})
 				Expect(err).ToNot(HaveOccurred())
 
 				By("uploading the PCA file", func() {
@@ -505,7 +505,7 @@ var _ = Describe("AttachCmd", func() {
 					cmd.AttachContainerImageTagType = "FIXED"
 					cmd.AttachInstructions = "docker run it"
 					cmd.AttachPCAFile = "/path/to/pca.pdf"
-					err := cmd.AttachContainerImageCmd.RunE(cmd.DownloadCmd, []string{""})
+					err := cmd.AttachContainerImageCmd.RunE(cmd.AttachContainerImageCmd, []string{""})
 					Expect(err).To(HaveOccurred())
 					Expect(err.Error()).To(Equal("get uploader failed"))
 				})
@@ -523,7 +523,7 @@ var _ = Describe("AttachCmd", func() {
 					cmd.AttachContainerImageTagType = "FIXED"
 					cmd.AttachInstructions = "docker run it"
 					cmd.AttachPCAFile = "/path/to/pca.pdf"
-					err := cmd.AttachContainerImageCmd.RunE(cmd.DownloadCmd, []string{""})
+					err := cmd.AttachContainerImageCmd.RunE(cmd.AttachContainerImageCmd, []string{""})
 					Expect(err).To(HaveOccurred())
 					Expect(err.Error()).To(Equal("upload media file failed"))
 				})
@@ -539,7 +539,7 @@ var _ = Describe("AttachCmd", func() {
 				cmd.AttachContainerImageTag = "1.21.6"
 				cmd.AttachContainerImageTagType = "FIXED"
 				cmd.AttachInstructions = "docker run it"
-				err := cmd.AttachContainerImageCmd.RunE(cmd.DownloadCmd, []string{""})
+				err := cmd.AttachContainerImageCmd.RunE(cmd.AttachContainerImageCmd, []string{""})
 				Expect(err).ToNot(HaveOccurred())
 
 				By("uploadings and attaching the container image", func() {
@@ -568,7 +568,7 @@ var _ = Describe("AttachCmd", func() {
 				cmd.AttachContainerImageTag = "1.21.6"
 				cmd.AttachContainerImageTagType = "FIXED"
 				cmd.AttachInstructions = "docker run it"
-				err := cmd.AttachContainerImageCmd.RunE(cmd.DownloadCmd, []string{""})
+				err := cmd.AttachContainerImageCmd.RunE(cmd.AttachContainerImageCmd, []string{""})
 				Expect(err).To(HaveOccurred())
 				Expect(err.Error()).To(Equal("get product with version failed"))
 			})
@@ -588,7 +588,7 @@ var _ = Describe("AttachCmd", func() {
 				cmd.AttachContainerImageTag = "1.21.6"
 				cmd.AttachContainerImageTagType = "FIXED"
 				cmd.AttachInstructions = "docker run it"
-				err := cmd.AttachContainerImageCmd.RunE(cmd.DownloadCmd, []string{""})
+				err := cmd.AttachContainerImageCmd.RunE(cmd.AttachContainerImageCmd, []string{""})
 				Expect(err).To(HaveOccurred())
 				Expect(err.Error()).To(Equal("product \"my-super-product\" does not have version 9.9.9"))
 			})
@@ -602,7 +602,7 @@ var _ = Describe("AttachCmd", func() {
 					cmd.AttachContainerImageTagType = "FIXED"
 					cmd.AttachInstructions = "docker run it"
 					cmd.AttachCreateVersion = true
-					err := cmd.AttachContainerImageCmd.RunE(cmd.DownloadCmd, []string{""})
+					err := cmd.AttachContainerImageCmd.RunE(cmd.AttachContainerImageCmd, []string{""})
 					Expect(err).ToNot(HaveOccurred())
 
 					By("passing a new version to upload vm", func() {
@@ -625,7 +625,7 @@ var _ = Describe("AttachCmd", func() {
 				cmd.AttachContainerImageTag = "1.21.6"
 				cmd.AttachContainerImageTagType = "FIXED"
 				cmd.AttachInstructions = "docker run it"
-				err := cmd.AttachContainerImageCmd.RunE(cmd.DownloadCmd, []string{""})
+				err := cmd.AttachContainerImageCmd.RunE(cmd.AttachContainerImageCmd, []string{""})
 				Expect(err).To(HaveOccurred())
 				Expect(err.Error()).To(Equal("attach container image failed"))
 			})
@@ -642,7 +642,195 @@ var _ = Describe("AttachCmd", func() {
 				cmd.AttachContainerImageTag = "1.21.6"
 				cmd.AttachContainerImageTagType = "FIXED"
 				cmd.AttachInstructions = "docker run it"
-				err := cmd.AttachContainerImageCmd.RunE(cmd.DownloadCmd, []string{""})
+				err := cmd.AttachContainerImageCmd.RunE(cmd.AttachContainerImageCmd, []string{""})
+				Expect(err).To(HaveOccurred())
+				Expect(err.Error()).To(Equal("render failed"))
+			})
+		})
+	})
+
+	Describe("AttachOtherCmd", func() {
+		var testProduct *models.Product
+
+		BeforeEach(func() {
+			testProduct = test.CreateFakeProduct("", "My Super Product", "my-super-product", "PENDING")
+			test.AddVerions(testProduct, "1.1.1")
+			marketplace.GetProductWithVersionReturns(testProduct, &models.Version{Number: "1.1.1"}, nil)
+
+			updatedProduct := test.CreateFakeProduct(testProduct.ProductId, "My Super Product", "my-super-product", "PENDING")
+			test.AddVerions(updatedProduct, "1.1.1")
+			updatedProduct.AddOnFiles = append(updatedProduct.AddOnFiles, test.CreateFakeOtherFile("fake-file", "1.1.1"))
+			marketplace.AttachOtherFileReturns(updatedProduct, nil)
+
+			cmd.AttachPCAFile = ""
+		})
+
+		It("attaches the asset", func() {
+			cmd.AttachProductSlug = "my-super-product"
+			cmd.AttachProductVersion = "1.1.1"
+			cmd.AttachOtherFile = "path/to/a/file.tgz"
+			err := cmd.AttachOtherCmd.RunE(cmd.AttachOtherCmd, []string{""})
+			Expect(err).ToNot(HaveOccurred())
+
+			By("getting the product details", func() {
+				Expect(marketplace.GetProductWithVersionCallCount()).To(Equal(1))
+				slug, version := marketplace.GetProductWithVersionArgsForCall(0)
+				Expect(slug).To(Equal("my-super-product"))
+				Expect(version).To(Equal("1.1.1"))
+			})
+
+			By("uploading the other file", func() {
+				Expect(marketplace.AttachOtherFileCallCount()).To(Equal(1))
+				file, product, version := marketplace.AttachOtherFileArgsForCall(0)
+				Expect(file).To(Equal("path/to/a/file.tgz"))
+				Expect(product.Slug).To(Equal("my-super-product"))
+				Expect(version.Number).To(Equal("1.1.1"))
+				Expect(version.IsNewVersion).To(BeFalse())
+			})
+
+			By("outputting the updated list of other files", func() {
+				Expect(output.PrintHeaderCallCount()).To(Equal(1))
+				header := output.PrintHeaderArgsForCall(0)
+				Expect(header).To(Equal("Other files for My Super Product 1.1.1:"))
+
+				Expect(output.RenderAssetsCallCount()).To(Equal(1))
+				files := output.RenderAssetsArgsForCall(0)
+				Expect(files).To(HaveLen(1))
+				Expect(files[0].Filename).To(Equal("fake-file"))
+			})
+		})
+
+		When("attaching a PCA file", func() {
+			var uploader *internalfakes.FakeUploader
+			BeforeEach(func() {
+				uploader = &internalfakes.FakeUploader{}
+				marketplace.GetUploaderReturns(uploader, nil)
+				uploader.UploadMediaFileReturns("", "https://example.com/path/to/pca.pdf", nil)
+			})
+			It("attaches the PCA file", func() {
+				cmd.AttachProductSlug = "my-super-product"
+				cmd.AttachProductVersion = "1.1.1"
+				cmd.AttachOtherFile = "path/to/a/file.tgz"
+				cmd.AttachPCAFile = "/path/to/pca.pdf"
+				err := cmd.AttachOtherCmd.RunE(cmd.AttachOtherCmd, []string{""})
+				Expect(err).ToNot(HaveOccurred())
+
+				By("uploading the PCA file", func() {
+					Expect(marketplace.GetUploaderCallCount()).To(Equal(1))
+					Expect(uploader.UploadMediaFileCallCount()).To(Equal(1))
+					Expect(uploader.UploadMediaFileArgsForCall(0)).To(Equal("/path/to/pca.pdf"))
+				})
+
+				By("adding the url to the product", func() {
+					_, product, _ := marketplace.AttachOtherFileArgsForCall(0)
+					Expect(product.PCADetails).ToNot(BeNil())
+					Expect(product.PCADetails.URL).To(Equal("https://example.com/path/to/pca.pdf"))
+					Expect(product.PCADetails.Version).To(Equal("1.1.1"))
+				})
+			})
+
+			When("getting the uploader fails", func() {
+				BeforeEach(func() {
+					marketplace.GetUploaderReturns(nil, errors.New("get uploader failed"))
+				})
+				It("returns an error", func() {
+					cmd.AttachProductSlug = "my-super-product"
+					cmd.AttachProductVersion = "1.1.1"
+					cmd.AttachOtherFile = "path/to/a/file.tgz"
+					cmd.AttachPCAFile = "/path/to/pca.pdf"
+					err := cmd.AttachOtherCmd.RunE(cmd.AttachOtherCmd, []string{""})
+					Expect(err).To(HaveOccurred())
+					Expect(err.Error()).To(Equal("get uploader failed"))
+				})
+			})
+
+			When("uploading the file fails", func() {
+				BeforeEach(func() {
+					uploader.UploadMediaFileReturns("", "", errors.New("upload media file failed"))
+				})
+				It("returns an error", func() {
+					cmd.AttachProductSlug = "my-super-product"
+					cmd.AttachProductVersion = "1.1.1"
+					cmd.AttachOtherFile = "path/to/a/file.tgz"
+					cmd.AttachPCAFile = "/path/to/pca.pdf"
+					err := cmd.AttachOtherCmd.RunE(cmd.AttachOtherCmd, []string{""})
+					Expect(err).To(HaveOccurred())
+					Expect(err.Error()).To(Equal("upload media file failed"))
+				})
+			})
+		})
+
+		When("getting the product fails", func() {
+			BeforeEach(func() {
+				marketplace.GetProductWithVersionReturns(nil, nil, errors.New("get product with version failed"))
+			})
+			It("Returns an error", func() {
+				cmd.AttachProductSlug = "my-super-product"
+				cmd.AttachProductVersion = "1.1.1"
+				cmd.AttachOtherFile = "path/to/a/file.tgz"
+				err := cmd.AttachOtherCmd.RunE(cmd.AttachOtherCmd, []string{""})
+				Expect(err).To(HaveOccurred())
+				Expect(err.Error()).To(Equal("get product with version failed"))
+			})
+		})
+
+		When("the version does not exist", func() {
+			BeforeEach(func() {
+				marketplace.GetProductWithVersionReturns(testProduct, nil, &pkg.VersionDoesNotExistError{
+					Product: testProduct.Slug,
+					Version: "9.9.9",
+				})
+			})
+			It("Returns an error", func() {
+				cmd.AttachProductSlug = "my-super-product"
+				cmd.AttachProductVersion = "9.9.9"
+				cmd.AttachOtherFile = "path/to/a/file.tgz"
+				err := cmd.AttachOtherCmd.RunE(cmd.AttachOtherCmd, []string{""})
+				Expect(err).To(HaveOccurred())
+				Expect(err.Error()).To(Equal("product \"my-super-product\" does not have version 9.9.9"))
+			})
+
+			Context("But, we want to create the version", func() {
+				It("attaches the asset, but with a new version", func() {
+					cmd.AttachProductSlug = "my-super-product"
+					cmd.AttachProductVersion = "9.9.9"
+					cmd.AttachOtherFile = "path/to/a/file.tgz"
+					cmd.AttachCreateVersion = true
+					err := cmd.AttachOtherCmd.RunE(cmd.AttachOtherCmd, []string{""})
+					Expect(err).ToNot(HaveOccurred())
+
+					By("passing a new version to attach other file", func() {
+						_, _, version := marketplace.AttachOtherFileArgsForCall(0)
+						Expect(version.Number).To(Equal("9.9.9"))
+						Expect(version.IsNewVersion).To(BeTrue())
+					})
+				})
+			})
+		})
+
+		When("uploading the file fails", func() {
+			BeforeEach(func() {
+				marketplace.AttachOtherFileReturns(nil, errors.New("attach other file failed"))
+			})
+			It("Returns an error", func() {
+				cmd.AttachProductSlug = "my-super-product"
+				cmd.AttachProductVersion = "1.1.1"
+				cmd.AttachOtherFile = "path/to/a/file.tgz"
+				err := cmd.AttachOtherCmd.RunE(cmd.AttachOtherCmd, []string{""})
+				Expect(err).To(HaveOccurred())
+				Expect(err.Error()).To(Equal("attach other file failed"))
+			})
+		})
+
+		When("rendering fails", func() {
+			BeforeEach(func() {
+				output.RenderAssetsReturns(errors.New("render failed"))
+			})
+			It("Returns an error", func() {
+				cmd.AttachProductSlug = "my-super-product"
+				cmd.AttachProductVersion = "1.1.1"
+				cmd.AttachOtherFile = "path/to/a/file.tgz"
+				err := cmd.AttachOtherCmd.RunE(cmd.AttachOtherCmd, []string{""})
 				Expect(err).To(HaveOccurred())
 				Expect(err.Error()).To(Equal("render failed"))
 			})
@@ -669,7 +857,7 @@ var _ = Describe("AttachCmd", func() {
 			cmd.AttachProductSlug = "my-super-product"
 			cmd.AttachProductVersion = "1.1.1"
 			cmd.AttachVMFile = "path/to/a/file.iso"
-			err := cmd.AttachVMCmd.RunE(cmd.DownloadCmd, []string{""})
+			err := cmd.AttachVMCmd.RunE(cmd.AttachVMCmd, []string{""})
 			Expect(err).ToNot(HaveOccurred())
 
 			By("getting the product details", func() {
@@ -712,7 +900,7 @@ var _ = Describe("AttachCmd", func() {
 				cmd.AttachProductVersion = "1.1.1"
 				cmd.AttachVMFile = "path/to/a/file.iso"
 				cmd.AttachPCAFile = "/path/to/pca.pdf"
-				err := cmd.AttachVMCmd.RunE(cmd.DownloadCmd, []string{""})
+				err := cmd.AttachVMCmd.RunE(cmd.AttachVMCmd, []string{""})
 				Expect(err).ToNot(HaveOccurred())
 
 				By("uploading the PCA file", func() {
@@ -738,7 +926,7 @@ var _ = Describe("AttachCmd", func() {
 					cmd.AttachProductVersion = "1.1.1"
 					cmd.AttachVMFile = "path/to/a/file.iso"
 					cmd.AttachPCAFile = "/path/to/pca.pdf"
-					err := cmd.AttachVMCmd.RunE(cmd.DownloadCmd, []string{""})
+					err := cmd.AttachVMCmd.RunE(cmd.AttachVMCmd, []string{""})
 					Expect(err).To(HaveOccurred())
 					Expect(err.Error()).To(Equal("get uploader failed"))
 				})
@@ -753,7 +941,7 @@ var _ = Describe("AttachCmd", func() {
 					cmd.AttachProductVersion = "1.1.1"
 					cmd.AttachVMFile = "path/to/a/file.iso"
 					cmd.AttachPCAFile = "/path/to/pca.pdf"
-					err := cmd.AttachVMCmd.RunE(cmd.DownloadCmd, []string{""})
+					err := cmd.AttachVMCmd.RunE(cmd.AttachVMCmd, []string{""})
 					Expect(err).To(HaveOccurred())
 					Expect(err.Error()).To(Equal("upload media file failed"))
 				})
@@ -768,7 +956,7 @@ var _ = Describe("AttachCmd", func() {
 				cmd.AttachProductSlug = "my-super-product"
 				cmd.AttachProductVersion = "1.1.1"
 				cmd.AttachVMFile = "path/to/a/file.iso"
-				err := cmd.AttachVMCmd.RunE(cmd.DownloadCmd, []string{""})
+				err := cmd.AttachVMCmd.RunE(cmd.AttachVMCmd, []string{""})
 				Expect(err).To(HaveOccurred())
 				Expect(err.Error()).To(Equal("get product with version failed"))
 			})
@@ -785,7 +973,7 @@ var _ = Describe("AttachCmd", func() {
 				cmd.AttachProductSlug = "my-super-product"
 				cmd.AttachProductVersion = "9.9.9"
 				cmd.AttachVMFile = "path/to/a/file.iso"
-				err := cmd.AttachVMCmd.RunE(cmd.DownloadCmd, []string{""})
+				err := cmd.AttachVMCmd.RunE(cmd.AttachVMCmd, []string{""})
 				Expect(err).To(HaveOccurred())
 				Expect(err.Error()).To(Equal("product \"my-super-product\" does not have version 9.9.9"))
 			})
@@ -796,7 +984,7 @@ var _ = Describe("AttachCmd", func() {
 					cmd.AttachProductVersion = "9.9.9"
 					cmd.AttachVMFile = "path/to/a/file.iso"
 					cmd.AttachCreateVersion = true
-					err := cmd.AttachVMCmd.RunE(cmd.DownloadCmd, []string{""})
+					err := cmd.AttachVMCmd.RunE(cmd.AttachVMCmd, []string{""})
 					Expect(err).ToNot(HaveOccurred())
 
 					By("passing a new version to upload vm", func() {
@@ -816,7 +1004,7 @@ var _ = Describe("AttachCmd", func() {
 				cmd.AttachProductSlug = "my-super-product"
 				cmd.AttachProductVersion = "1.1.1"
 				cmd.AttachVMFile = "path/to/a/file.iso"
-				err := cmd.AttachVMCmd.RunE(cmd.DownloadCmd, []string{""})
+				err := cmd.AttachVMCmd.RunE(cmd.AttachVMCmd, []string{""})
 				Expect(err).To(HaveOccurred())
 				Expect(err.Error()).To(Equal("upload vm failed"))
 			})
@@ -830,7 +1018,7 @@ var _ = Describe("AttachCmd", func() {
 				cmd.AttachProductSlug = "my-super-product"
 				cmd.AttachProductVersion = "1.1.1"
 				cmd.AttachVMFile = "path/to/a/file.iso"
-				err := cmd.AttachVMCmd.RunE(cmd.DownloadCmd, []string{""})
+				err := cmd.AttachVMCmd.RunE(cmd.AttachVMCmd, []string{""})
 				Expect(err).To(HaveOccurred())
 				Expect(err.Error()).To(Equal("render failed"))
 			})
