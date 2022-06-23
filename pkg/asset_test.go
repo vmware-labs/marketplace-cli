@@ -16,18 +16,18 @@ import (
 
 var _ = Describe("Asset", func() {
 	Describe("GetAssets", func() {
-		Context("Add-on", func() {
+		Context("Other", func() {
 			var (
-				product     *models.Product
-				addon       *models.AddOnFile
-				addonFileId string
+				product *models.Product
+				addon   *models.AddOnFile
+				fileId  string
 			)
 			BeforeEach(func() {
 				product = test.CreateFakeProduct("", "Hyperspace Database", "hyperspace-database", "PENDING")
 				test.AddVerions(product, "1")
-				addonFileId = uuid.New().String()
+				fileId = uuid.New().String()
 				addon = &models.AddOnFile{
-					ID:               addonFileId,
+					ID:               fileId,
 					Name:             "my-addon-file.vlcp",
 					Status:           models.DeploymentStatusActive,
 					DeploymentStatus: "",
@@ -48,7 +48,7 @@ var _ = Describe("Asset", func() {
 				Expect(assets[0].DisplayName).To(Equal("my-addon-file.vlcp"))
 				Expect(assets[0].Filename).To(Equal("my-addon-file.vlcp"))
 				Expect(assets[0].Version).To(Equal("1"))
-				Expect(assets[0].Type).To(Equal("Add-on"))
+				Expect(assets[0].Type).To(Equal("Other"))
 				Expect(strconv.FormatInt(assets[0].Size, 10)).To(Equal("1000"))
 				Expect(strconv.FormatInt(assets[0].Downloads, 10)).To(Equal("5"))
 				Expect(assets[0].Downloadable).To(BeTrue())
@@ -56,7 +56,7 @@ var _ = Describe("Asset", func() {
 				Expect(assets[0].DownloadRequestPayload.ProductId).To(Equal(product.ProductId))
 				Expect(assets[0].DownloadRequestPayload.AppVersion).To(Equal("1"))
 				Expect(assets[0].DownloadRequestPayload.IsAddonFile).To(BeTrue())
-				Expect(assets[0].DownloadRequestPayload.AddonFileId).To(Equal(addonFileId))
+				Expect(assets[0].DownloadRequestPayload.AddonFileId).To(Equal(fileId))
 			})
 		})
 

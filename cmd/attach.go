@@ -29,6 +29,8 @@ var (
 	AttachMetaFile        string
 	AttachMetaFileVersion string
 
+	AttachOtherFile string
+
 	AttachVMFile string
 
 	AttachInstructions string
@@ -38,10 +40,7 @@ var (
 
 func init() {
 	rootCmd.AddCommand(AttachCmd)
-	AttachCmd.AddCommand(AttachChartCmd)
-	AttachCmd.AddCommand(AttachContainerImageCmd)
-	AttachCmd.AddCommand(AttachMetaFileCmd)
-	AttachCmd.AddCommand(AttachVMCmd)
+	AttachCmd.AddCommand(AttachChartCmd, AttachContainerImageCmd, AttachMetaFileCmd, AttachOtherCmd, AttachVMCmd)
 
 	AttachChartCmd.Flags().StringVarP(&AttachProductSlug, "product", "p", "", "Product slug (required)")
 	_ = AttachChartCmd.MarkFlagRequired("product")
@@ -75,6 +74,14 @@ func init() {
 	_ = AttachMetaFileCmd.MarkFlagRequired("metafile")
 	AttachMetaFileCmd.Flags().StringVar(&MetaFileType, "metafile-type", "", "Meta file version (required, one of "+strings.Join(metaFileTypesList(), ", ")+")")
 	AttachMetaFileCmd.Flags().StringVar(&AttachMetaFileVersion, "metafile-version", "", "Meta file type (default is the product version)")
+
+	AttachOtherCmd.Flags().StringVarP(&AttachProductSlug, "product", "p", "", "Product slug (required)")
+	_ = AttachOtherCmd.MarkFlagRequired("product")
+	AttachOtherCmd.Flags().StringVarP(&AttachProductVersion, "product-version", "v", "", "Product version (default to latest version)")
+	AttachOtherCmd.Flags().StringVar(&AttachOtherFile, "file", "", "File to upload (required)")
+	_ = AttachOtherCmd.MarkFlagRequired("file")
+	AttachOtherCmd.Flags().BoolVar(&AttachCreateVersion, "create-version", false, "Create the product version, if it doesn't already exist")
+	AttachOtherCmd.Flags().StringVar(&AttachPCAFile, "pca-file", "", "Path to a PCA file to upload")
 
 	AttachVMCmd.Flags().StringVarP(&AttachProductSlug, "product", "p", "", "Product slug (required)")
 	_ = AttachVMCmd.MarkFlagRequired("product")
@@ -199,6 +206,48 @@ var AttachContainerImageCmd = &cobra.Command{
 
 		Output.PrintHeader(fmt.Sprintf("Container images for %s %s:", updatedProduct.DisplayName, version.Number))
 		return Output.RenderContainerImages(updatedProduct.GetContainerImagesForVersion(version.Number))
+	},
+}
+
+var AttachOtherCmd = &cobra.Command{
+	Use:     "other",
+	Short:   "Attach an other file",
+	Long:    "Upload and attach an other file (.pak, .vlcp, .zip, .tar, .gz, .tgz, .ova, .vmoapp) to a product in the VMware Marketplace",
+	Example: fmt.Sprintf("%s attach other -p hyperspace-database-vm1 -v 1.2.3 --file hyperspace-db-1.2.3.tgz", AppName),
+	Args:    cobra.NoArgs,
+	PreRunE: GetRefreshToken,
+	RunE: func(cmd *cobra.Command, args []string) error {
+		cmd.SilenceUsage = true
+
+		product, version, err := Marketplace.GetProductWithVersion(AttachProductSlug, AttachProductVersion)
+		if err != nil {
+			if errors.Is(err, &pkg.VersionDoesNotExistError{}) && AttachCreateVersion {
+				version = product.NewVersion(AttachProductVersion)
+			} else {
+				return err
+			}
+		}
+
+		if AttachPCAFile != "" {
+			uploader, err := Marketplace.GetUploader(product.PublisherDetails.OrgId)
+			if err != nil {
+				return err
+			}
+			_, pcaUrl, err := uploader.UploadMediaFile(AttachPCAFile)
+			if err != nil {
+				return err
+			}
+
+			product.SetPCAFile(version.Number, pcaUrl)
+		}
+
+		updatedProduct, err := Marketplace.AttachOtherFile(AttachOtherFile, product, version)
+		if err != nil {
+			return err
+		}
+
+		Output.PrintHeader(fmt.Sprintf("Other files for %s %s:", updatedProduct.DisplayName, version.Number))
+		return Output.RenderAssets(pkg.GetAssetsByType(pkg.AssetTypeOther, updatedProduct, version.Number))
 	},
 }
 

@@ -42,6 +42,19 @@ func CreateFakeProduct(id, name, slug, status string) *models.Product {
 	}
 }
 
+func CreateFakeOtherFile(name, version string) *models.AddOnFile {
+	return &models.AddOnFile{
+		ID:            uuid.New().String(),
+		Name:          name,
+		URL:           "https://marketplace.example.com/product-files/" + name,
+		Status:        models.DeploymentStatusActive,
+		FileID:        uuid.New().String(),
+		AppVersion:    version,
+		DownloadCount: 18,
+		Size:          140,
+	}
+}
+
 func CreateFakeOVA(name, version string) *models.ProductDeploymentFile {
 	details := &models.ProductItemDetails{
 		Name: name,

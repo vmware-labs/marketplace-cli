@@ -23,7 +23,7 @@ type Asset struct {
 }
 
 const (
-	AssetTypeAddon          = "Add-on"
+	AssetTypeOther          = "Other"
 	AssetTypeVM             = "VM"
 	AssetTypeChart          = "Chart"
 	AssetTypeContainerImage = "Container Image"
@@ -36,23 +36,23 @@ func GetAssets(product *models.Product, version string) []*Asset {
 		return assets
 	}
 
-	for _, addonFile := range product.GetAddonFilesForVersion(version) {
+	for _, otherFile := range product.GetAddonFilesForVersion(version) {
 		assets = append(assets, &Asset{
-			DisplayName:  addonFile.Name,
-			Filename:     addonFile.Name,
+			DisplayName:  otherFile.Name,
+			Filename:     otherFile.Name,
 			Version:      version,
-			Type:         AssetTypeAddon,
-			Size:         addonFile.Size,
-			Downloads:    addonFile.DownloadCount,
-			Downloadable: addonFile.Status != models.DeploymentStatusInactive,
+			Type:         AssetTypeOther,
+			Size:         otherFile.Size,
+			Downloads:    otherFile.DownloadCount,
+			Downloadable: otherFile.Status != models.DeploymentStatusInactive,
 			DownloadRequestPayload: &DownloadRequestPayload{
 				ProductId:   product.ProductId,
 				AppVersion:  version,
 				IsAddonFile: true,
-				AddonFileId: addonFile.ID,
+				AddonFileId: otherFile.ID,
 			},
-			Error:  addonFile.DeploymentStatus,
-			Status: addonFile.Status,
+			Error:  otherFile.DeploymentStatus,
+			Status: otherFile.Status,
 		})
 	}
 

@@ -53,6 +53,8 @@ type MarketplaceInterface interface {
 
 	AttachMetaFile(metafile, metafileType, metafileVersion string, product *models.Product, version *models.Version) (*models.Product, error)
 
+	AttachOtherFile(file string, product *models.Product, version *models.Version) (*models.Product, error)
+
 	UploadVM(vmFile string, product *models.Product, version *models.Version) (*models.Product, error)
 }
 

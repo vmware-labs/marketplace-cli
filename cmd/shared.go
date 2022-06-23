@@ -19,7 +19,7 @@ var (
 
 	AssetType        string
 	assetTypeMapping = map[string]string{
-		"addon":    pkg.AssetTypeAddon,
+		"other":    pkg.AssetTypeOther,
 		"chart":    pkg.AssetTypeChart,
 		"image":    pkg.AssetTypeContainerImage,
 		"metafile": pkg.AssetTypeMetaFile,

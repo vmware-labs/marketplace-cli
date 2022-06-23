@@ -115,11 +115,11 @@ var _ = Describe("DownloadCmd", func() {
 		It("returns an error saying there are no assets", func() {
 			cmd.DownloadProductSlug = "my-super-product"
 			cmd.DownloadProductVersion = "1.1.1"
-			cmd.AssetType = "addon"
+			cmd.AssetType = "other"
 			cmd.DownloadAcceptEULA = true
 			err := cmd.DownloadCmd.RunE(cmd.DownloadCmd, []string{""})
 			Expect(err).To(HaveOccurred())
-			Expect(err.Error()).To(Equal("product my-super-product 1.1.1 does not have any downloadable Add-on assets"))
+			Expect(err.Error()).To(Equal("product my-super-product 1.1.1 does not have any downloadable Other assets"))
 		})
 	})
 
