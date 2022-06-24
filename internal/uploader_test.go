@@ -145,7 +145,7 @@ var _ = Describe("Uploader", func() {
 				Expect(client.PutObjectCallCount()).To(Equal(1))
 				_, putArg, options := client.PutObjectArgsForCall(0)
 				Expect(*putArg.Bucket).To(Equal("my-bucket"))
-				Expect(*putArg.Key).To(MatchRegexp("^my-org/marketplace-product-files/mkpcli-test-uploader-file-[0-9]+-[0-9]+.txt$"))
+				Expect(*putArg.Key).To(MatchRegexp("^my-org/marketplace-product-files/[0-9]+/mkpcli-test-uploader-file-[0-9]+.txt$"))
 				Expect(putArg.ContentLength).To(Equal(int64(len("file contents"))))
 				Expect(options).To(BeEmpty())
 			})
@@ -160,8 +160,8 @@ var _ = Describe("Uploader", func() {
 			})
 
 			By("returning the uploaded filename and url", func() {
-				Expect(filename).To(MatchRegexp("^mkpcli-test-uploader-file-[0-9]+-[0-9]+.txt$"))
-				Expect(fileUrl).To(MatchRegexp("^https://my-bucket.s3.my-region.amazonaws.com/my-org/marketplace-product-files/mkpcli-test-uploader-file-[0-9]+-[0-9]+.txt$"))
+				Expect(filename).To(MatchRegexp("^mkpcli-test-uploader-file-[0-9]+.txt$"))
+				Expect(fileUrl).To(MatchRegexp("^https://my-bucket.s3.my-region.amazonaws.com/my-org/marketplace-product-files/[0-9]+/mkpcli-test-uploader-file-[0-9]+.txt$"))
 			})
 		})
 
@@ -176,14 +176,6 @@ var _ = Describe("Uploader", func() {
 				Expect(err).To(HaveOccurred())
 				Expect(err.Error()).To(Equal("failed to upload file: put object failed"))
 			})
-		})
-	})
-
-	Describe("MakeUniqueFilename", func() {
-		It("Returns a new unique filename", func() {
-			Expect(internal.MakeUniqueFilename("test.binary")).To(MatchRegexp("test-[0-9]*.binary"))
-			Expect(internal.MakeUniqueFilename("two.dots.test")).To(MatchRegexp("two.dots-[0-9]*.test"))
-			Expect(internal.MakeUniqueFilename("no-dots")).To(MatchRegexp("no-dots-[0-9]*"))
 		})
 	})
 })

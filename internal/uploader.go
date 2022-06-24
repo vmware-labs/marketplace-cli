@@ -11,7 +11,6 @@ import (
 	"path"
 	"path/filepath"
 	"strconv"
-	"strings"
 	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -29,12 +28,6 @@ const (
 
 func now() string {
 	return strconv.FormatInt(time.Now().UnixNano()/int64(time.Millisecond), 10)
-}
-
-func MakeUniqueFilename(filename string) string {
-	ext := filepath.Ext(filename)
-	base := strings.TrimSuffix(filename, ext)
-	return fmt.Sprintf("%s-%s%s", base, now(), ext)
 }
 
 //go:generate counterfeiter . Uploader
@@ -99,8 +92,9 @@ func (u *S3Uploader) UploadMetaFile(filePath string) (string, string, error) {
 }
 
 func (u *S3Uploader) UploadProductFile(filePath string) (string, string, error) {
-	filename := MakeUniqueFilename(filepath.Base(filePath))
-	key := path.Join(u.orgID, FolderProductFiles, filename)
+	filename := filepath.Base(filePath)
+	datestamp := now()
+	key := path.Join(u.orgID, FolderProductFiles, datestamp, filename)
 	url := fmt.Sprintf("https://%s.s3.%s.amazonaws.com/%s", u.bucket, u.region, key)
 	err := u.upload(filePath, key, types.ObjectCannedACLPrivate)
 	return filename, url, err
