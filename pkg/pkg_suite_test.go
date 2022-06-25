@@ -6,8 +6,10 @@ package pkg_test
 import (
 	"bytes"
 	"encoding/json"
+	"io"
 	"io/ioutil"
 	"net/http"
+	"net/url"
 	"strings"
 	"testing"
 
@@ -23,13 +25,12 @@ func TestPkg(t *testing.T) {
 	RunSpecs(t, "Pkg test suite")
 }
 
-func PutProductEchoResponse(req *http.Request) (*http.Response, error) {
-	Expect(req.Method).To(Equal("PUT"))
-
+func PutProductEchoResponse(requestURL *url.URL, content io.Reader, contentType string) (*http.Response, error) {
+	Expect(contentType).To(Equal("application/json"))
 	var product *models.Product
-	content, err := ioutil.ReadAll(req.Body)
+	productBytes, err := ioutil.ReadAll(content)
 	Expect(err).ToNot(HaveOccurred())
-	Expect(json.Unmarshal(content, &product)).To(Succeed())
+	Expect(json.Unmarshal(productBytes, &product)).To(Succeed())
 
 	body, err := json.Marshal(&pkg.GetProductResponse{
 		Response: &pkg.GetProductResponsePayload{

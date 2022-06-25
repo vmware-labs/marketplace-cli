@@ -14,6 +14,7 @@ import (
 )
 
 var (
+	Client      pkg.HTTPClient
 	Marketplace pkg.MarketplaceInterface
 	Output      output.Format
 

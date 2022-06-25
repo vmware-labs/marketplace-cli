@@ -44,7 +44,7 @@ var _ = Describe("Auth", func() {
 			Expect(viper.GetString("csp.refresh-token")).To(Equal("my-refresh-token"))
 
 			Expect(initializer.CallCount()).To(Equal(1))
-			Expect(initializer.ArgsForCall(0)).To(Equal("https://console.cloud.vmware.com.example"))
+			Expect(initializer.ArgsForCall(0)).To(Equal("console.cloud.vmware.com.example"))
 
 			Expect(tokenServices.RedeemCallCount()).To(Equal(1))
 			Expect(tokenServices.RedeemArgsForCall(0)).To(Equal("my-csp-api-token"))

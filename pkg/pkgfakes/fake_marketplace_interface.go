@@ -3,7 +3,6 @@ package pkgfakes
 
 import (
 	"io"
-	"net/http"
 	"net/url"
 	"sync"
 
@@ -151,28 +150,9 @@ type FakeMarketplaceInterface struct {
 		result1 *models.ChartVersion
 		result2 error
 	}
-	EnableDebuggingStub        func(bool, io.Writer)
-	enableDebuggingMutex       sync.RWMutex
-	enableDebuggingArgsForCall []struct {
-		arg1 bool
-		arg2 io.Writer
-	}
 	EnableStrictDecodingStub        func()
 	enableStrictDecodingMutex       sync.RWMutex
 	enableStrictDecodingArgsForCall []struct {
-	}
-	GetStub        func(*url.URL) (*http.Response, error)
-	getMutex       sync.RWMutex
-	getArgsForCall []struct {
-		arg1 *url.URL
-	}
-	getReturns struct {
-		result1 *http.Response
-		result2 error
-	}
-	getReturnsOnCall map[int]struct {
-		result1 *http.Response
-		result2 error
 	}
 	GetAPIHostStub        func() string
 	getAPIHostMutex       sync.RWMutex
@@ -182,6 +162,16 @@ type FakeMarketplaceInterface struct {
 		result1 string
 	}
 	getAPIHostReturnsOnCall map[int]struct {
+		result1 string
+	}
+	GetHostStub        func() string
+	getHostMutex       sync.RWMutex
+	getHostArgsForCall []struct {
+	}
+	getHostReturns struct {
+		result1 string
+	}
+	getHostReturnsOnCall map[int]struct {
 		result1 string
 	}
 	GetProductStub        func(string) (*models.Product, error)
@@ -250,48 +240,6 @@ type FakeMarketplaceInterface struct {
 		result1 []*models.Product
 		result2 error
 	}
-	MakeURLStub        func(string, url.Values) *url.URL
-	makeURLMutex       sync.RWMutex
-	makeURLArgsForCall []struct {
-		arg1 string
-		arg2 url.Values
-	}
-	makeURLReturns struct {
-		result1 *url.URL
-	}
-	makeURLReturnsOnCall map[int]struct {
-		result1 *url.URL
-	}
-	PostStub        func(*url.URL, io.Reader, string) (*http.Response, error)
-	postMutex       sync.RWMutex
-	postArgsForCall []struct {
-		arg1 *url.URL
-		arg2 io.Reader
-		arg3 string
-	}
-	postReturns struct {
-		result1 *http.Response
-		result2 error
-	}
-	postReturnsOnCall map[int]struct {
-		result1 *http.Response
-		result2 error
-	}
-	PutStub        func(*url.URL, io.Reader, string) (*http.Response, error)
-	putMutex       sync.RWMutex
-	putArgsForCall []struct {
-		arg1 *url.URL
-		arg2 io.Reader
-		arg3 string
-	}
-	putReturns struct {
-		result1 *http.Response
-		result2 error
-	}
-	putReturnsOnCall map[int]struct {
-		result1 *http.Response
-		result2 error
-	}
 	PutProductStub        func(*models.Product, bool) (*models.Product, error)
 	putProductMutex       sync.RWMutex
 	putProductArgsForCall []struct {
@@ -304,22 +252,6 @@ type FakeMarketplaceInterface struct {
 	}
 	putProductReturnsOnCall map[int]struct {
 		result1 *models.Product
-		result2 error
-	}
-	SendRequestStub        func(string, *url.URL, map[string]string, io.Reader) (*http.Response, error)
-	sendRequestMutex       sync.RWMutex
-	sendRequestArgsForCall []struct {
-		arg1 string
-		arg2 *url.URL
-		arg3 map[string]string
-		arg4 io.Reader
-	}
-	sendRequestReturns struct {
-		result1 *http.Response
-		result2 error
-	}
-	sendRequestReturnsOnCall map[int]struct {
-		result1 *http.Response
 		result2 error
 	}
 	SetUploaderStub        func(internal.Uploader)
@@ -941,39 +873,6 @@ func (fake *FakeMarketplaceInterface) DownloadChartReturnsOnCall(i int, result1 
 	}{result1, result2}
 }
 
-func (fake *FakeMarketplaceInterface) EnableDebugging(arg1 bool, arg2 io.Writer) {
-	fake.enableDebuggingMutex.Lock()
-	fake.enableDebuggingArgsForCall = append(fake.enableDebuggingArgsForCall, struct {
-		arg1 bool
-		arg2 io.Writer
-	}{arg1, arg2})
-	stub := fake.EnableDebuggingStub
-	fake.recordInvocation("EnableDebugging", []interface{}{arg1, arg2})
-	fake.enableDebuggingMutex.Unlock()
-	if stub != nil {
-		fake.EnableDebuggingStub(arg1, arg2)
-	}
-}
-
-func (fake *FakeMarketplaceInterface) EnableDebuggingCallCount() int {
-	fake.enableDebuggingMutex.RLock()
-	defer fake.enableDebuggingMutex.RUnlock()
-	return len(fake.enableDebuggingArgsForCall)
-}
-
-func (fake *FakeMarketplaceInterface) EnableDebuggingCalls(stub func(bool, io.Writer)) {
-	fake.enableDebuggingMutex.Lock()
-	defer fake.enableDebuggingMutex.Unlock()
-	fake.EnableDebuggingStub = stub
-}
-
-func (fake *FakeMarketplaceInterface) EnableDebuggingArgsForCall(i int) (bool, io.Writer) {
-	fake.enableDebuggingMutex.RLock()
-	defer fake.enableDebuggingMutex.RUnlock()
-	argsForCall := fake.enableDebuggingArgsForCall[i]
-	return argsForCall.arg1, argsForCall.arg2
-}
-
 func (fake *FakeMarketplaceInterface) EnableStrictDecoding() {
 	fake.enableStrictDecodingMutex.Lock()
 	fake.enableStrictDecodingArgsForCall = append(fake.enableStrictDecodingArgsForCall, struct {
@@ -996,70 +895,6 @@ func (fake *FakeMarketplaceInterface) EnableStrictDecodingCalls(stub func()) {
 	fake.enableStrictDecodingMutex.Lock()
 	defer fake.enableStrictDecodingMutex.Unlock()
 	fake.EnableStrictDecodingStub = stub
-}
-
-func (fake *FakeMarketplaceInterface) Get(arg1 *url.URL) (*http.Response, error) {
-	fake.getMutex.Lock()
-	ret, specificReturn := fake.getReturnsOnCall[len(fake.getArgsForCall)]
-	fake.getArgsForCall = append(fake.getArgsForCall, struct {
-		arg1 *url.URL
-	}{arg1})
-	stub := fake.GetStub
-	fakeReturns := fake.getReturns
-	fake.recordInvocation("Get", []interface{}{arg1})
-	fake.getMutex.Unlock()
-	if stub != nil {
-		return stub(arg1)
-	}
-	if specificReturn {
-		return ret.result1, ret.result2
-	}
-	return fakeReturns.result1, fakeReturns.result2
-}
-
-func (fake *FakeMarketplaceInterface) GetCallCount() int {
-	fake.getMutex.RLock()
-	defer fake.getMutex.RUnlock()
-	return len(fake.getArgsForCall)
-}
-
-func (fake *FakeMarketplaceInterface) GetCalls(stub func(*url.URL) (*http.Response, error)) {
-	fake.getMutex.Lock()
-	defer fake.getMutex.Unlock()
-	fake.GetStub = stub
-}
-
-func (fake *FakeMarketplaceInterface) GetArgsForCall(i int) *url.URL {
-	fake.getMutex.RLock()
-	defer fake.getMutex.RUnlock()
-	argsForCall := fake.getArgsForCall[i]
-	return argsForCall.arg1
-}
-
-func (fake *FakeMarketplaceInterface) GetReturns(result1 *http.Response, result2 error) {
-	fake.getMutex.Lock()
-	defer fake.getMutex.Unlock()
-	fake.GetStub = nil
-	fake.getReturns = struct {
-		result1 *http.Response
-		result2 error
-	}{result1, result2}
-}
-
-func (fake *FakeMarketplaceInterface) GetReturnsOnCall(i int, result1 *http.Response, result2 error) {
-	fake.getMutex.Lock()
-	defer fake.getMutex.Unlock()
-	fake.GetStub = nil
-	if fake.getReturnsOnCall == nil {
-		fake.getReturnsOnCall = make(map[int]struct {
-			result1 *http.Response
-			result2 error
-		})
-	}
-	fake.getReturnsOnCall[i] = struct {
-		result1 *http.Response
-		result2 error
-	}{result1, result2}
 }
 
 func (fake *FakeMarketplaceInterface) GetAPIHost() string {
@@ -1111,6 +946,59 @@ func (fake *FakeMarketplaceInterface) GetAPIHostReturnsOnCall(i int, result1 str
 		})
 	}
 	fake.getAPIHostReturnsOnCall[i] = struct {
+		result1 string
+	}{result1}
+}
+
+func (fake *FakeMarketplaceInterface) GetHost() string {
+	fake.getHostMutex.Lock()
+	ret, specificReturn := fake.getHostReturnsOnCall[len(fake.getHostArgsForCall)]
+	fake.getHostArgsForCall = append(fake.getHostArgsForCall, struct {
+	}{})
+	stub := fake.GetHostStub
+	fakeReturns := fake.getHostReturns
+	fake.recordInvocation("GetHost", []interface{}{})
+	fake.getHostMutex.Unlock()
+	if stub != nil {
+		return stub()
+	}
+	if specificReturn {
+		return ret.result1
+	}
+	return fakeReturns.result1
+}
+
+func (fake *FakeMarketplaceInterface) GetHostCallCount() int {
+	fake.getHostMutex.RLock()
+	defer fake.getHostMutex.RUnlock()
+	return len(fake.getHostArgsForCall)
+}
+
+func (fake *FakeMarketplaceInterface) GetHostCalls(stub func() string) {
+	fake.getHostMutex.Lock()
+	defer fake.getHostMutex.Unlock()
+	fake.GetHostStub = stub
+}
+
+func (fake *FakeMarketplaceInterface) GetHostReturns(result1 string) {
+	fake.getHostMutex.Lock()
+	defer fake.getHostMutex.Unlock()
+	fake.GetHostStub = nil
+	fake.getHostReturns = struct {
+		result1 string
+	}{result1}
+}
+
+func (fake *FakeMarketplaceInterface) GetHostReturnsOnCall(i int, result1 string) {
+	fake.getHostMutex.Lock()
+	defer fake.getHostMutex.Unlock()
+	fake.GetHostStub = nil
+	if fake.getHostReturnsOnCall == nil {
+		fake.getHostReturnsOnCall = make(map[int]struct {
+			result1 string
+		})
+	}
+	fake.getHostReturnsOnCall[i] = struct {
 		result1 string
 	}{result1}
 }
@@ -1429,200 +1317,6 @@ func (fake *FakeMarketplaceInterface) ListProductsReturnsOnCall(i int, result1 [
 	}{result1, result2}
 }
 
-func (fake *FakeMarketplaceInterface) MakeURL(arg1 string, arg2 url.Values) *url.URL {
-	fake.makeURLMutex.Lock()
-	ret, specificReturn := fake.makeURLReturnsOnCall[len(fake.makeURLArgsForCall)]
-	fake.makeURLArgsForCall = append(fake.makeURLArgsForCall, struct {
-		arg1 string
-		arg2 url.Values
-	}{arg1, arg2})
-	stub := fake.MakeURLStub
-	fakeReturns := fake.makeURLReturns
-	fake.recordInvocation("MakeURL", []interface{}{arg1, arg2})
-	fake.makeURLMutex.Unlock()
-	if stub != nil {
-		return stub(arg1, arg2)
-	}
-	if specificReturn {
-		return ret.result1
-	}
-	return fakeReturns.result1
-}
-
-func (fake *FakeMarketplaceInterface) MakeURLCallCount() int {
-	fake.makeURLMutex.RLock()
-	defer fake.makeURLMutex.RUnlock()
-	return len(fake.makeURLArgsForCall)
-}
-
-func (fake *FakeMarketplaceInterface) MakeURLCalls(stub func(string, url.Values) *url.URL) {
-	fake.makeURLMutex.Lock()
-	defer fake.makeURLMutex.Unlock()
-	fake.MakeURLStub = stub
-}
-
-func (fake *FakeMarketplaceInterface) MakeURLArgsForCall(i int) (string, url.Values) {
-	fake.makeURLMutex.RLock()
-	defer fake.makeURLMutex.RUnlock()
-	argsForCall := fake.makeURLArgsForCall[i]
-	return argsForCall.arg1, argsForCall.arg2
-}
-
-func (fake *FakeMarketplaceInterface) MakeURLReturns(result1 *url.URL) {
-	fake.makeURLMutex.Lock()
-	defer fake.makeURLMutex.Unlock()
-	fake.MakeURLStub = nil
-	fake.makeURLReturns = struct {
-		result1 *url.URL
-	}{result1}
-}
-
-func (fake *FakeMarketplaceInterface) MakeURLReturnsOnCall(i int, result1 *url.URL) {
-	fake.makeURLMutex.Lock()
-	defer fake.makeURLMutex.Unlock()
-	fake.MakeURLStub = nil
-	if fake.makeURLReturnsOnCall == nil {
-		fake.makeURLReturnsOnCall = make(map[int]struct {
-			result1 *url.URL
-		})
-	}
-	fake.makeURLReturnsOnCall[i] = struct {
-		result1 *url.URL
-	}{result1}
-}
-
-func (fake *FakeMarketplaceInterface) Post(arg1 *url.URL, arg2 io.Reader, arg3 string) (*http.Response, error) {
-	fake.postMutex.Lock()
-	ret, specificReturn := fake.postReturnsOnCall[len(fake.postArgsForCall)]
-	fake.postArgsForCall = append(fake.postArgsForCall, struct {
-		arg1 *url.URL
-		arg2 io.Reader
-		arg3 string
-	}{arg1, arg2, arg3})
-	stub := fake.PostStub
-	fakeReturns := fake.postReturns
-	fake.recordInvocation("Post", []interface{}{arg1, arg2, arg3})
-	fake.postMutex.Unlock()
-	if stub != nil {
-		return stub(arg1, arg2, arg3)
-	}
-	if specificReturn {
-		return ret.result1, ret.result2
-	}
-	return fakeReturns.result1, fakeReturns.result2
-}
-
-func (fake *FakeMarketplaceInterface) PostCallCount() int {
-	fake.postMutex.RLock()
-	defer fake.postMutex.RUnlock()
-	return len(fake.postArgsForCall)
-}
-
-func (fake *FakeMarketplaceInterface) PostCalls(stub func(*url.URL, io.Reader, string) (*http.Response, error)) {
-	fake.postMutex.Lock()
-	defer fake.postMutex.Unlock()
-	fake.PostStub = stub
-}
-
-func (fake *FakeMarketplaceInterface) PostArgsForCall(i int) (*url.URL, io.Reader, string) {
-	fake.postMutex.RLock()
-	defer fake.postMutex.RUnlock()
-	argsForCall := fake.postArgsForCall[i]
-	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3
-}
-
-func (fake *FakeMarketplaceInterface) PostReturns(result1 *http.Response, result2 error) {
-	fake.postMutex.Lock()
-	defer fake.postMutex.Unlock()
-	fake.PostStub = nil
-	fake.postReturns = struct {
-		result1 *http.Response
-		result2 error
-	}{result1, result2}
-}
-
-func (fake *FakeMarketplaceInterface) PostReturnsOnCall(i int, result1 *http.Response, result2 error) {
-	fake.postMutex.Lock()
-	defer fake.postMutex.Unlock()
-	fake.PostStub = nil
-	if fake.postReturnsOnCall == nil {
-		fake.postReturnsOnCall = make(map[int]struct {
-			result1 *http.Response
-			result2 error
-		})
-	}
-	fake.postReturnsOnCall[i] = struct {
-		result1 *http.Response
-		result2 error
-	}{result1, result2}
-}
-
-func (fake *FakeMarketplaceInterface) Put(arg1 *url.URL, arg2 io.Reader, arg3 string) (*http.Response, error) {
-	fake.putMutex.Lock()
-	ret, specificReturn := fake.putReturnsOnCall[len(fake.putArgsForCall)]
-	fake.putArgsForCall = append(fake.putArgsForCall, struct {
-		arg1 *url.URL
-		arg2 io.Reader
-		arg3 string
-	}{arg1, arg2, arg3})
-	stub := fake.PutStub
-	fakeReturns := fake.putReturns
-	fake.recordInvocation("Put", []interface{}{arg1, arg2, arg3})
-	fake.putMutex.Unlock()
-	if stub != nil {
-		return stub(arg1, arg2, arg3)
-	}
-	if specificReturn {
-		return ret.result1, ret.result2
-	}
-	return fakeReturns.result1, fakeReturns.result2
-}
-
-func (fake *FakeMarketplaceInterface) PutCallCount() int {
-	fake.putMutex.RLock()
-	defer fake.putMutex.RUnlock()
-	return len(fake.putArgsForCall)
-}
-
-func (fake *FakeMarketplaceInterface) PutCalls(stub func(*url.URL, io.Reader, string) (*http.Response, error)) {
-	fake.putMutex.Lock()
-	defer fake.putMutex.Unlock()
-	fake.PutStub = stub
-}
-
-func (fake *FakeMarketplaceInterface) PutArgsForCall(i int) (*url.URL, io.Reader, string) {
-	fake.putMutex.RLock()
-	defer fake.putMutex.RUnlock()
-	argsForCall := fake.putArgsForCall[i]
-	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3
-}
-
-func (fake *FakeMarketplaceInterface) PutReturns(result1 *http.Response, result2 error) {
-	fake.putMutex.Lock()
-	defer fake.putMutex.Unlock()
-	fake.PutStub = nil
-	fake.putReturns = struct {
-		result1 *http.Response
-		result2 error
-	}{result1, result2}
-}
-
-func (fake *FakeMarketplaceInterface) PutReturnsOnCall(i int, result1 *http.Response, result2 error) {
-	fake.putMutex.Lock()
-	defer fake.putMutex.Unlock()
-	fake.PutStub = nil
-	if fake.putReturnsOnCall == nil {
-		fake.putReturnsOnCall = make(map[int]struct {
-			result1 *http.Response
-			result2 error
-		})
-	}
-	fake.putReturnsOnCall[i] = struct {
-		result1 *http.Response
-		result2 error
-	}{result1, result2}
-}
-
 func (fake *FakeMarketplaceInterface) PutProduct(arg1 *models.Product, arg2 bool) (*models.Product, error) {
 	fake.putProductMutex.Lock()
 	ret, specificReturn := fake.putProductReturnsOnCall[len(fake.putProductArgsForCall)]
@@ -1684,73 +1378,6 @@ func (fake *FakeMarketplaceInterface) PutProductReturnsOnCall(i int, result1 *mo
 	}
 	fake.putProductReturnsOnCall[i] = struct {
 		result1 *models.Product
-		result2 error
-	}{result1, result2}
-}
-
-func (fake *FakeMarketplaceInterface) SendRequest(arg1 string, arg2 *url.URL, arg3 map[string]string, arg4 io.Reader) (*http.Response, error) {
-	fake.sendRequestMutex.Lock()
-	ret, specificReturn := fake.sendRequestReturnsOnCall[len(fake.sendRequestArgsForCall)]
-	fake.sendRequestArgsForCall = append(fake.sendRequestArgsForCall, struct {
-		arg1 string
-		arg2 *url.URL
-		arg3 map[string]string
-		arg4 io.Reader
-	}{arg1, arg2, arg3, arg4})
-	stub := fake.SendRequestStub
-	fakeReturns := fake.sendRequestReturns
-	fake.recordInvocation("SendRequest", []interface{}{arg1, arg2, arg3, arg4})
-	fake.sendRequestMutex.Unlock()
-	if stub != nil {
-		return stub(arg1, arg2, arg3, arg4)
-	}
-	if specificReturn {
-		return ret.result1, ret.result2
-	}
-	return fakeReturns.result1, fakeReturns.result2
-}
-
-func (fake *FakeMarketplaceInterface) SendRequestCallCount() int {
-	fake.sendRequestMutex.RLock()
-	defer fake.sendRequestMutex.RUnlock()
-	return len(fake.sendRequestArgsForCall)
-}
-
-func (fake *FakeMarketplaceInterface) SendRequestCalls(stub func(string, *url.URL, map[string]string, io.Reader) (*http.Response, error)) {
-	fake.sendRequestMutex.Lock()
-	defer fake.sendRequestMutex.Unlock()
-	fake.SendRequestStub = stub
-}
-
-func (fake *FakeMarketplaceInterface) SendRequestArgsForCall(i int) (string, *url.URL, map[string]string, io.Reader) {
-	fake.sendRequestMutex.RLock()
-	defer fake.sendRequestMutex.RUnlock()
-	argsForCall := fake.sendRequestArgsForCall[i]
-	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3, argsForCall.arg4
-}
-
-func (fake *FakeMarketplaceInterface) SendRequestReturns(result1 *http.Response, result2 error) {
-	fake.sendRequestMutex.Lock()
-	defer fake.sendRequestMutex.Unlock()
-	fake.SendRequestStub = nil
-	fake.sendRequestReturns = struct {
-		result1 *http.Response
-		result2 error
-	}{result1, result2}
-}
-
-func (fake *FakeMarketplaceInterface) SendRequestReturnsOnCall(i int, result1 *http.Response, result2 error) {
-	fake.sendRequestMutex.Lock()
-	defer fake.sendRequestMutex.Unlock()
-	fake.SendRequestStub = nil
-	if fake.sendRequestReturnsOnCall == nil {
-		fake.sendRequestReturnsOnCall = make(map[int]struct {
-			result1 *http.Response
-			result2 error
-		})
-	}
-	fake.sendRequestReturnsOnCall[i] = struct {
-		result1 *http.Response
 		result2 error
 	}{result1, result2}
 }
@@ -1874,14 +1501,12 @@ func (fake *FakeMarketplaceInterface) Invocations() map[string][][]interface{} {
 	defer fake.downloadMutex.RUnlock()
 	fake.downloadChartMutex.RLock()
 	defer fake.downloadChartMutex.RUnlock()
-	fake.enableDebuggingMutex.RLock()
-	defer fake.enableDebuggingMutex.RUnlock()
 	fake.enableStrictDecodingMutex.RLock()
 	defer fake.enableStrictDecodingMutex.RUnlock()
-	fake.getMutex.RLock()
-	defer fake.getMutex.RUnlock()
 	fake.getAPIHostMutex.RLock()
 	defer fake.getAPIHostMutex.RUnlock()
+	fake.getHostMutex.RLock()
+	defer fake.getHostMutex.RUnlock()
 	fake.getProductMutex.RLock()
 	defer fake.getProductMutex.RUnlock()
 	fake.getProductWithVersionMutex.RLock()
@@ -1892,16 +1517,8 @@ func (fake *FakeMarketplaceInterface) Invocations() map[string][][]interface{} {
 	defer fake.getUploaderMutex.RUnlock()
 	fake.listProductsMutex.RLock()
 	defer fake.listProductsMutex.RUnlock()
-	fake.makeURLMutex.RLock()
-	defer fake.makeURLMutex.RUnlock()
-	fake.postMutex.RLock()
-	defer fake.postMutex.RUnlock()
-	fake.putMutex.RLock()
-	defer fake.putMutex.RUnlock()
 	fake.putProductMutex.RLock()
 	defer fake.putProductMutex.RUnlock()
-	fake.sendRequestMutex.RLock()
-	defer fake.sendRequestMutex.RUnlock()
 	fake.setUploaderMutex.RLock()
 	defer fake.setUploaderMutex.RUnlock()
 	fake.uploadVMMutex.RLock()

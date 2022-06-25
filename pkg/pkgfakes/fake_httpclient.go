@@ -2,7 +2,9 @@
 package pkgfakes
 
 import (
+	"io"
 	"net/http"
+	"net/url"
 	"sync"
 
 	"github.com/vmware-labs/marketplace-cli/v2/pkg"
@@ -19,6 +21,93 @@ type FakeHTTPClient struct {
 		result2 error
 	}
 	doReturnsOnCall map[int]struct {
+		result1 *http.Response
+		result2 error
+	}
+	GetStub        func(*url.URL) (*http.Response, error)
+	getMutex       sync.RWMutex
+	getArgsForCall []struct {
+		arg1 *url.URL
+	}
+	getReturns struct {
+		result1 *http.Response
+		result2 error
+	}
+	getReturnsOnCall map[int]struct {
+		result1 *http.Response
+		result2 error
+	}
+	PostStub        func(*url.URL, io.Reader, string) (*http.Response, error)
+	postMutex       sync.RWMutex
+	postArgsForCall []struct {
+		arg1 *url.URL
+		arg2 io.Reader
+		arg3 string
+	}
+	postReturns struct {
+		result1 *http.Response
+		result2 error
+	}
+	postReturnsOnCall map[int]struct {
+		result1 *http.Response
+		result2 error
+	}
+	PostFormStub        func(*url.URL, url.Values) (*http.Response, error)
+	postFormMutex       sync.RWMutex
+	postFormArgsForCall []struct {
+		arg1 *url.URL
+		arg2 url.Values
+	}
+	postFormReturns struct {
+		result1 *http.Response
+		result2 error
+	}
+	postFormReturnsOnCall map[int]struct {
+		result1 *http.Response
+		result2 error
+	}
+	PostJSONStub        func(*url.URL, interface{}) (*http.Response, error)
+	postJSONMutex       sync.RWMutex
+	postJSONArgsForCall []struct {
+		arg1 *url.URL
+		arg2 interface{}
+	}
+	postJSONReturns struct {
+		result1 *http.Response
+		result2 error
+	}
+	postJSONReturnsOnCall map[int]struct {
+		result1 *http.Response
+		result2 error
+	}
+	PutStub        func(*url.URL, io.Reader, string) (*http.Response, error)
+	putMutex       sync.RWMutex
+	putArgsForCall []struct {
+		arg1 *url.URL
+		arg2 io.Reader
+		arg3 string
+	}
+	putReturns struct {
+		result1 *http.Response
+		result2 error
+	}
+	putReturnsOnCall map[int]struct {
+		result1 *http.Response
+		result2 error
+	}
+	SendRequestStub        func(string, *url.URL, map[string]string, io.Reader) (*http.Response, error)
+	sendRequestMutex       sync.RWMutex
+	sendRequestArgsForCall []struct {
+		arg1 string
+		arg2 *url.URL
+		arg3 map[string]string
+		arg4 io.Reader
+	}
+	sendRequestReturns struct {
+		result1 *http.Response
+		result2 error
+	}
+	sendRequestReturnsOnCall map[int]struct {
 		result1 *http.Response
 		result2 error
 	}
@@ -90,11 +179,416 @@ func (fake *FakeHTTPClient) DoReturnsOnCall(i int, result1 *http.Response, resul
 	}{result1, result2}
 }
 
+func (fake *FakeHTTPClient) Get(arg1 *url.URL) (*http.Response, error) {
+	fake.getMutex.Lock()
+	ret, specificReturn := fake.getReturnsOnCall[len(fake.getArgsForCall)]
+	fake.getArgsForCall = append(fake.getArgsForCall, struct {
+		arg1 *url.URL
+	}{arg1})
+	stub := fake.GetStub
+	fakeReturns := fake.getReturns
+	fake.recordInvocation("Get", []interface{}{arg1})
+	fake.getMutex.Unlock()
+	if stub != nil {
+		return stub(arg1)
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	return fakeReturns.result1, fakeReturns.result2
+}
+
+func (fake *FakeHTTPClient) GetCallCount() int {
+	fake.getMutex.RLock()
+	defer fake.getMutex.RUnlock()
+	return len(fake.getArgsForCall)
+}
+
+func (fake *FakeHTTPClient) GetCalls(stub func(*url.URL) (*http.Response, error)) {
+	fake.getMutex.Lock()
+	defer fake.getMutex.Unlock()
+	fake.GetStub = stub
+}
+
+func (fake *FakeHTTPClient) GetArgsForCall(i int) *url.URL {
+	fake.getMutex.RLock()
+	defer fake.getMutex.RUnlock()
+	argsForCall := fake.getArgsForCall[i]
+	return argsForCall.arg1
+}
+
+func (fake *FakeHTTPClient) GetReturns(result1 *http.Response, result2 error) {
+	fake.getMutex.Lock()
+	defer fake.getMutex.Unlock()
+	fake.GetStub = nil
+	fake.getReturns = struct {
+		result1 *http.Response
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeHTTPClient) GetReturnsOnCall(i int, result1 *http.Response, result2 error) {
+	fake.getMutex.Lock()
+	defer fake.getMutex.Unlock()
+	fake.GetStub = nil
+	if fake.getReturnsOnCall == nil {
+		fake.getReturnsOnCall = make(map[int]struct {
+			result1 *http.Response
+			result2 error
+		})
+	}
+	fake.getReturnsOnCall[i] = struct {
+		result1 *http.Response
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeHTTPClient) Post(arg1 *url.URL, arg2 io.Reader, arg3 string) (*http.Response, error) {
+	fake.postMutex.Lock()
+	ret, specificReturn := fake.postReturnsOnCall[len(fake.postArgsForCall)]
+	fake.postArgsForCall = append(fake.postArgsForCall, struct {
+		arg1 *url.URL
+		arg2 io.Reader
+		arg3 string
+	}{arg1, arg2, arg3})
+	stub := fake.PostStub
+	fakeReturns := fake.postReturns
+	fake.recordInvocation("Post", []interface{}{arg1, arg2, arg3})
+	fake.postMutex.Unlock()
+	if stub != nil {
+		return stub(arg1, arg2, arg3)
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	return fakeReturns.result1, fakeReturns.result2
+}
+
+func (fake *FakeHTTPClient) PostCallCount() int {
+	fake.postMutex.RLock()
+	defer fake.postMutex.RUnlock()
+	return len(fake.postArgsForCall)
+}
+
+func (fake *FakeHTTPClient) PostCalls(stub func(*url.URL, io.Reader, string) (*http.Response, error)) {
+	fake.postMutex.Lock()
+	defer fake.postMutex.Unlock()
+	fake.PostStub = stub
+}
+
+func (fake *FakeHTTPClient) PostArgsForCall(i int) (*url.URL, io.Reader, string) {
+	fake.postMutex.RLock()
+	defer fake.postMutex.RUnlock()
+	argsForCall := fake.postArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3
+}
+
+func (fake *FakeHTTPClient) PostReturns(result1 *http.Response, result2 error) {
+	fake.postMutex.Lock()
+	defer fake.postMutex.Unlock()
+	fake.PostStub = nil
+	fake.postReturns = struct {
+		result1 *http.Response
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeHTTPClient) PostReturnsOnCall(i int, result1 *http.Response, result2 error) {
+	fake.postMutex.Lock()
+	defer fake.postMutex.Unlock()
+	fake.PostStub = nil
+	if fake.postReturnsOnCall == nil {
+		fake.postReturnsOnCall = make(map[int]struct {
+			result1 *http.Response
+			result2 error
+		})
+	}
+	fake.postReturnsOnCall[i] = struct {
+		result1 *http.Response
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeHTTPClient) PostForm(arg1 *url.URL, arg2 url.Values) (*http.Response, error) {
+	fake.postFormMutex.Lock()
+	ret, specificReturn := fake.postFormReturnsOnCall[len(fake.postFormArgsForCall)]
+	fake.postFormArgsForCall = append(fake.postFormArgsForCall, struct {
+		arg1 *url.URL
+		arg2 url.Values
+	}{arg1, arg2})
+	stub := fake.PostFormStub
+	fakeReturns := fake.postFormReturns
+	fake.recordInvocation("PostForm", []interface{}{arg1, arg2})
+	fake.postFormMutex.Unlock()
+	if stub != nil {
+		return stub(arg1, arg2)
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	return fakeReturns.result1, fakeReturns.result2
+}
+
+func (fake *FakeHTTPClient) PostFormCallCount() int {
+	fake.postFormMutex.RLock()
+	defer fake.postFormMutex.RUnlock()
+	return len(fake.postFormArgsForCall)
+}
+
+func (fake *FakeHTTPClient) PostFormCalls(stub func(*url.URL, url.Values) (*http.Response, error)) {
+	fake.postFormMutex.Lock()
+	defer fake.postFormMutex.Unlock()
+	fake.PostFormStub = stub
+}
+
+func (fake *FakeHTTPClient) PostFormArgsForCall(i int) (*url.URL, url.Values) {
+	fake.postFormMutex.RLock()
+	defer fake.postFormMutex.RUnlock()
+	argsForCall := fake.postFormArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2
+}
+
+func (fake *FakeHTTPClient) PostFormReturns(result1 *http.Response, result2 error) {
+	fake.postFormMutex.Lock()
+	defer fake.postFormMutex.Unlock()
+	fake.PostFormStub = nil
+	fake.postFormReturns = struct {
+		result1 *http.Response
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeHTTPClient) PostFormReturnsOnCall(i int, result1 *http.Response, result2 error) {
+	fake.postFormMutex.Lock()
+	defer fake.postFormMutex.Unlock()
+	fake.PostFormStub = nil
+	if fake.postFormReturnsOnCall == nil {
+		fake.postFormReturnsOnCall = make(map[int]struct {
+			result1 *http.Response
+			result2 error
+		})
+	}
+	fake.postFormReturnsOnCall[i] = struct {
+		result1 *http.Response
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeHTTPClient) PostJSON(arg1 *url.URL, arg2 interface{}) (*http.Response, error) {
+	fake.postJSONMutex.Lock()
+	ret, specificReturn := fake.postJSONReturnsOnCall[len(fake.postJSONArgsForCall)]
+	fake.postJSONArgsForCall = append(fake.postJSONArgsForCall, struct {
+		arg1 *url.URL
+		arg2 interface{}
+	}{arg1, arg2})
+	stub := fake.PostJSONStub
+	fakeReturns := fake.postJSONReturns
+	fake.recordInvocation("PostJSON", []interface{}{arg1, arg2})
+	fake.postJSONMutex.Unlock()
+	if stub != nil {
+		return stub(arg1, arg2)
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	return fakeReturns.result1, fakeReturns.result2
+}
+
+func (fake *FakeHTTPClient) PostJSONCallCount() int {
+	fake.postJSONMutex.RLock()
+	defer fake.postJSONMutex.RUnlock()
+	return len(fake.postJSONArgsForCall)
+}
+
+func (fake *FakeHTTPClient) PostJSONCalls(stub func(*url.URL, interface{}) (*http.Response, error)) {
+	fake.postJSONMutex.Lock()
+	defer fake.postJSONMutex.Unlock()
+	fake.PostJSONStub = stub
+}
+
+func (fake *FakeHTTPClient) PostJSONArgsForCall(i int) (*url.URL, interface{}) {
+	fake.postJSONMutex.RLock()
+	defer fake.postJSONMutex.RUnlock()
+	argsForCall := fake.postJSONArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2
+}
+
+func (fake *FakeHTTPClient) PostJSONReturns(result1 *http.Response, result2 error) {
+	fake.postJSONMutex.Lock()
+	defer fake.postJSONMutex.Unlock()
+	fake.PostJSONStub = nil
+	fake.postJSONReturns = struct {
+		result1 *http.Response
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeHTTPClient) PostJSONReturnsOnCall(i int, result1 *http.Response, result2 error) {
+	fake.postJSONMutex.Lock()
+	defer fake.postJSONMutex.Unlock()
+	fake.PostJSONStub = nil
+	if fake.postJSONReturnsOnCall == nil {
+		fake.postJSONReturnsOnCall = make(map[int]struct {
+			result1 *http.Response
+			result2 error
+		})
+	}
+	fake.postJSONReturnsOnCall[i] = struct {
+		result1 *http.Response
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeHTTPClient) Put(arg1 *url.URL, arg2 io.Reader, arg3 string) (*http.Response, error) {
+	fake.putMutex.Lock()
+	ret, specificReturn := fake.putReturnsOnCall[len(fake.putArgsForCall)]
+	fake.putArgsForCall = append(fake.putArgsForCall, struct {
+		arg1 *url.URL
+		arg2 io.Reader
+		arg3 string
+	}{arg1, arg2, arg3})
+	stub := fake.PutStub
+	fakeReturns := fake.putReturns
+	fake.recordInvocation("Put", []interface{}{arg1, arg2, arg3})
+	fake.putMutex.Unlock()
+	if stub != nil {
+		return stub(arg1, arg2, arg3)
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	return fakeReturns.result1, fakeReturns.result2
+}
+
+func (fake *FakeHTTPClient) PutCallCount() int {
+	fake.putMutex.RLock()
+	defer fake.putMutex.RUnlock()
+	return len(fake.putArgsForCall)
+}
+
+func (fake *FakeHTTPClient) PutCalls(stub func(*url.URL, io.Reader, string) (*http.Response, error)) {
+	fake.putMutex.Lock()
+	defer fake.putMutex.Unlock()
+	fake.PutStub = stub
+}
+
+func (fake *FakeHTTPClient) PutArgsForCall(i int) (*url.URL, io.Reader, string) {
+	fake.putMutex.RLock()
+	defer fake.putMutex.RUnlock()
+	argsForCall := fake.putArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3
+}
+
+func (fake *FakeHTTPClient) PutReturns(result1 *http.Response, result2 error) {
+	fake.putMutex.Lock()
+	defer fake.putMutex.Unlock()
+	fake.PutStub = nil
+	fake.putReturns = struct {
+		result1 *http.Response
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeHTTPClient) PutReturnsOnCall(i int, result1 *http.Response, result2 error) {
+	fake.putMutex.Lock()
+	defer fake.putMutex.Unlock()
+	fake.PutStub = nil
+	if fake.putReturnsOnCall == nil {
+		fake.putReturnsOnCall = make(map[int]struct {
+			result1 *http.Response
+			result2 error
+		})
+	}
+	fake.putReturnsOnCall[i] = struct {
+		result1 *http.Response
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeHTTPClient) SendRequest(arg1 string, arg2 *url.URL, arg3 map[string]string, arg4 io.Reader) (*http.Response, error) {
+	fake.sendRequestMutex.Lock()
+	ret, specificReturn := fake.sendRequestReturnsOnCall[len(fake.sendRequestArgsForCall)]
+	fake.sendRequestArgsForCall = append(fake.sendRequestArgsForCall, struct {
+		arg1 string
+		arg2 *url.URL
+		arg3 map[string]string
+		arg4 io.Reader
+	}{arg1, arg2, arg3, arg4})
+	stub := fake.SendRequestStub
+	fakeReturns := fake.sendRequestReturns
+	fake.recordInvocation("SendRequest", []interface{}{arg1, arg2, arg3, arg4})
+	fake.sendRequestMutex.Unlock()
+	if stub != nil {
+		return stub(arg1, arg2, arg3, arg4)
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	return fakeReturns.result1, fakeReturns.result2
+}
+
+func (fake *FakeHTTPClient) SendRequestCallCount() int {
+	fake.sendRequestMutex.RLock()
+	defer fake.sendRequestMutex.RUnlock()
+	return len(fake.sendRequestArgsForCall)
+}
+
+func (fake *FakeHTTPClient) SendRequestCalls(stub func(string, *url.URL, map[string]string, io.Reader) (*http.Response, error)) {
+	fake.sendRequestMutex.Lock()
+	defer fake.sendRequestMutex.Unlock()
+	fake.SendRequestStub = stub
+}
+
+func (fake *FakeHTTPClient) SendRequestArgsForCall(i int) (string, *url.URL, map[string]string, io.Reader) {
+	fake.sendRequestMutex.RLock()
+	defer fake.sendRequestMutex.RUnlock()
+	argsForCall := fake.sendRequestArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3, argsForCall.arg4
+}
+
+func (fake *FakeHTTPClient) SendRequestReturns(result1 *http.Response, result2 error) {
+	fake.sendRequestMutex.Lock()
+	defer fake.sendRequestMutex.Unlock()
+	fake.SendRequestStub = nil
+	fake.sendRequestReturns = struct {
+		result1 *http.Response
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeHTTPClient) SendRequestReturnsOnCall(i int, result1 *http.Response, result2 error) {
+	fake.sendRequestMutex.Lock()
+	defer fake.sendRequestMutex.Unlock()
+	fake.SendRequestStub = nil
+	if fake.sendRequestReturnsOnCall == nil {
+		fake.sendRequestReturnsOnCall = make(map[int]struct {
+			result1 *http.Response
+			result2 error
+		})
+	}
+	fake.sendRequestReturnsOnCall[i] = struct {
+		result1 *http.Response
+		result2 error
+	}{result1, result2}
+}
+
 func (fake *FakeHTTPClient) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
 	fake.doMutex.RLock()
 	defer fake.doMutex.RUnlock()
+	fake.getMutex.RLock()
+	defer fake.getMutex.RUnlock()
+	fake.postMutex.RLock()
+	defer fake.postMutex.RUnlock()
+	fake.postFormMutex.RLock()
+	defer fake.postFormMutex.RUnlock()
+	fake.postJSONMutex.RLock()
+	defer fake.postJSONMutex.RUnlock()
+	fake.putMutex.RLock()
+	defer fake.putMutex.RUnlock()
+	fake.sendRequestMutex.RLock()
+	defer fake.sendRequestMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value

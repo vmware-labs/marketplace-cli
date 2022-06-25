@@ -10,12 +10,14 @@ import (
 	"net/url"
 
 	"github.com/golang-jwt/jwt"
+	"github.com/vmware-labs/marketplace-cli/v2/pkg"
 )
 
 type TokenServices struct {
 	keyfunc jwt.Keyfunc
 	keyPem  string
 	CSPHost string
+	Client  pkg.HTTPClient
 }
 
 type RedeemResponse struct {
@@ -23,19 +25,20 @@ type RedeemResponse struct {
 }
 
 func (csp *TokenServices) Redeem(refreshToken string) (*Claims, error) {
+	requestURL := pkg.MakeURL(csp.CSPHost, "/csp/gateway/am/api/auth/api-tokens/authorize", nil)
 	formData := url.Values{
 		"refresh_token": []string{refreshToken},
 	}
 
 	retried := false
-	resp, err := http.PostForm(csp.CSPHost+"/csp/gateway/am/api/auth/api-tokens/authorize", formData)
+	resp, err := csp.Client.PostForm(requestURL, formData)
 	if err != nil {
 		return nil, fmt.Errorf("failed to redeem token: %w", err)
 	}
 
 	if resp.StatusCode == http.StatusServiceUnavailable {
 		retried = true
-		resp, err = http.PostForm(csp.CSPHost+"/csp/gateway/am/api/auth/api-tokens/authorize", formData)
+		resp, err = csp.Client.PostForm(requestURL, formData)
 		if err != nil {
 			return nil, fmt.Errorf("failed to redeem token on second attempt: %w", err)
 		}
@@ -75,8 +78,8 @@ func (csp *TokenServices) VerificationKey() string {
 	return csp.keyPem
 }
 
-func NewTokenServices(cspHost string) (*TokenServices, error) {
-	keyData, err := fetchPublicKey(cspHost)
+func NewTokenServices(cspHost string, client pkg.HTTPClient) (*TokenServices, error) {
+	keyData, err := fetchPublicKey(cspHost, client)
 	if err != nil {
 		return nil, err
 	}
@@ -92,14 +95,14 @@ func NewTokenServices(cspHost string) (*TokenServices, error) {
 
 	return &TokenServices{
 		CSPHost: cspHost,
+		Client:  client,
 		keyfunc: rsa,
 		keyPem:  string(keyData),
 	}, nil
 }
 
-func fetchPublicKey(cspLink string) ([]byte, error) {
-	u := cspLink + "/csp/gateway/am/api/auth/token-public-key"
-	resp, err := http.Get(u)
+func fetchPublicKey(cspHost string, client pkg.HTTPClient) ([]byte, error) {
+	resp, err := client.Get(pkg.MakeURL(cspHost, "/csp/gateway/am/api/auth/token-public-key", nil))
 	if err != nil {
 		return nil, fmt.Errorf("failed to get CSP Public key: %w", err)
 	}

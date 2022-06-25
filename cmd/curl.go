@@ -11,6 +11,7 @@ import (
 	"net/url"
 
 	"github.com/spf13/cobra"
+	"github.com/vmware-labs/marketplace-cli/v2/pkg"
 )
 
 var (
@@ -42,10 +43,12 @@ var curlCmd = &cobra.Command{
 			return err
 		}
 
-		requestURL := Marketplace.MakeURL(inputURL.Path, inputURL.Query())
+		host := Marketplace.GetHost()
 		if useAPIHost {
-			requestURL.Host = Marketplace.GetAPIHost()
+			host = Marketplace.GetAPIHost()
 		}
+
+		requestURL := pkg.MakeURL(host, inputURL.Path, inputURL.Query())
 
 		cmd.PrintErrf("Sending %s request to %s...\n", method, requestURL.String())
 
@@ -60,7 +63,7 @@ var curlCmd = &cobra.Command{
 			headers["Content-Type"] = "application/json"
 		}
 
-		resp, err := Marketplace.SendRequest(method, requestURL, headers, content)
+		resp, err := Client.SendRequest(method, requestURL, headers, content)
 		if err != nil {
 			return err
 		}

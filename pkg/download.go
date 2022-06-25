@@ -38,8 +38,8 @@ type DownloadResponse struct {
 }
 
 func (m *Marketplace) Download(filename string, payload *DownloadRequestPayload) error {
-	requestURL := m.MakeURL(fmt.Sprintf("/api/v1/products/%s/download", payload.ProductId), nil)
-	resp, err := m.PostJSON(requestURL, payload)
+	requestURL := MakeURL(m.GetHost(), fmt.Sprintf("/api/v1/products/%s/download", payload.ProductId), nil)
+	resp, err := m.Client.PostJSON(requestURL, payload)
 	if err != nil {
 		return fmt.Errorf("failed to get download link: %w", err)
 	}

@@ -77,9 +77,9 @@ func (m *Marketplace) ListProducts(allOrgs bool, searchTerm string) ([]*models.P
 
 	var progressBar *progressbar.ProgressBar
 	for ; firstTime || len(products) < totalProducts; pagination.Page++ {
-		requestURL := m.MakeURL("/api/v1/products", values)
+		requestURL := MakeURL(m.GetHost(), "/api/v1/products", values)
 		ApplyParameters(requestURL, pagination, sorting)
-		resp, err := m.Get(requestURL)
+		resp, err := m.Client.Get(requestURL)
 		if err != nil {
 			return nil, fmt.Errorf("sending the request for the list of products failed: %w", err)
 		}
@@ -167,7 +167,8 @@ func (m *Marketplace) GetProduct(slug string) (*models.Product, error) {
 		isSlug = false
 	}
 
-	requestURL := m.MakeURL(
+	requestURL := MakeURL(
+		m.GetHost(),
 		fmt.Sprintf("/api/v1/products/%s", slug),
 		url.Values{
 			"increaseViewCount": []string{"false"},
@@ -175,7 +176,7 @@ func (m *Marketplace) GetProduct(slug string) (*models.Product, error) {
 		},
 	)
 
-	resp, err := m.Get(requestURL)
+	resp, err := m.Client.Get(requestURL)
 	if err != nil {
 		return nil, fmt.Errorf("sending the request for product %s failed: %w", slug, err)
 	}
@@ -206,7 +207,8 @@ func (m *Marketplace) GetProduct(slug string) (*models.Product, error) {
 }
 
 func (m *Marketplace) getVersionDetails(product *models.Product, version string) (*models.VersionSpecificProductDetails, error) {
-	requestURL := m.MakeURL(
+	requestURL := MakeURL(
+		m.GetHost(),
 		fmt.Sprintf("/api/v1/products/%s/version-details", product.ProductId),
 		url.Values{
 			"versionNumber": []string{version},
@@ -218,7 +220,7 @@ func (m *Marketplace) getVersionDetails(product *models.Product, version string)
 		VersionNumber: version,
 	}
 
-	resp, err := m.PostJSON(requestURL, payload)
+	resp, err := m.Client.PostJSON(requestURL, payload)
 	if err != nil {
 		return nil, fmt.Errorf("sending the product version details request for %s %s failed: %w", product.Slug, version, err)
 	}
@@ -279,7 +281,8 @@ func (m *Marketplace) PutProduct(product *models.Product, versionUpdate bool) (*
 		return nil, err
 	}
 
-	requestURL := m.MakeURL(
+	requestURL := MakeURL(
+		m.GetHost(),
 		fmt.Sprintf("/api/v1/products/%s", product.ProductId),
 		url.Values{
 			"archivepreviousversion": []string{"false"},
@@ -287,7 +290,7 @@ func (m *Marketplace) PutProduct(product *models.Product, versionUpdate bool) (*
 		},
 	)
 
-	resp, err := m.Put(requestURL, bytes.NewReader(encoded), "application/json")
+	resp, err := m.Client.Put(requestURL, bytes.NewReader(encoded), "application/json")
 	if err != nil {
 		return nil, fmt.Errorf("sending the update for product \"%s\" failed: %w", product.Slug, err)
 	}
