@@ -4,7 +4,6 @@
 package pkg_test
 
 import (
-	"encoding/json"
 	"errors"
 	"io"
 	"io/ioutil"
@@ -47,12 +46,12 @@ var _ = Describe("Download", func() {
 		progressBarMaker.Returns(progressBar)
 		internal.MakeProgressBar = progressBarMaker.Spy
 
-		httpClient.DoReturnsOnCall(0, MakeJSONResponse(&pkg.DownloadResponse{
+		httpClient.PostJSONReturns(MakeJSONResponse(&pkg.DownloadResponse{
 			Response: &pkg.DownloadResponseBody{
 				PreSignedURL: "https://example.com/download/file.txt",
 			},
 		}), nil)
-		httpClient.DoReturnsOnCall(1, MakeStringResponse("file contents!"), nil)
+		httpClient.DoReturns(MakeStringResponse("file contents!"), nil)
 	})
 
 	AfterEach(func() {
@@ -70,21 +69,18 @@ var _ = Describe("Download", func() {
 		err := marketplace.Download(filename, requestPayload)
 		Expect(err).ToNot(HaveOccurred())
 
-		Expect(httpClient.DoCallCount()).To(Equal(2))
 		By("requesting the download link", func() {
-			request := httpClient.DoArgsForCall(0)
-			Expect(request.Method).To(Equal("POST"))
-			Expect(request.URL.String()).To(Equal("https://marketplace.example.com/api/v1/products/my-product-id/download"))
-			var payload *pkg.DownloadRequestPayload
-			bodyBytes, err := ioutil.ReadAll(request.Body)
-			Expect(err).ToNot(HaveOccurred())
-			Expect(json.Unmarshal(bodyBytes, &payload)).To(Succeed())
+			Expect(httpClient.PostJSONCallCount()).To(Equal(1))
+			url, requestPayload := httpClient.PostJSONArgsForCall(0)
+			Expect(url.String()).To(Equal("https://marketplace.example.com/api/v1/products/my-product-id/download"))
+			payload := requestPayload.(*pkg.DownloadRequestPayload)
 			Expect(payload.ProductId).To(Equal("my-product-id"))
 			Expect(payload.AppVersion).To(Equal("1.2.3"))
 		})
 
 		By("sending the download request", func() {
-			request := httpClient.DoArgsForCall(1)
+			Expect(httpClient.DoCallCount()).To(Equal(1))
+			request := httpClient.DoArgsForCall(0)
 			Expect(request.Method).To(Equal("GET"))
 			Expect(request.URL.String()).To(Equal("https://example.com/download/file.txt"))
 		})
@@ -107,7 +103,7 @@ var _ = Describe("Download", func() {
 
 	When("requesting the download link fails", func() {
 		BeforeEach(func() {
-			httpClient.DoReturnsOnCall(0, nil, errors.New("download link request failed"))
+			httpClient.PostJSONReturns(nil, errors.New("download link request failed"))
 		})
 		It("returns an error", func() {
 			requestPayload := &pkg.DownloadRequestPayload{
@@ -116,7 +112,7 @@ var _ = Describe("Download", func() {
 			}
 			err := marketplace.Download("", requestPayload)
 			Expect(err).To(HaveOccurred())
-			Expect(err.Error()).To(Equal("failed to get download link: marketplace request failed: download link request failed"))
+			Expect(err.Error()).To(Equal("failed to get download link: download link request failed"))
 		})
 	})
 
@@ -125,7 +121,7 @@ var _ = Describe("Download", func() {
 			response := MakeStringResponse("download link request failed")
 			response.Status = http.StatusText(http.StatusTeapot)
 			response.StatusCode = http.StatusTeapot
-			httpClient.DoReturnsOnCall(0, response, nil)
+			httpClient.PostJSONReturns(response, nil)
 		})
 		It("returns an error", func() {
 			requestPayload := &pkg.DownloadRequestPayload{
@@ -144,7 +140,7 @@ var _ = Describe("Download", func() {
 					Status:     http.StatusText(http.StatusTeapot),
 					StatusCode: http.StatusTeapot,
 				}
-				httpClient.DoReturnsOnCall(0, response, nil)
+				httpClient.PostJSONReturns(response, nil)
 			})
 
 			It("returns an error", func() {
@@ -161,7 +157,7 @@ var _ = Describe("Download", func() {
 
 	When("the response is not a valid download payload", func() {
 		BeforeEach(func() {
-			httpClient.DoReturnsOnCall(0, MakeStringResponse("this is not a good payload"), nil)
+			httpClient.PostJSONReturns(MakeStringResponse("this is not a good payload"), nil)
 		})
 
 		It("returns an error", func() {
@@ -189,7 +185,7 @@ var _ = Describe("Download", func() {
 
 	When("making the download request fails", func() {
 		BeforeEach(func() {
-			httpClient.DoReturnsOnCall(0, MakeJSONResponse(&pkg.DownloadResponse{
+			httpClient.PostJSONReturns(MakeJSONResponse(&pkg.DownloadResponse{
 				Response: &pkg.DownloadResponseBody{
 					PreSignedURL: ": : this is a bad url",
 				},
@@ -209,7 +205,7 @@ var _ = Describe("Download", func() {
 
 	When("downloading the asset fails", func() {
 		BeforeEach(func() {
-			httpClient.DoReturnsOnCall(1, nil, errors.New("download failed"))
+			httpClient.DoReturns(nil, errors.New("download failed"))
 		})
 		It("returns an error", func() {
 			filename = "destination-file.txt"

@@ -39,7 +39,7 @@ var _ = Describe("Upload", func() {
 				SessionToken: "my-session-token",
 				Expiration:   time.Time{},
 			}
-			httpClient.DoReturns(MakeJSONResponse(response), nil)
+			httpClient.GetReturns(MakeJSONResponse(response), nil)
 		})
 
 		It("gets the credentials", func() {
@@ -50,27 +50,26 @@ var _ = Describe("Upload", func() {
 			Expect(creds.SessionToken).To(Equal("my-session-token"))
 
 			By("requesting the creds from the Marketplace", func() {
-				Expect(httpClient.DoCallCount()).To(Equal(1))
-				request := httpClient.DoArgsForCall(0)
-				Expect(request.Method).To(Equal("GET"))
-				Expect(request.URL.String()).To(Equal("https://marketplace.api.example.com/aws/credentials/generate"))
+				Expect(httpClient.GetCallCount()).To(Equal(1))
+				url := httpClient.GetArgsForCall(0)
+				Expect(url.String()).To(Equal("https://marketplace.api.example.com/aws/credentials/generate"))
 			})
 		})
 
 		When("the credentials request fails", func() {
 			BeforeEach(func() {
-				httpClient.DoReturns(nil, errors.New("get credentials failed"))
+				httpClient.GetReturns(nil, errors.New("get credentials failed"))
 			})
 			It("returns an error", func() {
 				_, err := marketplace.GetUploadCredentials()
 				Expect(err).To(HaveOccurred())
-				Expect(err.Error()).To(Equal("marketplace request failed: get credentials failed"))
+				Expect(err.Error()).To(Equal("get credentials failed"))
 			})
 		})
 
 		When("the credentials response is not 200 OK", func() {
 			BeforeEach(func() {
-				httpClient.DoReturns(&http.Response{
+				httpClient.GetReturns(&http.Response{
 					StatusCode: http.StatusTeapot,
 				}, nil)
 			})
@@ -84,7 +83,7 @@ var _ = Describe("Upload", func() {
 
 		When("the credentials response is invalid", func() {
 			BeforeEach(func() {
-				httpClient.DoReturns(MakeStringResponse("this is not valid json"), nil)
+				httpClient.GetReturns(MakeStringResponse("this is not valid json"), nil)
 			})
 			It("returns an error", func() {
 				_, err := marketplace.GetUploadCredentials()
@@ -102,26 +101,28 @@ var _ = Describe("Upload", func() {
 				SessionToken: "my-session-token",
 				Expiration:   time.Time{},
 			}
-			httpClient.DoReturns(MakeJSONResponse(response), nil)
+			httpClient.GetReturns(MakeJSONResponse(response), nil)
 		})
 		It("creates an uploader with upload credentials", func() {
 			uploader, err := marketplace.GetUploader("my-org")
 			Expect(err).ToNot(HaveOccurred())
 
 			By("requesting the upload credentials", func() {
-				Expect(httpClient.DoCallCount()).To(Equal(1))
+				Expect(httpClient.GetCallCount()).To(Equal(1))
+				url := httpClient.GetArgsForCall(0)
+				Expect(url.String()).To(Equal("https://marketplace.api.example.com/aws/credentials/generate"))
 			})
 			Expect(uploader).ToNot(BeNil())
 		})
 
 		When("getting the credentials fails", func() {
 			BeforeEach(func() {
-				httpClient.DoReturns(nil, errors.New("get credentials failed"))
+				httpClient.GetReturns(nil, errors.New("get credentials failed"))
 			})
 			It("returns an error", func() {
 				_, err := marketplace.GetUploader("my-org")
 				Expect(err).To(HaveOccurred())
-				Expect(err.Error()).To(Equal("failed to get upload credentials: marketplace request failed: get credentials failed"))
+				Expect(err.Error()).To(Equal("failed to get upload credentials: get credentials failed"))
 			})
 		})
 
@@ -133,7 +134,7 @@ var _ = Describe("Upload", func() {
 			})
 			It("returns that uploader", func() {
 				Expect(marketplace.GetUploader("doesn't matter")).To(Equal(uploader))
-				Expect(httpClient.DoCallCount()).To(Equal(0))
+				Expect(httpClient.GetCallCount()).To(Equal(0))
 			})
 		})
 	})

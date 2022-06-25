@@ -141,7 +141,7 @@ var _ = Describe("Charts", func() {
 	Describe("AttachLocalChart", func() {
 		var uploader *internalfakes.FakeUploader
 		BeforeEach(func() {
-			httpClient.DoStub = PutProductEchoResponse
+			httpClient.PutStub = PutProductEchoResponse
 			uploader = &internalfakes.FakeUploader{}
 			uploader.UploadProductFileReturns("", "https://example.com/uploaded-chart.tgz", nil)
 			marketplace.SetUploader(uploader)
@@ -165,7 +165,7 @@ var _ = Describe("Charts", func() {
 			})
 
 			By("updating the product", func() {
-				Expect(httpClient.DoCallCount()).To(Equal(1))
+				Expect(httpClient.PutCallCount()).To(Equal(1))
 			})
 
 			By("returning the updated product", func() {
@@ -195,7 +195,7 @@ var _ = Describe("Charts", func() {
 		When("getting the uploader fails", func() {
 			BeforeEach(func() {
 				marketplace.SetUploader(nil)
-				httpClient.DoReturns(nil, errors.New("get uploader failed"))
+				httpClient.GetReturns(nil, errors.New("get uploader failed"))
 			})
 			It("returns an error", func() {
 				product := test.CreateFakeProduct("", "Hyperspace Database", "hyperspace-database", models.SolutionTypeChart)
@@ -203,7 +203,7 @@ var _ = Describe("Charts", func() {
 				test.AddVerions(product, "1.2.3")
 				_, err := marketplace.AttachLocalChart(chartPath, "helm install it", product, version)
 				Expect(err).To(HaveOccurred())
-				Expect(err.Error()).To(Equal("failed to get upload credentials: marketplace request failed: get uploader failed"))
+				Expect(err.Error()).To(Equal("failed to get upload credentials: get uploader failed"))
 			})
 		})
 
@@ -223,7 +223,7 @@ var _ = Describe("Charts", func() {
 
 		When("updating the product fails", func() {
 			BeforeEach(func() {
-				httpClient.DoReturns(nil, errors.New("update product failed"))
+				httpClient.PutReturns(nil, errors.New("update product failed"))
 			})
 			It("returns an error", func() {
 				product := test.CreateFakeProduct("", "Hyperspace Database", "hyperspace-database", models.SolutionTypeChart)
@@ -231,16 +231,15 @@ var _ = Describe("Charts", func() {
 				test.AddVerions(product, "1.2.3")
 				_, err := marketplace.AttachLocalChart(chartPath, "helm install it", product, version)
 				Expect(err).To(HaveOccurred())
-				Expect(err.Error()).To(Equal("sending the update for product \"hyperspace-database\" failed: marketplace request failed: update product failed"))
+				Expect(err.Error()).To(Equal("sending the update for product \"hyperspace-database\" failed: update product failed"))
 			})
 		})
 	})
 
 	Describe("AttachPublicChart", func() {
 		var (
-			chartBytes   []byte
-			chartUrl     *url.URL
-			firstRequest = true
+			chartBytes []byte
+			chartUrl   *url.URL
 		)
 		BeforeEach(func() {
 			var err error
@@ -253,16 +252,10 @@ var _ = Describe("Charts", func() {
 			chartBytes, err = ioutil.ReadFile(chartArchive)
 			Expect(err).ToNot(HaveOccurred())
 
-			httpClient.DoStub = func(request *http.Request) (*http.Response, error) {
-				if firstRequest {
-					firstRequest = false
-					return &http.Response{
-						Body: ioutil.NopCloser(bytes.NewReader(chartBytes)),
-					}, nil
-				} else {
-					return PutProductEchoResponse(request)
-				}
-			}
+			httpClient.DoReturns(&http.Response{
+				Body: ioutil.NopCloser(bytes.NewReader(chartBytes)),
+			}, nil)
+			httpClient.PutStub = PutProductEchoResponse
 		})
 
 		It("attaches a public chart", func() {
@@ -273,17 +266,17 @@ var _ = Describe("Charts", func() {
 			Expect(err).ToNot(HaveOccurred())
 
 			By("downloading the chart", func() {
-				Expect(httpClient.DoCallCount()).To(Equal(2))
+				Expect(httpClient.DoCallCount()).To(Equal(1))
 				downloadRequest := httpClient.DoArgsForCall(0)
 				Expect(downloadRequest.Method).To(Equal("GET"))
 				Expect(downloadRequest.URL.String()).To(Equal("https://example.com/my-public-chart.tgz"))
 			})
 
 			By("updating the product", func() {
-				Expect(httpClient.DoCallCount()).To(Equal(2))
-				updateProductRequest := httpClient.DoArgsForCall(1)
-				Expect(updateProductRequest.Method).To(Equal("PUT"))
-				Expect(updateProductRequest.URL.String()).To(ContainSubstring("https://marketplace.vmware.example/api/v1/products"))
+				Expect(httpClient.PutCallCount()).To(Equal(1))
+				url, _, contentType := httpClient.PutArgsForCall(0)
+				Expect(url.String()).To(ContainSubstring("https://marketplace.vmware.example/api/v1/products"))
+				Expect(contentType).To(Equal("application/json"))
 			})
 
 			By("returning the updated product", func() {
@@ -311,8 +304,7 @@ var _ = Describe("Charts", func() {
 
 		When("updating the product fails", func() {
 			BeforeEach(func() {
-				httpClient.DoReturnsOnCall(0, MakeBytesResponse(chartBytes), nil)
-				httpClient.DoReturnsOnCall(1, nil, errors.New("update product failed"))
+				httpClient.PutReturns(nil, errors.New("update product failed"))
 			})
 			It("returns an error", func() {
 				product := test.CreateFakeProduct("", "Hyperspace Database", "hyperspace-database", models.SolutionTypeChart)
@@ -320,7 +312,7 @@ var _ = Describe("Charts", func() {
 				test.AddVerions(product, "1.2.3")
 				_, err := marketplace.AttachPublicChart(chartUrl, "helm install it", product, version)
 				Expect(err).To(HaveOccurred())
-				Expect(err.Error()).To(Equal("sending the update for product \"hyperspace-database\" failed: marketplace request failed: update product failed"))
+				Expect(err.Error()).To(Equal("sending the update for product \"hyperspace-database\" failed: update product failed"))
 			})
 		})
 	})

@@ -30,9 +30,8 @@ func (c *CredentialsResponse) AWSCredentials() aws.Credentials {
 }
 
 func (m *Marketplace) GetUploadCredentials() (*CredentialsResponse, error) {
-	requestURL := m.MakeURL("/aws/credentials/generate", nil)
-	requestURL.Host = m.APIHost
-	response, err := m.Get(requestURL)
+	requestURL := MakeURL(m.GetAPIHost(), "/aws/credentials/generate", nil)
+	response, err := m.Client.Get(requestURL)
 	if err != nil {
 		return nil, err
 	}

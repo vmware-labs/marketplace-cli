@@ -26,13 +26,6 @@ func RunSerially(funcs ...func(cmd *cobra.Command, args []string) error) func(cm
 	}
 }
 
-func EnableDebugging(command *cobra.Command, _ []string) error {
-	if viper.GetBool("debugging.enabled") {
-		Marketplace.EnableDebugging(viper.GetBool("debugging.print-request-payloads"), command.ErrOrStderr())
-	}
-	return nil
-}
-
 func ValidateOutputFormatFlag(command *cobra.Command, _ []string) error {
 	outputFormat := viper.GetString("output_format")
 	if outputFormat == output.FormatHuman {
@@ -52,7 +45,32 @@ var rootCmd = &cobra.Command{
 	Short: fmt.Sprintf("%s is a CLI interface for the VMware Marketplace", AppName),
 	Long: fmt.Sprintf(`%s is a CLI interface for the VMware Marketplace,
 enabling users to view, get, and manage their Marketplace products.`, AppName),
-	PersistentPreRunE: RunSerially(EnableDebugging, ValidateOutputFormatFlag),
+	PersistentPreRunE: RunSerially(
+		func(cmd *cobra.Command, args []string) error {
+			Client = pkg.NewClient(
+				os.Stderr,
+				viper.GetBool("debugging.enabled"),
+				viper.GetBool("debugging.print-request-payloads"),
+				viper.GetBool("debugging.print-response-payloads"),
+			)
+
+			Marketplace = &pkg.Marketplace{
+				Host:          viper.GetString("marketplace.host"),
+				APIHost:       viper.GetString("marketplace.api-host"),
+				UIHost:        viper.GetString("marketplace.ui-host"),
+				StorageBucket: viper.GetString("marketplace.storage.bucket"),
+				StorageRegion: viper.GetString("marketplace.storage.region"),
+				Client:        Client,
+				Output:        os.Stderr,
+			}
+
+			if viper.GetBool("marketplace.strict-decoding") {
+				Marketplace.EnableStrictDecoding()
+			}
+			return nil
+		},
+		ValidateOutputFormatFlag,
+	),
 }
 
 func init() {
@@ -67,6 +85,8 @@ func init() {
 	rootCmd.PersistentFlags().Bool("debug-request-payloads", false, "Also print request payloads [$MKPCLI_DEBUG_REQUEST_PAYLOADS]")
 	_ = rootCmd.PersistentFlags().MarkHidden("debug-request-payloads")
 	_ = viper.BindPFlag("debugging.print-request-payloads", rootCmd.PersistentFlags().Lookup("debug-request-payloads"))
+
+	viper.SetDefault("debugging.print-response-payloads", false)
 
 	viper.SetDefault("csp.api-token", "")
 	_ = viper.BindEnv("csp.api-token", "CSP_API_TOKEN")
@@ -99,21 +119,8 @@ func init() {
 		viper.SetDefault("marketplace.storage.region", "us-west-2")
 	}
 
-	Marketplace = &pkg.Marketplace{
-		Host:          viper.GetString("marketplace.host"),
-		APIHost:       viper.GetString("marketplace.api-host"),
-		UIHost:        viper.GetString("marketplace.ui-host"),
-		StorageBucket: viper.GetString("marketplace.storage.bucket"),
-		StorageRegion: viper.GetString("marketplace.storage.region"),
-		Client:        pkg.NewClient(),
-		Output:        os.Stderr,
-	}
-
 	viper.SetDefault("marketplace.strict-decoding", false)
 	_ = viper.BindEnv("marketplace.strict-decoding", "MKPCLI_STRICT_DECODING")
-	if viper.GetBool("marketplace.strict-decoding") {
-		Marketplace.EnableStrictDecoding()
-	}
 
 	viper.SetDefault("output_format", output.FormatHuman)
 	_ = viper.BindEnv("output_format", "MKPCLI_OUTPUT")

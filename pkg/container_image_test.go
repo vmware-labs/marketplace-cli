@@ -36,7 +36,7 @@ var _ = Describe("Container image", func() {
 
 	Describe("AttachLocalContainerImage", func() {
 		BeforeEach(func() {
-			httpClient.DoStub = PutProductEchoResponse
+			httpClient.PutStub = PutProductEchoResponse
 			uploader.UploadProductFileReturns("", "https://s3.example.com/uploads/image.tar", nil)
 		})
 
@@ -90,7 +90,7 @@ var _ = Describe("Container image", func() {
 		When("getting the uploader fails", func() {
 			BeforeEach(func() {
 				marketplace.SetUploader(nil)
-				httpClient.DoReturns(nil, errors.New("put product failed"))
+				httpClient.GetReturns(nil, errors.New("get uploader failed"))
 			})
 			It("returns an error", func() {
 				product := test.CreateFakeProduct("", "Hyperspace Database", "hyperspace-database", models.SolutionTypeImage)
@@ -98,7 +98,7 @@ var _ = Describe("Container image", func() {
 
 				_, err := marketplace.AttachLocalContainerImage("image.tar", "nginx", "latest", "FLOATING", "docker run it", product, &models.Version{Number: "1.2.3"})
 				Expect(err).To(HaveOccurred())
-				Expect(err.Error()).To(Equal("failed to get upload credentials: marketplace request failed: put product failed"))
+				Expect(err.Error()).To(Equal("failed to get upload credentials: get uploader failed"))
 			})
 		})
 
@@ -118,7 +118,7 @@ var _ = Describe("Container image", func() {
 
 		When("updating the product fails", func() {
 			BeforeEach(func() {
-				httpClient.DoReturns(nil, errors.New("put product failed"))
+				httpClient.PutReturns(nil, errors.New("put product failed"))
 			})
 			It("returns an error", func() {
 				product := test.CreateFakeProduct("", "Hyperspace Database", "hyperspace-database", models.SolutionTypeImage)
@@ -126,14 +126,14 @@ var _ = Describe("Container image", func() {
 
 				_, err := marketplace.AttachLocalContainerImage("image.tar", "nginx", "latest", "FLOATING", "docker run it", product, &models.Version{Number: "1.2.3"})
 				Expect(err).To(HaveOccurred())
-				Expect(err.Error()).To(Equal("sending the update for product \"hyperspace-database\" failed: marketplace request failed: put product failed"))
+				Expect(err.Error()).To(Equal("sending the update for product \"hyperspace-database\" failed: put product failed"))
 			})
 		})
 	})
 
 	Describe("AttachPublicContainerImage", func() {
 		BeforeEach(func() {
-			httpClient.DoStub = PutProductEchoResponse
+			httpClient.PutStub = PutProductEchoResponse
 		})
 
 		It("updates the product with a public container image", func() {
@@ -181,7 +181,7 @@ var _ = Describe("Container image", func() {
 
 		When("updating the product fails", func() {
 			BeforeEach(func() {
-				httpClient.DoReturns(nil, errors.New("put product failed"))
+				httpClient.PutReturns(nil, errors.New("put product failed"))
 			})
 			It("returns an error", func() {
 				product := test.CreateFakeProduct("", "Hyperspace Database", "hyperspace-database", models.SolutionTypeImage)
@@ -189,7 +189,7 @@ var _ = Describe("Container image", func() {
 
 				_, err := marketplace.AttachPublicContainerImage("nginx", "latest", "FLOATING", "docker run it", product, &models.Version{Number: "1.2.3"})
 				Expect(err).To(HaveOccurred())
-				Expect(err.Error()).To(Equal("sending the update for product \"hyperspace-database\" failed: marketplace request failed: put product failed"))
+				Expect(err.Error()).To(Equal("sending the update for product \"hyperspace-database\" failed: put product failed"))
 			})
 		})
 	})

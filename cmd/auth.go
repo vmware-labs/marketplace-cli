@@ -20,13 +20,11 @@ type TokenServices interface {
 type TokenServicesInitializer func(cspHost string) (TokenServices, error)
 
 var InitializeTokenServices TokenServicesInitializer = func(cspHost string) (TokenServices, error) {
-	return csp.NewTokenServices(cspHost)
+	return csp.NewTokenServices(cspHost, Client)
 }
 
 func GetRefreshToken(cmd *cobra.Command, args []string) error {
-	tokenServices, err := InitializeTokenServices(
-		fmt.Sprintf("https://%s", viper.GetString("csp.host")),
-	)
+	tokenServices, err := InitializeTokenServices(viper.GetString("csp.host"))
 	if err != nil {
 		return fmt.Errorf("failed to initialize token services: %w", err)
 	}
