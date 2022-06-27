@@ -295,7 +295,11 @@ func (o *HumanOutput) RenderAssets(assets []*pkg.Asset) error {
 	} else {
 		table := o.NewTable("Name", "Type", "Version", "Size", "Downloads")
 		for _, asset := range assets {
-			table.Append([]string{asset.DisplayName, asset.Type, asset.Version, FormatSize(asset.Size), strconv.FormatInt(asset.Downloads, 10)})
+			downloads := strconv.FormatInt(asset.Downloads, 10)
+			if !asset.Downloadable {
+				downloads = "N/A: " + asset.Error
+			}
+			table.Append([]string{asset.DisplayName, asset.Type, asset.Version, FormatSize(asset.Size), downloads})
 		}
 		table.Render()
 	}
