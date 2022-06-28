@@ -297,7 +297,11 @@ func (o *HumanOutput) RenderAssets(assets []*pkg.Asset) error {
 		for _, asset := range assets {
 			downloads := strconv.FormatInt(asset.Downloads, 10)
 			if !asset.Downloadable {
-				downloads = "N/A: " + asset.Error
+				if asset.Error == "" {
+					downloads = "Not yet available"
+				} else {
+					downloads = "Error: " + asset.Error
+				}
 			}
 			table.Append([]string{asset.DisplayName, asset.Type, asset.Version, FormatSize(asset.Size), downloads})
 		}
