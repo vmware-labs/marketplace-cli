@@ -2,6 +2,8 @@
 
 `mkpcli` enables a command-line interface to the [VMware Marketplace](http://marketplace.cloud.vmware.com/) for consumers and publishes.
 
+To learn how to get started with the Marketplace CLI, [watch this video](https://youtu.be/0oxFjnJCEBE) or follow the steps below:
+
 To install, grab the latest prebuilt binary from the [Releases](https://github.com/vmware-labs/marketplace-cli/releases) page, or [build from source](#building).
 
 Features:
