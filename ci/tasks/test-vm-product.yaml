@@ -29,4 +29,16 @@ run:
         --file "${VM_FILE}"
 
       # Get the list of vms
-      mkpcli product list-assets --type vm --product "${PRODUCT_SLUG}" --product-version "${VERSION}" | grep $(basename "$VM_FILE")
+      mkpcli product list-assets --product "${PRODUCT_SLUG}" --product-version "${VERSION}"
+
+      # Wait until the image is downloadable
+      asset=$(mkpcli product list-assets --type vm --product "${PRODUCT_SLUG}" --product-version "${VERSION}" --output json | jq --arg name "${$VM_FILE}" '.[] | select(.displayname == $name)')
+      while [ "$(echo "${asset}" | jq .downloadable)" == "false" ]
+      do
+        if [ "$(echo "${asset}" | jq .error)" != "null" ]; then
+          exit 1
+        fi
+
+        sleep 30
+        asset=$(mkpcli product list-assets --type vm --product "${PRODUCT_SLUG}" --product-version "${VERSION}" --output json | jq --arg name "${$VM_FILE}" '.[] | select(.displayname == $name)')
+      done
