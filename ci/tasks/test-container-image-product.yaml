@@ -44,9 +44,9 @@ run:
 
       # Wait until the image is downloadable
       asset=$(mkpcli product list-assets --type image --product "${PRODUCT_SLUG}" --product-version "${VERSION}" --output json | jq --arg name "${TEST_IMAGE_REPO}:${TEST_IMAGE_TAG}" '.[] | select(.displayname == $name)')
-      while [ $(echo "${asset}" | jq .downloadable) == "false" ]
+      while [ "$(echo "${asset}" | jq .downloadable)" == "false" ]
       do
-        if [ $(echo "${asset}" | jq .error) != "null" ]; then
+        if [ "$(echo "${asset}" | jq .error)" != "null" ]; then
           exit 1
         fi
 
