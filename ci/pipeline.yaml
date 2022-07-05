@@ -393,7 +393,7 @@ jobs:
         params:
           MARKETPLACE_ENV: staging
           PRODUCT_SLUG: test-container-product-41
-          TEST_IMAGE_REPO: library/ubuntu
+          TEST_IMAGE_REPO: harbor-repo.vmware.com/dockerhub-proxy-cache/library/ubuntu
           TEST_IMAGE_TAG: 20.04
           TEST_IMAGE_FILE: test-container-image/image.tar
       - task: set-osl
