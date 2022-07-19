@@ -81,7 +81,7 @@ var _ = Describe("Charts", func() {
 			Expect(err).ToNot(HaveOccurred())
 			chartBytes, err := ioutil.ReadFile(chartArchive)
 			Expect(err).ToNot(HaveOccurred())
-			httpClient.DoReturns(MakeBytesResponse(chartBytes), nil)
+			httpClient.DoReturns(test.MakeBytesResponse(chartBytes), nil)
 		})
 
 		It("downloads a chart", func() {
@@ -113,7 +113,7 @@ var _ = Describe("Charts", func() {
 
 		When("copying the chart fails", func() {
 			BeforeEach(func() {
-				httpClient.DoReturns(MakeFailingBodyResponse("read fail"), nil)
+				httpClient.DoReturns(test.MakeFailingBodyResponse("read fail"), nil)
 			})
 			It("returns an error", func() {
 				chartUrl, err := url.Parse("https://charts.example.com/my-chart.tgz")

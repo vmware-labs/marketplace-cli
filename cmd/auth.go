@@ -17,17 +17,17 @@ type TokenServices interface {
 }
 
 //go:generate counterfeiter . TokenServicesInitializer
-type TokenServicesInitializer func(cspHost string) (TokenServices, error)
+type TokenServicesInitializer func(cspHost string) TokenServices
 
-var InitializeTokenServices TokenServicesInitializer = func(cspHost string) (TokenServices, error) {
-	return csp.NewTokenServices(cspHost, Client)
+var InitializeTokenServices TokenServicesInitializer = func(cspHost string) TokenServices {
+	return &csp.TokenServices{
+		CSPHost: cspHost,
+		Client:  Client,
+	}
 }
 
 func GetRefreshToken(cmd *cobra.Command, args []string) error {
-	tokenServices, err := InitializeTokenServices(viper.GetString("csp.host"))
-	if err != nil {
-		return fmt.Errorf("failed to initialize token services: %w", err)
-	}
+	tokenServices := InitializeTokenServices(viper.GetString("csp.host"))
 
 	apiToken := viper.GetString("csp.api-token")
 	if apiToken == "" {
@@ -36,7 +36,7 @@ func GetRefreshToken(cmd *cobra.Command, args []string) error {
 
 	claims, err := tokenServices.Redeem(apiToken)
 	if err != nil {
-		return fmt.Errorf("failed to exchange api token: %w", err)
+		return err
 	}
 
 	viper.Set("csp.refresh-token", claims.Token)

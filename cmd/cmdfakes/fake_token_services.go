@@ -32,15 +32,16 @@ func (fake *FakeTokenServices) Redeem(arg1 string) (*csp.Claims, error) {
 	fake.redeemArgsForCall = append(fake.redeemArgsForCall, struct {
 		arg1 string
 	}{arg1})
+	stub := fake.RedeemStub
+	fakeReturns := fake.redeemReturns
 	fake.recordInvocation("Redeem", []interface{}{arg1})
 	fake.redeemMutex.Unlock()
-	if fake.RedeemStub != nil {
-		return fake.RedeemStub(arg1)
+	if stub != nil {
+		return stub(arg1)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.redeemReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 

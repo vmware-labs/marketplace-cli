@@ -54,9 +54,9 @@ var _ = Describe("Debugging", func() {
 		DefineCommonSteps(define)
 
 		define.Then(`^the request is printed$`, func() {
-			Eventually(CommandSession.Err).Should(Say(regexp.QuoteMeta("Request #0: GET https://console.cloud.vmware.com/csp/gateway/am/api/auth/token-public-key")))
+			Eventually(CommandSession.Err).Should(Say(regexp.QuoteMeta("Request #0: POST https://console.cloud.vmware.com/csp/gateway/am/api/auth/api-tokens/authorize")))
 			Eventually(CommandSession.Err).Should(Say(regexp.QuoteMeta("Request #0 Response: 200 OK")))
-			Eventually(CommandSession.Err).Should(Say(regexp.QuoteMeta("Request #1: POST https://console.cloud.vmware.com/csp/gateway/am/api/auth/api-tokens/authorize")))
+			Eventually(CommandSession.Err).Should(Say(regexp.QuoteMeta("Request #1: GET https://console.cloud.vmware.com/csp/gateway/am/api/auth/token-public-key")))
 			Eventually(CommandSession.Err).Should(Say(regexp.QuoteMeta("Request #1 Response: 200 OK")))
 			Eventually(CommandSession.Err).Should(Say(regexp.QuoteMeta("Request #2: GET https://gtw.marketplace.cloud.vmware.com/api/v1/products/nginx?increaseViewCount=false&isSlug=true")))
 			Eventually(CommandSession.Err).Should(Say(regexp.QuoteMeta("Request #2 Response: 200 OK")))
@@ -72,12 +72,12 @@ var _ = Describe("Debugging", func() {
 		})
 
 		define.Then(`^the requests are printed with request payloads$`, func() {
-			Eventually(CommandSession.Err).Should(Say(regexp.QuoteMeta("Request #0: GET https://console.cloud.vmware.com/csp/gateway/am/api/auth/token-public-key")))
-			Eventually(CommandSession.Err).Should(Say(regexp.QuoteMeta("Request #0 Response: 200 OK")))
-			Eventually(CommandSession.Err).Should(Say(regexp.QuoteMeta("Request #1: POST https://console.cloud.vmware.com/csp/gateway/am/api/auth/api-tokens/authorize")))
-			Eventually(CommandSession.Err).Should(Say(regexp.QuoteMeta("--- Start of request #1 body payload ---")))
+			Eventually(CommandSession.Err).Should(Say(regexp.QuoteMeta("Request #0: POST https://console.cloud.vmware.com/csp/gateway/am/api/auth/api-tokens/authorize")))
+			Eventually(CommandSession.Err).Should(Say(regexp.QuoteMeta("--- Start of request #0 body payload ---")))
 			Eventually(CommandSession.Err).Should(Say(regexp.QuoteMeta("refresh_token=")))
-			Eventually(CommandSession.Err).Should(Say(regexp.QuoteMeta("--- End of request #1 body payload ---")))
+			Eventually(CommandSession.Err).Should(Say(regexp.QuoteMeta("--- End of request #0 body payload ---")))
+			Eventually(CommandSession.Err).Should(Say(regexp.QuoteMeta("Request #0 Response: 200 OK")))
+			Eventually(CommandSession.Err).Should(Say(regexp.QuoteMeta("Request #1: GET https://console.cloud.vmware.com/csp/gateway/am/api/auth/token-public-key")))
 			Eventually(CommandSession.Err).Should(Say(regexp.QuoteMeta("Request #1 Response: 200 OK")))
 			Eventually(CommandSession.Err).Should(Say(regexp.QuoteMeta("Request #2: GET https://gtw.marketplace.cloud.vmware.com/api/v1/products/nginx?increaseViewCount=false&isSlug=true")))
 			Eventually(CommandSession.Err).Should(Say("Request #2 Response: 200 OK"))

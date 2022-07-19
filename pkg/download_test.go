@@ -46,12 +46,12 @@ var _ = Describe("Download", func() {
 		progressBarMaker.Returns(progressBar)
 		internal.MakeProgressBar = progressBarMaker.Spy
 
-		httpClient.PostJSONReturns(MakeJSONResponse(&pkg.DownloadResponse{
+		httpClient.PostJSONReturns(test.MakeJSONResponse(&pkg.DownloadResponse{
 			Response: &pkg.DownloadResponseBody{
 				PreSignedURL: "https://example.com/download/file.txt",
 			},
 		}), nil)
-		httpClient.DoReturns(MakeStringResponse("file contents!"), nil)
+		httpClient.DoReturns(test.MakeStringResponse("file contents!"), nil)
 	})
 
 	AfterEach(func() {
@@ -118,7 +118,7 @@ var _ = Describe("Download", func() {
 
 	When("the response is not 200 OK", func() {
 		BeforeEach(func() {
-			response := MakeStringResponse("download link request failed")
+			response := test.MakeStringResponse("download link request failed")
 			response.Status = http.StatusText(http.StatusTeapot)
 			response.StatusCode = http.StatusTeapot
 			httpClient.PostJSONReturns(response, nil)
@@ -157,7 +157,7 @@ var _ = Describe("Download", func() {
 
 	When("the response is not a valid download payload", func() {
 		BeforeEach(func() {
-			httpClient.PostJSONReturns(MakeStringResponse("this is not a good payload"), nil)
+			httpClient.PostJSONReturns(test.MakeStringResponse("this is not a good payload"), nil)
 		})
 
 		It("returns an error", func() {
@@ -185,7 +185,7 @@ var _ = Describe("Download", func() {
 
 	When("making the download request fails", func() {
 		BeforeEach(func() {
-			httpClient.PostJSONReturns(MakeJSONResponse(&pkg.DownloadResponse{
+			httpClient.PostJSONReturns(test.MakeJSONResponse(&pkg.DownloadResponse{
 				Response: &pkg.DownloadResponseBody{
 					PreSignedURL: ": : this is a bad url",
 				},

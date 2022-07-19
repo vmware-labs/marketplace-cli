@@ -66,7 +66,7 @@ var _ = Describe("Product", func() {
 					Message:    "testing",
 				},
 			}
-			httpClient.GetReturns(MakeJSONResponse(response), nil)
+			httpClient.GetReturns(test.MakeJSONResponse(response), nil)
 		})
 
 		It("gets the list of products", func() {
@@ -141,8 +141,8 @@ var _ = Describe("Product", func() {
 						Message: "testing",
 					},
 				}
-				httpClient.GetReturnsOnCall(0, MakeJSONResponse(response1), nil)
-				httpClient.GetReturnsOnCall(1, MakeJSONResponse(response2), nil)
+				httpClient.GetReturnsOnCall(0, test.MakeJSONResponse(response1), nil)
+				httpClient.GetReturnsOnCall(1, test.MakeJSONResponse(response2), nil)
 			})
 
 			It("returns all results", func() {
@@ -196,7 +196,7 @@ var _ = Describe("Product", func() {
 
 		Context("Un-parsable response", func() {
 			BeforeEach(func() {
-				httpClient.GetReturns(MakeStringResponse("This totally isn't a valid response"), nil)
+				httpClient.GetReturns(test.MakeStringResponse("This totally isn't a valid response"), nil)
 			})
 
 			It("prints the error", func() {
@@ -223,7 +223,7 @@ var _ = Describe("Product", func() {
 				},
 			}
 
-			httpClient.GetReturns(MakeJSONResponse(response), nil)
+			httpClient.GetReturns(test.MakeJSONResponse(response), nil)
 		})
 
 		It("gets the product", func() {
@@ -285,7 +285,7 @@ var _ = Describe("Product", func() {
 
 		Context("Un-parsable response", func() {
 			BeforeEach(func() {
-				httpClient.GetReturns(MakeStringResponse("This totally isn't a valid response"), nil)
+				httpClient.GetReturns(test.MakeStringResponse("This totally isn't a valid response"), nil)
 			})
 
 			It("prints the error", func() {
@@ -318,7 +318,7 @@ var _ = Describe("Product", func() {
 				},
 			}
 
-			httpClient.GetReturns(MakeJSONResponse(response), nil)
+			httpClient.GetReturns(test.MakeJSONResponse(response), nil)
 
 			versionSpecificDetails := &pkg.VersionSpecificDetailsPayloadResponse{
 				Response: &pkg.VersionSpecificDetailsPayload{
@@ -333,7 +333,7 @@ var _ = Describe("Product", func() {
 				},
 			}
 
-			httpClient.PostJSONReturns(MakeJSONResponse(versionSpecificDetails), nil)
+			httpClient.PostJSONReturns(test.MakeJSONResponse(versionSpecificDetails), nil)
 		})
 
 		It("returns the product with version specific details", func() {
@@ -432,7 +432,7 @@ var _ = Describe("Product", func() {
 		})
 		Context("version specific details returns bad data", func() {
 			BeforeEach(func() {
-				httpClient.PostJSONReturns(MakeFailingBodyResponse("bad response body"), nil)
+				httpClient.PostJSONReturns(test.MakeFailingBodyResponse("bad response body"), nil)
 			})
 
 			It("returns an error", func() {
@@ -443,7 +443,7 @@ var _ = Describe("Product", func() {
 		})
 		Context("version specific details returns malformed json", func() {
 			BeforeEach(func() {
-				httpClient.PostJSONReturns(MakeBytesResponse([]byte("}}} this is bad json! {{{")), nil)
+				httpClient.PostJSONReturns(test.MakeBytesResponse([]byte("}}} this is bad json! {{{")), nil)
 			})
 
 			It("returns an error", func() {

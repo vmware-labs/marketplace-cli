@@ -5,6 +5,7 @@ package pkg_test
 
 import (
 	"errors"
+	"github.com/vmware-labs/marketplace-cli/v2/test"
 	"net/http"
 	"time"
 
@@ -39,7 +40,7 @@ var _ = Describe("Upload", func() {
 				SessionToken: "my-session-token",
 				Expiration:   time.Time{},
 			}
-			httpClient.GetReturns(MakeJSONResponse(response), nil)
+			httpClient.GetReturns(test.MakeJSONResponse(response), nil)
 		})
 
 		It("gets the credentials", func() {
@@ -83,7 +84,7 @@ var _ = Describe("Upload", func() {
 
 		When("the credentials response is invalid", func() {
 			BeforeEach(func() {
-				httpClient.GetReturns(MakeStringResponse("this is not valid json"), nil)
+				httpClient.GetReturns(test.MakeStringResponse("this is not valid json"), nil)
 			})
 			It("returns an error", func() {
 				_, err := marketplace.GetUploadCredentials()
@@ -101,7 +102,7 @@ var _ = Describe("Upload", func() {
 				SessionToken: "my-session-token",
 				Expiration:   time.Time{},
 			}
-			httpClient.GetReturns(MakeJSONResponse(response), nil)
+			httpClient.GetReturns(test.MakeJSONResponse(response), nil)
 		})
 		It("creates an uploader with upload credentials", func() {
 			uploader, err := marketplace.GetUploader("my-org")

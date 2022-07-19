@@ -4,10 +4,14 @@
 package test
 
 import (
+	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io/ioutil"
+	"net/http"
 	"os"
+	"strings"
 
 	"github.com/google/uuid"
 	. "github.com/onsi/gomega"
@@ -187,4 +191,33 @@ func (w *FailingReadWriter) Write(p []byte) (n int, err error) {
 
 func (r *FailingReadWriter) Read(p []byte) (n int, err error) {
 	return 0, errors.New(r.Message)
+}
+
+func MakeJSONResponse(body interface{}) *http.Response {
+	bodyBytes, err := json.Marshal(body)
+	Expect(err).ToNot(HaveOccurred())
+	return MakeBytesResponse(bodyBytes)
+}
+
+func MakeBytesResponse(body []byte) *http.Response {
+	return &http.Response{
+		StatusCode:    http.StatusOK,
+		ContentLength: int64(len(body)),
+		Body:          ioutil.NopCloser(bytes.NewReader(body)),
+	}
+}
+
+func MakeStringResponse(body string) *http.Response {
+	return &http.Response{
+		StatusCode:    http.StatusOK,
+		ContentLength: int64(len(body)),
+		Body:          ioutil.NopCloser(strings.NewReader(body)),
+	}
+}
+
+func MakeFailingBodyResponse(errorMessage string) *http.Response {
+	return &http.Response{
+		StatusCode: http.StatusOK,
+		Body:       ioutil.NopCloser(&FailingReadWriter{Message: errorMessage}),
+	}
 }

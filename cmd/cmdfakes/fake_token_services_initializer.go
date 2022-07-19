@@ -8,38 +8,38 @@ import (
 )
 
 type FakeTokenServicesInitializer struct {
-	Stub        func(string) (cmd.TokenServices, error)
+	Stub        func(string) cmd.TokenServices
 	mutex       sync.RWMutex
 	argsForCall []struct {
 		arg1 string
 	}
 	returns struct {
 		result1 cmd.TokenServices
-		result2 error
 	}
 	returnsOnCall map[int]struct {
 		result1 cmd.TokenServices
-		result2 error
 	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
 }
 
-func (fake *FakeTokenServicesInitializer) Spy(arg1 string) (cmd.TokenServices, error) {
+func (fake *FakeTokenServicesInitializer) Spy(arg1 string) cmd.TokenServices {
 	fake.mutex.Lock()
 	ret, specificReturn := fake.returnsOnCall[len(fake.argsForCall)]
 	fake.argsForCall = append(fake.argsForCall, struct {
 		arg1 string
 	}{arg1})
+	stub := fake.Stub
+	returns := fake.returns
 	fake.recordInvocation("TokenServicesInitializer", []interface{}{arg1})
 	fake.mutex.Unlock()
-	if fake.Stub != nil {
-		return fake.Stub(arg1)
+	if stub != nil {
+		return stub(arg1)
 	}
 	if specificReturn {
-		return ret.result1, ret.result2
+		return ret.result1
 	}
-	return fake.returns.result1, fake.returns.result2
+	return returns.result1
 }
 
 func (fake *FakeTokenServicesInitializer) CallCount() int {
@@ -48,7 +48,7 @@ func (fake *FakeTokenServicesInitializer) CallCount() int {
 	return len(fake.argsForCall)
 }
 
-func (fake *FakeTokenServicesInitializer) Calls(stub func(string) (cmd.TokenServices, error)) {
+func (fake *FakeTokenServicesInitializer) Calls(stub func(string) cmd.TokenServices) {
 	fake.mutex.Lock()
 	defer fake.mutex.Unlock()
 	fake.Stub = stub
@@ -60,30 +60,27 @@ func (fake *FakeTokenServicesInitializer) ArgsForCall(i int) string {
 	return fake.argsForCall[i].arg1
 }
 
-func (fake *FakeTokenServicesInitializer) Returns(result1 cmd.TokenServices, result2 error) {
+func (fake *FakeTokenServicesInitializer) Returns(result1 cmd.TokenServices) {
 	fake.mutex.Lock()
 	defer fake.mutex.Unlock()
 	fake.Stub = nil
 	fake.returns = struct {
 		result1 cmd.TokenServices
-		result2 error
-	}{result1, result2}
+	}{result1}
 }
 
-func (fake *FakeTokenServicesInitializer) ReturnsOnCall(i int, result1 cmd.TokenServices, result2 error) {
+func (fake *FakeTokenServicesInitializer) ReturnsOnCall(i int, result1 cmd.TokenServices) {
 	fake.mutex.Lock()
 	defer fake.mutex.Unlock()
 	fake.Stub = nil
 	if fake.returnsOnCall == nil {
 		fake.returnsOnCall = make(map[int]struct {
 			result1 cmd.TokenServices
-			result2 error
 		})
 	}
 	fake.returnsOnCall[i] = struct {
 		result1 cmd.TokenServices
-		result2 error
-	}{result1, result2}
+	}{result1}
 }
 
 func (fake *FakeTokenServicesInitializer) Invocations() map[string][][]interface{} {

@@ -18,6 +18,7 @@ import (
 
 var (
 	CommandSession *gexec.Session
+	EnvVars        []string
 	mkpcliPath     string
 )
 
@@ -53,18 +54,18 @@ func unsetEnvVars(envVars []string, varsToUnset []string) []string {
 }
 
 func DefineCommonSteps(define Definitions) {
+	EnvVars = []string{}
 	var (
-		envVars        []string
 		unsetVars      []string
 		downloadedFile string
 	)
 
 	define.Given(`^targeting the (.*) environment$`, func(environment string) {
-		envVars = append(envVars, "MARKETPLACE_ENV="+environment)
+		EnvVars = append(EnvVars, "MARKETPLACE_ENV="+environment)
 	})
 
 	define.Given(`^the environment variable ([_A-Z]*) is set to (.*)$`, func(key, value string) {
-		envVars = append(envVars, key+"="+value)
+		EnvVars = append(EnvVars, key+"="+value)
 	})
 
 	define.Given(`^the environment variable ([_A-Z]*) is not set$`, func(key string) {
@@ -73,7 +74,7 @@ func DefineCommonSteps(define Definitions) {
 
 	define.When(`^running mkpcli (.*)$`, func(argString string) {
 		command := exec.Command(mkpcliPath, strings.Split(argString, " ")...)
-		command.Env = unsetEnvVars(append(os.Environ(), envVars...), unsetVars)
+		command.Env = unsetEnvVars(append(os.Environ(), EnvVars...), unsetVars)
 
 		var err error
 		CommandSession, err = gexec.Start(command, GinkgoWriter, GinkgoWriter)

@@ -26,7 +26,7 @@ var _ = Describe("Auth", func() {
 			tokenServices = &cmdfakes.FakeTokenServices{}
 
 			initializer = &cmdfakes.FakeTokenServicesInitializer{}
-			initializer.Returns(tokenServices, nil)
+			initializer.Returns(tokenServices)
 			InitializeTokenServices = initializer.Spy
 		})
 
@@ -50,18 +50,6 @@ var _ = Describe("Auth", func() {
 			Expect(tokenServices.RedeemArgsForCall(0)).To(Equal("my-csp-api-token"))
 		})
 
-		Context("fails to initialize token services", func() {
-			BeforeEach(func() {
-				initializer.Returns(nil, fmt.Errorf("initializer failed"))
-			})
-
-			It("returns an error", func() {
-				err := GetRefreshToken(nil, []string{})
-				Expect(err).To(HaveOccurred())
-				Expect(err.Error()).To(Equal("failed to initialize token services: initializer failed"))
-			})
-		})
-
 		Context("fails to exchange api token", func() {
 			BeforeEach(func() {
 				tokenServices.RedeemReturns(nil, fmt.Errorf("redeem failed"))
@@ -70,7 +58,7 @@ var _ = Describe("Auth", func() {
 			It("returns an error", func() {
 				err := GetRefreshToken(nil, []string{})
 				Expect(err).To(HaveOccurred())
-				Expect(err.Error()).To(Equal("failed to exchange api token: redeem failed"))
+				Expect(err.Error()).To(Equal("redeem failed"))
 			})
 		})
 	})
