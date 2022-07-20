@@ -13,6 +13,7 @@ import (
 const (
 	RoleOrgOwner         = "csp:org_owner"
 	RolePlatformOperator = "csp:platform_operator"
+	ClockSkewBuffer      = int64(10)
 )
 
 type Claims struct {
@@ -28,6 +29,15 @@ type Claims struct {
 
 	// The token as a string, signed and ready to be put in an Authorization header
 	Token string `json:"-"`
+}
+
+// Valid overloads the StandardClaims's Valid method to allow for additional room
+// to handle clock skew between the local machine's time and the CSP server
+func (claims *Claims) Valid() error {
+	claims.IssuedAt -= ClockSkewBuffer
+	valid := claims.StandardClaims.Valid()
+	claims.StandardClaims.IssuedAt += ClockSkewBuffer
+	return valid
 }
 
 func (claims *Claims) GetQualifiedUsername() string {
