@@ -439,7 +439,7 @@ jobs:
           MARKETPLACE_ENV: production
           ASSET_TYPE: image
           PRODUCT_SLUG: minio-high-performance-object-storage-for-kubernetes
-          PRODUCT_VERSION: "8.5.0"
+          PRODUCT_VERSION: "2020-01-16T22-40-29Z"
     on_error:
       put: slack-dev
       inputs: detect
