@@ -5,7 +5,6 @@ package pkg_test
 
 import (
 	"errors"
-	"github.com/vmware-labs/marketplace-cli/v2/test"
 	"net/http"
 	"time"
 
@@ -15,6 +14,7 @@ import (
 	"github.com/vmware-labs/marketplace-cli/v2/internal/internalfakes"
 	"github.com/vmware-labs/marketplace-cli/v2/pkg"
 	"github.com/vmware-labs/marketplace-cli/v2/pkg/pkgfakes"
+	"github.com/vmware-labs/marketplace-cli/v2/test"
 )
 
 var _ = Describe("Upload", func() {

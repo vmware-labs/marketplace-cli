@@ -5,12 +5,13 @@ package csp_test
 
 import (
 	"errors"
+	"net/http"
+
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/vmware-labs/marketplace-cli/v2/internal/csp"
 	"github.com/vmware-labs/marketplace-cli/v2/pkg/pkgfakes"
 	"github.com/vmware-labs/marketplace-cli/v2/test"
-	"net/http"
 )
 
 var _ = Describe("CSP Token Services", func() {

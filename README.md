@@ -52,7 +52,7 @@ enabling users to view, get, and manage their Marketplace entries.
 
 If you would like to build and contribute to this project, please fork and make pull requests.
 
-If you are internal to VMware, and you would like to run commands against the [Marketplace staging service](https://stg.market.csp.vmware.com/), set this environment variable:
+If you are internal to VMware, and you would like to run commands against the [Marketplace staging service](https://stg.market.csp.vmware.com/), ensure your CSP API token [has access](docs/Authentication.md) to the Staging Marketplace and then set this environment variable:
 ```
 export MARKETPLACE_ENV=staging
 ```

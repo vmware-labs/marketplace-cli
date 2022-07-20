@@ -11,9 +11,12 @@ To generate a new API Token:
 3. Set the token's name
 4. Set the token's expiration
 5. Add the "VMware Marketplace" service role
-6. No organization role is required
-7. Click Generate
-8. Record the token somewhere (preferably a secure secret store)
+
+    If your org has access to the Staging Marketplace, add the "Cloud Stage Marketplace" service role
+
+7. No organization role is required
+8. Click Generate
+9. Record the token somewhere (preferably a secure secret store)
 
 ## Using the token
 

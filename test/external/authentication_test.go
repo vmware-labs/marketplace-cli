@@ -5,6 +5,7 @@ package external_test
 
 import (
 	"fmt"
+
 	. "github.com/bunniesandbeatings/goerkin"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -15,7 +16,7 @@ import (
 var _ = Describe("authentication", func() {
 	steps := NewSteps()
 
-	Scenario("Exprired token", func() {
+	Scenario("Expired token", func() {
 		steps.Given("targeting the production environment")
 		steps.When(fmt.Sprintf("running mkpcli --csp-api-token %s auth", "M_sfojHArrjx90lxUCmID2qhZw-I0WGlW5fThBuiQXwVtvy7UJq6XeKtAKzf8cFm"))
 		steps.Then("the command exits with an error")
