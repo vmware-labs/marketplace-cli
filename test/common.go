@@ -149,7 +149,7 @@ func CreateFakeMetaFile(name, version, productVersion string) *models.MetaFile {
 	}
 }
 
-func AddVerions(product *models.Product, versions ...string) *models.Product {
+func AddVersions(product *models.Product, versions ...string) {
 	for _, version := range versions {
 		versionObject := &models.Version{
 			Number:       version,
@@ -158,12 +158,7 @@ func AddVerions(product *models.Product, versions ...string) *models.Product {
 			Instructions: fmt.Sprintf("Instructions for %s", version),
 		}
 		product.AllVersions = append(product.AllVersions, versionObject)
-
-		if versionObject.Status != "PENDING" {
-			product.Versions = append(product.Versions, versionObject)
-		}
 	}
-	return product
 }
 
 func AddContainerImages(product *models.Product, version string, instructions string, images ...*models.DockerURLDetails) *models.Product {

@@ -44,13 +44,13 @@ var _ = Describe("Product", func() {
 				"My Super Product",
 				"my-super-product",
 				models.SolutionTypeImage)
-			test.AddVerions(product1, "1.1.1")
+			test.AddVersions(product1, "1.1.1")
 			product2 := test.CreateFakeProduct(
 				"",
 				"My Other Product",
 				"my-other-product",
 				models.SolutionTypeImage)
-			test.AddVerions(product2, "2.2.2")
+			test.AddVersions(product2, "2.2.2")
 			products := []*models.Product{
 				product1,
 				product2,
@@ -107,7 +107,7 @@ var _ = Describe("Product", func() {
 						fmt.Sprintf("My Super Product %d", i),
 						fmt.Sprintf("my-super-product-%d", i),
 						models.SolutionTypeImage)
-					test.AddVerions(product, "1.0.0")
+					test.AddVersions(product, "1.0.0")
 					products = append(products, product)
 				}
 
@@ -214,7 +214,7 @@ var _ = Describe("Product", func() {
 				"My Super Product",
 				"my-super-product",
 				models.SolutionTypeImage)
-			test.AddVerions(product, "0.1.2", "1.2.3")
+			test.AddVersions(product, "0.1.2", "1.2.3")
 			response := &pkg.GetProductResponse{
 				Response: &pkg.GetProductResponsePayload{
 					Data:       product,
@@ -309,7 +309,7 @@ var _ = Describe("Product", func() {
 			product.OpenSourceDisclosure = &models.OpenSourceDisclosureURLS{
 				SourceCodePackageURL: "https://github.com/vmware-labs/marketplace-cli",
 			}
-			test.AddVerions(product, "0.1.2", "1.2.3")
+			test.AddVersions(product, "0.1.2", "1.2.3")
 			response := &pkg.GetProductResponse{
 				Response: &pkg.GetProductResponsePayload{
 					Data:       product,

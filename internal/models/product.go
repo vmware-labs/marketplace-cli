@@ -330,9 +330,6 @@ func (product *Product) UpdateWithVersionSpecificDetails(version string, details
 func (product *Product) PrepForUpdate() {
 	// This whole function is a workaround
 
-	// Send an empty compatibility matrix, any entries in here will multiply
-	product.CompatibilityMatrix = []*CompatibilityMatrix{}
-
 	// For updates, the encryption hash needs to be populated
 	// with the contents of the encryption details list
 	product.Encryption = &ProductEncryption{List: map[string]bool{}}
