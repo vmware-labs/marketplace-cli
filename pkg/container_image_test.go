@@ -42,7 +42,7 @@ var _ = Describe("Container image", func() {
 
 		It("updates the product with a public container image", func() {
 			product := test.CreateFakeProduct("", "Hyperspace Database", "hyperspace-database", models.SolutionTypeImage)
-			test.AddVerions(product, "1.2.3")
+			test.AddVersions(product, "1.2.3")
 
 			updatedProduct, err := marketplace.AttachLocalContainerImage("image.tar", "nginx", "latest", "FLOATING", "docker run it", product, &models.Version{Number: "1.2.3"})
 			Expect(err).ToNot(HaveOccurred())
@@ -70,7 +70,7 @@ var _ = Describe("Container image", func() {
 		When("the container and tag combo already exists for this version", func() {
 			It("returns an error", func() {
 				product := test.CreateFakeProduct("", "Hyperspace Database", "hyperspace-database", models.SolutionTypeImage)
-				test.AddVerions(product, "1.2.3")
+				test.AddVersions(product, "1.2.3")
 				test.AddContainerImages(product, "1.2.3", "docker run it", &models.DockerURLDetails{
 					Url: "nginx",
 					ImageTags: []*models.DockerImageTag{
@@ -94,7 +94,7 @@ var _ = Describe("Container image", func() {
 			})
 			It("returns an error", func() {
 				product := test.CreateFakeProduct("", "Hyperspace Database", "hyperspace-database", models.SolutionTypeImage)
-				test.AddVerions(product, "1.2.3")
+				test.AddVersions(product, "1.2.3")
 
 				_, err := marketplace.AttachLocalContainerImage("image.tar", "nginx", "latest", "FLOATING", "docker run it", product, &models.Version{Number: "1.2.3"})
 				Expect(err).To(HaveOccurred())
@@ -108,7 +108,7 @@ var _ = Describe("Container image", func() {
 			})
 			It("returns an error", func() {
 				product := test.CreateFakeProduct("", "Hyperspace Database", "hyperspace-database", models.SolutionTypeImage)
-				test.AddVerions(product, "1.2.3")
+				test.AddVersions(product, "1.2.3")
 
 				_, err := marketplace.AttachLocalContainerImage("image.tar", "nginx", "latest", "FLOATING", "docker run it", product, &models.Version{Number: "1.2.3"})
 				Expect(err).To(HaveOccurred())
@@ -122,7 +122,7 @@ var _ = Describe("Container image", func() {
 			})
 			It("returns an error", func() {
 				product := test.CreateFakeProduct("", "Hyperspace Database", "hyperspace-database", models.SolutionTypeImage)
-				test.AddVerions(product, "1.2.3")
+				test.AddVersions(product, "1.2.3")
 
 				_, err := marketplace.AttachLocalContainerImage("image.tar", "nginx", "latest", "FLOATING", "docker run it", product, &models.Version{Number: "1.2.3"})
 				Expect(err).To(HaveOccurred())
@@ -138,7 +138,7 @@ var _ = Describe("Container image", func() {
 
 		It("updates the product with a public container image", func() {
 			product := test.CreateFakeProduct("", "Hyperspace Database", "hyperspace-database", models.SolutionTypeImage)
-			test.AddVerions(product, "1.2.3")
+			test.AddVersions(product, "1.2.3")
 
 			updatedProduct, err := marketplace.AttachPublicContainerImage("nginx", "latest", "FLOATING", "docker run it", product, &models.Version{Number: "1.2.3"})
 			Expect(err).ToNot(HaveOccurred())
@@ -160,7 +160,7 @@ var _ = Describe("Container image", func() {
 		When("the container and tag combo already exists for this version", func() {
 			It("returns an error", func() {
 				product := test.CreateFakeProduct("", "Hyperspace Database", "hyperspace-database", models.SolutionTypeImage)
-				test.AddVerions(product, "1.2.3")
+				test.AddVersions(product, "1.2.3")
 				test.AddContainerImages(product, "1.2.3", "docker run it", &models.DockerURLDetails{
 					Url: "nginx",
 					ImageTags: []*models.DockerImageTag{
@@ -185,7 +185,7 @@ var _ = Describe("Container image", func() {
 			})
 			It("returns an error", func() {
 				product := test.CreateFakeProduct("", "Hyperspace Database", "hyperspace-database", models.SolutionTypeImage)
-				test.AddVerions(product, "1.2.3")
+				test.AddVersions(product, "1.2.3")
 
 				_, err := marketplace.AttachPublicContainerImage("nginx", "latest", "FLOATING", "docker run it", product, &models.Version{Number: "1.2.3"})
 				Expect(err).To(HaveOccurred())
