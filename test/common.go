@@ -158,10 +158,6 @@ func AddVersions(product *models.Product, versions ...string) *models.Product {
 			Instructions: fmt.Sprintf("Instructions for %s", version),
 		}
 		product.AllVersions = append(product.AllVersions, versionObject)
-
-		if versionObject.Status != "PENDING" {
-			product.Versions = append(product.Versions, versionObject)
-		}
 	}
 	return product
 }
