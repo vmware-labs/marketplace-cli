@@ -6,6 +6,7 @@
 
 if [[ -z "$1" ]]; then
   echo "USAGE: $0 <product slug>"
+  exit 1
 fi
 
 mkpcli curl "/api/v1/products/${1}?increaseViewCount=false&isSlug=true"

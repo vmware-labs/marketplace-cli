@@ -274,6 +274,7 @@ type Product struct {
 	SKUS                         []*SKUPublisherView          `json:"skusList"`
 	MetaFiles                    []*MetaFile                  `json:"metafilesList"`
 	PCADetails                   *PCADetail                   `json:"pcadetails"`
+	RedirectURL                  string                       `json:"redirecturl"`
 }
 
 type VersionSpecificProductDetails struct {

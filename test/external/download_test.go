@@ -14,7 +14,7 @@ import (
 var _ = Describe("Download", func() {
 	const (
 		ProductSlug    = "tanzu-kubenetes-grid-1-111-1-1"
-		ProductVersion = "1.5.1"
+		ProductVersion = "1.5.4"
 	)
 
 	steps := NewSteps()
