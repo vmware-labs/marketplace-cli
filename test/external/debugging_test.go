@@ -88,7 +88,7 @@ var _ = Describe("Debugging", func() {
 			Eventually(CommandSession.Err).Should(Say(regexp.QuoteMeta("{\"productid\":\"89431c5d-ddb7-45df-a544-2c81a370e17b\",\"appVersion\":\"1.22.0_150_r04\",\"eulaAccepted\":true,\"chartVersion\":\"12.0.4\"}")))
 			Eventually(CommandSession.Err).Should(Say("--- End of request #4 body payload ---"))
 			Eventually(CommandSession.Err).Should(Say("Request #4 Response: 200 OK"))
-			Eventually(CommandSession.Err).Should(Say(regexp.QuoteMeta("Request #5: GET https://cmpprdhelmsolutions.s3.us-west-2.amazonaws.com/marketplace-product-files/89431c5d-ddb7-45df-a544-2c81a370e17b/")))
+			Eventually(CommandSession.Err).Should(Say(regexp.QuoteMeta("Request #5: GET https://charts.bitnami.com/bitnami/nginx-13.1.4.tgz")))
 			Eventually(CommandSession.Err).Should(Say("Request #5 Response: 200 OK"))
 		})
 	})
