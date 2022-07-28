@@ -30,6 +30,7 @@ type ChartVersion struct {
 	HashAlgorithm                  string `json:"hashalgo,omitempty"`
 	Size                           int64  `json:"size,omitempty"`
 	Comment                        string `json:"comment"`
+	MarketplaceRegistryURL         string `json:"marketplaceregistryurl"`
 }
 
 func (product *Product) GetChartsForVersion(version string) []*ChartVersion {
