@@ -29,3 +29,15 @@ run:
 
       # Get the list of charts
       mkpcli product list-assets --type chart --product "${PRODUCT_SLUG}" --product-version "${VERSION}" | grep $(basename chart/*.tgz)
+
+      # Wait until the chart is downloadable
+      asset=$(mkpcli product list-assets --type chart --product "${PRODUCT_SLUG}" --product-version "${VERSION}" --output json | jq '.[0]')
+      while [ "$(echo "${asset}" | jq .downloadable)" == "false" ]
+      do
+        if [ "$(echo "${asset}" | jq .error)" != "null" ]; then
+          exit 1
+        fi
+
+        sleep 30
+        asset=$(mkpcli product list-assets --type chart --product "${PRODUCT_SLUG}" --product-version "${VERSION}" --output json | jq '.[0]')
+      done
