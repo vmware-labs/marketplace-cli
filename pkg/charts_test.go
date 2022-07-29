@@ -150,7 +150,7 @@ var _ = Describe("Charts", func() {
 		It("uploads and attaches a local chart", func() {
 			product := test.CreateFakeProduct("", "Hyperspace Database", "hyperspace-database", models.SolutionTypeChart)
 			version := &models.Version{Number: "1.2.3"}
-			test.AddVerions(product, "1.2.3")
+			test.AddVersions(product, "1.2.3")
 			updatedProduct, err := marketplace.AttachLocalChart(chartPath, "helm install it", product, version)
 			Expect(err).ToNot(HaveOccurred())
 
@@ -185,7 +185,7 @@ var _ = Describe("Charts", func() {
 			It("returns an error", func() {
 				product := test.CreateFakeProduct("", "Hyperspace Database", "hyperspace-database", models.SolutionTypeChart)
 				version := &models.Version{Number: "1.2.3"}
-				test.AddVerions(product, "1.2.3")
+				test.AddVersions(product, "1.2.3")
 				_, err := marketplace.AttachLocalChart(chartPath, "helm install it", product, version)
 				Expect(err).To(HaveOccurred())
 				Expect(err.Error()).To(Equal("failed to read chart: load chart failed"))
@@ -200,7 +200,7 @@ var _ = Describe("Charts", func() {
 			It("returns an error", func() {
 				product := test.CreateFakeProduct("", "Hyperspace Database", "hyperspace-database", models.SolutionTypeChart)
 				version := &models.Version{Number: "1.2.3"}
-				test.AddVerions(product, "1.2.3")
+				test.AddVersions(product, "1.2.3")
 				_, err := marketplace.AttachLocalChart(chartPath, "helm install it", product, version)
 				Expect(err).To(HaveOccurred())
 				Expect(err.Error()).To(Equal("failed to get upload credentials: get uploader failed"))
@@ -214,7 +214,7 @@ var _ = Describe("Charts", func() {
 			It("returns an error", func() {
 				product := test.CreateFakeProduct("", "Hyperspace Database", "hyperspace-database", models.SolutionTypeChart)
 				version := &models.Version{Number: "1.2.3"}
-				test.AddVerions(product, "1.2.3")
+				test.AddVersions(product, "1.2.3")
 				_, err := marketplace.AttachLocalChart(chartPath, "helm install it", product, version)
 				Expect(err).To(HaveOccurred())
 				Expect(err.Error()).To(Equal("upload product file failed"))
@@ -228,7 +228,7 @@ var _ = Describe("Charts", func() {
 			It("returns an error", func() {
 				product := test.CreateFakeProduct("", "Hyperspace Database", "hyperspace-database", models.SolutionTypeChart)
 				version := &models.Version{Number: "1.2.3"}
-				test.AddVerions(product, "1.2.3")
+				test.AddVersions(product, "1.2.3")
 				_, err := marketplace.AttachLocalChart(chartPath, "helm install it", product, version)
 				Expect(err).To(HaveOccurred())
 				Expect(err.Error()).To(Equal("sending the update for product \"hyperspace-database\" failed: update product failed"))
@@ -261,7 +261,7 @@ var _ = Describe("Charts", func() {
 		It("attaches a public chart", func() {
 			product := test.CreateFakeProduct("", "Hyperspace Database", "hyperspace-database", models.SolutionTypeChart)
 			version := &models.Version{Number: "1.2.3"}
-			test.AddVerions(product, "1.2.3")
+			test.AddVersions(product, "1.2.3")
 			updatedProduct, err := marketplace.AttachPublicChart(chartUrl, "helm install it", product, version)
 			Expect(err).ToNot(HaveOccurred())
 
@@ -295,7 +295,7 @@ var _ = Describe("Charts", func() {
 			It("returns an error", func() {
 				product := test.CreateFakeProduct("", "Hyperspace Database", "hyperspace-database", models.SolutionTypeChart)
 				version := &models.Version{Number: "1.2.3"}
-				test.AddVerions(product, "1.2.3")
+				test.AddVersions(product, "1.2.3")
 				_, err := marketplace.AttachPublicChart(chartUrl, "helm install it", product, version)
 				Expect(err).To(HaveOccurred())
 				Expect(err.Error()).To(Equal("failed to download chart: download chart failed"))
@@ -309,7 +309,7 @@ var _ = Describe("Charts", func() {
 			It("returns an error", func() {
 				product := test.CreateFakeProduct("", "Hyperspace Database", "hyperspace-database", models.SolutionTypeChart)
 				version := &models.Version{Number: "1.2.3"}
-				test.AddVerions(product, "1.2.3")
+				test.AddVersions(product, "1.2.3")
 				_, err := marketplace.AttachPublicChart(chartUrl, "helm install it", product, version)
 				Expect(err).To(HaveOccurred())
 				Expect(err.Error()).To(Equal("sending the update for product \"hyperspace-database\" failed: update product failed"))

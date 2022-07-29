@@ -149,7 +149,7 @@ func CreateFakeMetaFile(name, version, productVersion string) *models.MetaFile {
 	}
 }
 
-func AddVerions(product *models.Product, versions ...string) *models.Product {
+func AddVersions(product *models.Product, versions ...string) *models.Product {
 	for _, version := range versions {
 		versionObject := &models.Version{
 			Number:       version,

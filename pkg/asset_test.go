@@ -24,7 +24,7 @@ var _ = Describe("Asset", func() {
 			)
 			BeforeEach(func() {
 				product = test.CreateFakeProduct("", "Hyperspace Database", "hyperspace-database", models.SolutionTypeOthers)
-				test.AddVerions(product, "1")
+				test.AddVersions(product, "1")
 				fileId = uuid.New().String()
 				addon = &models.AddOnFile{
 					ID:               fileId,
@@ -67,7 +67,7 @@ var _ = Describe("Asset", func() {
 			)
 			BeforeEach(func() {
 				product = test.CreateFakeProduct("", "Hyperspace Database", "hyperspace-database", models.SolutionTypeChart)
-				test.AddVerions(product, "1")
+				test.AddVersions(product, "1")
 				chart = &models.ChartVersion{
 					Id:         uuid.New().String(),
 					Version:    "1.0.0",
@@ -108,7 +108,7 @@ var _ = Describe("Asset", func() {
 			)
 			BeforeEach(func() {
 				product = test.CreateFakeProduct("", "Hyperspace Database", "hyperspace-database", models.SolutionTypeImage)
-				test.AddVerions(product, "1")
+				test.AddVersions(product, "1")
 				containerImage = test.CreateFakeContainerImage("astrowidgets/hyperspacedb", "1", "imaginary")
 				test.AddContainerImages(product, "1", "docker run it", containerImage)
 			})
@@ -157,7 +157,7 @@ var _ = Describe("Asset", func() {
 			)
 			BeforeEach(func() {
 				product = test.CreateFakeProduct("", "Hyperspace Database", "hyperspace-database", models.SolutionTypeOVA)
-				test.AddVerions(product, "1")
+				test.AddVersions(product, "1")
 				vm = test.CreateFakeOVA("hyperspace-database.ova", "1")
 				product.ProductDeploymentFiles = append(product.ProductDeploymentFiles, vm)
 
@@ -205,7 +205,7 @@ var _ = Describe("Asset", func() {
 		var product *models.Product
 		BeforeEach(func() {
 			product = test.CreateFakeProduct("", "Hyperspace Database", "hyperspace-database", models.SolutionTypeOVA)
-			test.AddVerions(product, "1")
+			test.AddVersions(product, "1")
 			vm := test.CreateFakeOVA("hyperspace-database.ova", "1")
 			product.ProductDeploymentFiles = append(product.ProductDeploymentFiles, vm)
 

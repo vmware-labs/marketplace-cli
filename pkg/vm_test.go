@@ -54,7 +54,7 @@ var _ = Describe("VM", func() {
 
 		It("uploads and attaches the vm file", func() {
 			product := test.CreateFakeProduct("", "Hyperspace Database", "hyperspace-database", models.SolutionTypeISO)
-			test.AddVerions(product, "1.2.3")
+			test.AddVersions(product, "1.2.3")
 
 			updatedProduct, err := marketplace.UploadVM(vmFilePath, product, &models.Version{Number: "1.2.3"})
 			Expect(err).ToNot(HaveOccurred())
@@ -81,7 +81,7 @@ var _ = Describe("VM", func() {
 		When("hashing fails", func() {
 			It("returns an error", func() {
 				product := test.CreateFakeProduct("", "Hyperspace Database", "hyperspace-database", models.SolutionTypeISO)
-				test.AddVerions(product, "1.2.3")
+				test.AddVersions(product, "1.2.3")
 
 				_, err := marketplace.UploadVM("this/file/does/not/exist", product, &models.Version{Number: "1.2.3"})
 				Expect(err).To(HaveOccurred())
@@ -97,7 +97,7 @@ var _ = Describe("VM", func() {
 
 			It("returns an error", func() {
 				product := test.CreateFakeProduct("", "Hyperspace Database", "hyperspace-database", models.SolutionTypeISO)
-				test.AddVerions(product, "1.2.3")
+				test.AddVersions(product, "1.2.3")
 
 				_, err := marketplace.UploadVM(vmFilePath, product, &models.Version{Number: "1.2.3"})
 				Expect(err).To(HaveOccurred())
@@ -111,7 +111,7 @@ var _ = Describe("VM", func() {
 			})
 			It("returns an error", func() {
 				product := test.CreateFakeProduct("", "Hyperspace Database", "hyperspace-database", models.SolutionTypeISO)
-				test.AddVerions(product, "1.2.3")
+				test.AddVersions(product, "1.2.3")
 
 				_, err := marketplace.UploadVM(vmFilePath, product, &models.Version{Number: "1.2.3"})
 				Expect(err).To(HaveOccurred())
@@ -125,7 +125,7 @@ var _ = Describe("VM", func() {
 			})
 			It("returns an error", func() {
 				product := test.CreateFakeProduct("", "Hyperspace Database", "hyperspace-database", models.SolutionTypeISO)
-				test.AddVerions(product, "1.2.3")
+				test.AddVersions(product, "1.2.3")
 
 				_, err := marketplace.UploadVM(vmFilePath, product, &models.Version{Number: "1.2.3"})
 				Expect(err).To(HaveOccurred())

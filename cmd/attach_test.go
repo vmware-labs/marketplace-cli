@@ -69,11 +69,11 @@ var _ = Describe("AttachCmd", func() {
 
 		BeforeEach(func() {
 			testProduct = test.CreateFakeProduct("", "My Super Product", "my-super-product", models.SolutionTypeChart)
-			test.AddVerions(testProduct, "1.1.1")
+			test.AddVersions(testProduct, "1.1.1")
 			marketplace.GetProductWithVersionReturns(testProduct, &models.Version{Number: "1.1.1"}, nil)
 
 			updatedProduct = test.CreateFakeProduct(testProduct.ProductId, "My Super Product", "my-super-product", models.SolutionTypeChart)
-			test.AddVerions(updatedProduct, "1.1.1")
+			test.AddVersions(updatedProduct, "1.1.1")
 		})
 
 		Context("chart is a local file", func() {
@@ -418,11 +418,11 @@ var _ = Describe("AttachCmd", func() {
 
 		BeforeEach(func() {
 			testProduct = test.CreateFakeProduct("", "My Super Product", "my-super-product", models.SolutionTypeImage)
-			test.AddVerions(testProduct, "1.1.1")
+			test.AddVersions(testProduct, "1.1.1")
 			marketplace.GetProductWithVersionReturns(testProduct, &models.Version{Number: "1.1.1"}, nil)
 
 			updatedProduct := test.CreateFakeProduct(testProduct.ProductId, "My Super Product", "my-super-product", models.SolutionTypeImage)
-			test.AddVerions(updatedProduct, "1.1.1")
+			test.AddVersions(updatedProduct, "1.1.1")
 			nginx := test.CreateFakeContainerImage("nginx", "1.21.6")
 			test.AddContainerImages(updatedProduct, "1.1.1", "docker run it", nginx)
 			marketplace.AttachLocalContainerImageReturns(updatedProduct, nil)
@@ -686,11 +686,11 @@ var _ = Describe("AttachCmd", func() {
 
 		BeforeEach(func() {
 			testProduct = test.CreateFakeProduct("", "My Super Product", "my-super-product", models.SolutionTypeOthers)
-			test.AddVerions(testProduct, "1.1.1")
+			test.AddVersions(testProduct, "1.1.1")
 			marketplace.GetProductWithVersionReturns(testProduct, &models.Version{Number: "1.1.1"}, nil)
 
 			updatedProduct := test.CreateFakeProduct(testProduct.ProductId, "My Super Product", "my-super-product", models.SolutionTypeOthers)
-			test.AddVerions(updatedProduct, "1.1.1")
+			test.AddVersions(updatedProduct, "1.1.1")
 			updatedProduct.AddOnFiles = append(updatedProduct.AddOnFiles, test.CreateFakeOtherFile("fake-file", "1.1.1"))
 			marketplace.AttachOtherFileReturns(updatedProduct, nil)
 
@@ -888,11 +888,11 @@ var _ = Describe("AttachCmd", func() {
 
 		BeforeEach(func() {
 			testProduct = test.CreateFakeProduct("", "My Super Product", "my-super-product", models.SolutionTypeOVA)
-			test.AddVerions(testProduct, "1.1.1")
+			test.AddVersions(testProduct, "1.1.1")
 			marketplace.GetProductWithVersionReturns(testProduct, &models.Version{Number: "1.1.1"}, nil)
 
 			updatedProduct := test.CreateFakeProduct(testProduct.ProductId, "My Super Product", "my-super-product", models.SolutionTypeOVA)
-			test.AddVerions(updatedProduct, "1.1.1")
+			test.AddVersions(updatedProduct, "1.1.1")
 			updatedProduct.ProductDeploymentFiles = append(updatedProduct.ProductDeploymentFiles, test.CreateFakeOVA("fake-ova", "1.1.1"))
 			marketplace.UploadVMReturns(updatedProduct, nil)
 

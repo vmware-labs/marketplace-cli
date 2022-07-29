@@ -54,7 +54,7 @@ var _ = Describe("Other", func() {
 
 		It("uploads and attaches the file", func() {
 			product := test.CreateFakeProduct("", "Hyperspace Database", "hyperspace-database", "PENDING")
-			test.AddVerions(product, "1.2.3")
+			test.AddVersions(product, "1.2.3")
 
 			updatedProduct, err := marketplace.AttachOtherFile(filePath, product, &models.Version{Number: "1.2.3"})
 			Expect(err).ToNot(HaveOccurred())
@@ -79,7 +79,7 @@ var _ = Describe("Other", func() {
 		When("hashing fails", func() {
 			It("returns an error", func() {
 				product := test.CreateFakeProduct("", "Hyperspace Database", "hyperspace-database", "PENDING")
-				test.AddVerions(product, "1.2.3")
+				test.AddVersions(product, "1.2.3")
 
 				_, err := marketplace.AttachOtherFile("this/file/does/not/exist", product, &models.Version{Number: "1.2.3"})
 				Expect(err).To(HaveOccurred())
@@ -95,7 +95,7 @@ var _ = Describe("Other", func() {
 
 			It("returns an error", func() {
 				product := test.CreateFakeProduct("", "Hyperspace Database", "hyperspace-database", "PENDING")
-				test.AddVerions(product, "1.2.3")
+				test.AddVersions(product, "1.2.3")
 
 				_, err := marketplace.AttachOtherFile(filePath, product, &models.Version{Number: "1.2.3"})
 				Expect(err).To(HaveOccurred())
@@ -109,7 +109,7 @@ var _ = Describe("Other", func() {
 			})
 			It("returns an error", func() {
 				product := test.CreateFakeProduct("", "Hyperspace Database", "hyperspace-database", "PENDING")
-				test.AddVerions(product, "1.2.3")
+				test.AddVersions(product, "1.2.3")
 
 				_, err := marketplace.AttachOtherFile(filePath, product, &models.Version{Number: "1.2.3"})
 				Expect(err).To(HaveOccurred())
@@ -123,7 +123,7 @@ var _ = Describe("Other", func() {
 			})
 			It("returns an error", func() {
 				product := test.CreateFakeProduct("", "Hyperspace Database", "hyperspace-database", "PENDING")
-				test.AddVerions(product, "1.2.3")
+				test.AddVersions(product, "1.2.3")
 
 				_, err := marketplace.AttachOtherFile(filePath, product, &models.Version{Number: "1.2.3"})
 				Expect(err).To(HaveOccurred())

@@ -84,7 +84,7 @@ var _ = Describe("Products", func() {
 				"My Super Product",
 				"my-super-product",
 				models.SolutionTypeOthers)
-			test.AddVerions(product, "1.2.3", "2.3.4")
+			test.AddVersions(product, "1.2.3", "2.3.4")
 			marketplace.GetProductReturns(product, nil)
 			marketplace.GetProductWithVersionStub = func(slug string, version string) (*models.Product, *models.Version, error) {
 				Expect(slug).To(Equal("my-super-product"))
@@ -153,7 +153,7 @@ var _ = Describe("Products", func() {
 		BeforeEach(func() {
 			product = test.CreateFakeProduct("", "Hyperspace Database", "hyperspace-database", models.SolutionTypeOVA)
 			version := &models.Version{Number: "1"}
-			test.AddVerions(product, "1")
+			test.AddVersions(product, "1")
 			vm := test.CreateFakeOVA("hyperspace-database.ova", "1")
 			product.ProductDeploymentFiles = append(product.ProductDeploymentFiles, vm)
 
@@ -208,7 +208,7 @@ var _ = Describe("Products", func() {
 				"My Super Product",
 				"my-super-product",
 				models.SolutionTypeOVA)
-			test.AddVerions(product, "0.1.2", "1.2.3")
+			test.AddVersions(product, "0.1.2", "1.2.3")
 			marketplace.GetProductReturns(product, nil)
 		})
 
