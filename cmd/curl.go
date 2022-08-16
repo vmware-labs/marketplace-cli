@@ -7,8 +7,8 @@ import (
 	"bytes"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/url"
+	"os"
 
 	"github.com/spf13/cobra"
 	"github.com/vmware-labs/marketplace-cli/v2/pkg"
@@ -55,7 +55,7 @@ var curlCmd = &cobra.Command{
 		var content io.Reader
 		headers := map[string]string{}
 		if payload != "" {
-			payloadBytes, err := ioutil.ReadFile(payload)
+			payloadBytes, err := os.ReadFile(payload)
 			if err != nil {
 				return fmt.Errorf("failed to read payload file: %w", err)
 			}
@@ -70,7 +70,7 @@ var curlCmd = &cobra.Command{
 
 		cmd.PrintErrf("Response status %d\n", resp.StatusCode)
 
-		body, err := ioutil.ReadAll(resp.Body)
+		body, err := io.ReadAll(resp.Body)
 		if err != nil {
 			return fmt.Errorf("failed to read response: %w", err)
 		}

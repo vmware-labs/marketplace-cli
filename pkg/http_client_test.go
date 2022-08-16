@@ -4,7 +4,7 @@
 package pkg_test
 
 import (
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/url"
 	"strings"
@@ -100,7 +100,7 @@ var _ = Describe("HTTP Client", func() {
 			})
 
 			By("including the right content", func() {
-				Expect(ioutil.ReadAll(request.Body)).To(Equal([]byte("everything totally passed")))
+				Expect(io.ReadAll(request.Body)).To(Equal([]byte("everything totally passed")))
 			})
 		})
 	})

@@ -6,6 +6,7 @@ package cmd
 import (
 	"fmt"
 
+	"github.com/golang-jwt/jwt"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"github.com/vmware-labs/marketplace-cli/v2/internal/csp"
@@ -21,8 +22,9 @@ type TokenServicesInitializer func(cspHost string) TokenServices
 
 var InitializeTokenServices TokenServicesInitializer = func(cspHost string) TokenServices {
 	return &csp.TokenServices{
-		CSPHost: cspHost,
-		Client:  Client,
+		CSPHost:     cspHost,
+		Client:      Client,
+		TokenParser: jwt.ParseWithClaims,
 	}
 }
 

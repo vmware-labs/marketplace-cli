@@ -7,7 +7,7 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"strings"
 
@@ -183,7 +183,7 @@ var _ = Describe("Product", func() {
 				httpClient.GetReturns(&http.Response{
 					StatusCode: http.StatusTeapot,
 					Status:     http.StatusText(http.StatusTeapot),
-					Body:       ioutil.NopCloser(bytes.NewReader([]byte("Teapots!"))),
+					Body:       io.NopCloser(bytes.NewReader([]byte("Teapots!"))),
 				}, nil)
 			})
 
@@ -272,7 +272,7 @@ var _ = Describe("Product", func() {
 				httpClient.GetReturns(&http.Response{
 					StatusCode: http.StatusTeapot,
 					Status:     http.StatusText(http.StatusTeapot),
-					Body:       ioutil.NopCloser(strings.NewReader("Teapots all the way down")),
+					Body:       io.NopCloser(strings.NewReader("Teapots all the way down")),
 				}, nil)
 			})
 
@@ -371,7 +371,7 @@ var _ = Describe("Product", func() {
 			BeforeEach(func() {
 				httpClient.GetReturns(&http.Response{
 					StatusCode: http.StatusTeapot,
-					Body:       ioutil.NopCloser(bytes.NewReader([]byte("get product failed"))),
+					Body:       io.NopCloser(bytes.NewReader([]byte("get product failed"))),
 				}, nil)
 			})
 			It("returns the error", func() {
@@ -397,7 +397,7 @@ var _ = Describe("Product", func() {
 			BeforeEach(func() {
 				httpClient.PostJSONReturns(&http.Response{
 					StatusCode: http.StatusTeapot,
-					Body:       ioutil.NopCloser(bytes.NewReader([]byte("get version specific details failed"))),
+					Body:       io.NopCloser(bytes.NewReader([]byte("get version specific details failed"))),
 				}, nil)
 			})
 			It("returns an error", func() {
@@ -410,7 +410,7 @@ var _ = Describe("Product", func() {
 			BeforeEach(func() {
 				httpClient.PostJSONReturns(&http.Response{
 					StatusCode: http.StatusNotFound,
-					Body:       ioutil.NopCloser(bytes.NewReader([]byte("version specific details not found"))),
+					Body:       io.NopCloser(bytes.NewReader([]byte("version specific details not found"))),
 				}, nil)
 			})
 			It("returns an error", func() {
@@ -423,7 +423,7 @@ var _ = Describe("Product", func() {
 			BeforeEach(func() {
 				httpClient.PostJSONReturns(&http.Response{
 					StatusCode: http.StatusBadRequest,
-					Body:       ioutil.NopCloser(bytes.NewReader([]byte("bad version specific details request"))),
+					Body:       io.NopCloser(bytes.NewReader([]byte("bad version specific details request"))),
 				}, nil)
 			})
 			It("returns the product without version specific details", func() {

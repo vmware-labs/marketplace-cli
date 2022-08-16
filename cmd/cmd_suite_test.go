@@ -6,7 +6,7 @@ package cmd_test
 import (
 	"bytes"
 	"encoding/json"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"testing"
 
@@ -25,6 +25,6 @@ func ResponseWithPayload(payload interface{}) *http.Response {
 
 	return &http.Response{
 		StatusCode: http.StatusOK,
-		Body:       ioutil.NopCloser(bytes.NewReader(encoded)),
+		Body:       io.NopCloser(bytes.NewReader(encoded)),
 	}
 }

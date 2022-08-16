@@ -7,7 +7,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"net/url"
 	"testing"
@@ -26,7 +25,7 @@ func TestPkg(t *testing.T) {
 func PutProductEchoResponse(requestURL *url.URL, content io.Reader, contentType string) (*http.Response, error) {
 	Expect(contentType).To(Equal("application/json"))
 	var product *models.Product
-	productBytes, err := ioutil.ReadAll(content)
+	productBytes, err := io.ReadAll(content)
 	Expect(err).ToNot(HaveOccurred())
 	Expect(json.Unmarshal(productBytes, &product)).To(Succeed())
 
@@ -41,6 +40,6 @@ func PutProductEchoResponse(requestURL *url.URL, content io.Reader, contentType 
 
 	return &http.Response{
 		StatusCode: http.StatusOK,
-		Body:       ioutil.NopCloser(bytes.NewReader(body)),
+		Body:       io.NopCloser(bytes.NewReader(body)),
 	}, nil
 }

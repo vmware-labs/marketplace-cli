@@ -6,7 +6,6 @@ package pkg_test
 import (
 	"errors"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"os"
 
@@ -95,7 +94,7 @@ var _ = Describe("Download", func() {
 		})
 
 		By("copying the asset to the filename", func() {
-			content, err := ioutil.ReadFile(filename)
+			content, err := os.ReadFile(filename)
 			Expect(err).ToNot(HaveOccurred())
 			Expect(string(content)).To(Equal("file contents!"))
 		})
@@ -136,7 +135,7 @@ var _ = Describe("Download", func() {
 		Context("and no response body is sent", func() {
 			BeforeEach(func() {
 				response := &http.Response{
-					Body:       ioutil.NopCloser(&test.FailingReadWriter{Message: "failed to read"}),
+					Body:       io.NopCloser(&test.FailingReadWriter{Message: "failed to read"}),
 					Status:     http.StatusText(http.StatusTeapot),
 					StatusCode: http.StatusTeapot,
 				}

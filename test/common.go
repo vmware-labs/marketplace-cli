@@ -8,7 +8,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"os"
 	"strings"
@@ -203,7 +203,7 @@ func MakeBytesResponse(body []byte) *http.Response {
 	return &http.Response{
 		StatusCode:    http.StatusOK,
 		ContentLength: int64(len(body)),
-		Body:          ioutil.NopCloser(bytes.NewReader(body)),
+		Body:          io.NopCloser(bytes.NewReader(body)),
 	}
 }
 
@@ -211,13 +211,13 @@ func MakeStringResponse(body string) *http.Response {
 	return &http.Response{
 		StatusCode:    http.StatusOK,
 		ContentLength: int64(len(body)),
-		Body:          ioutil.NopCloser(strings.NewReader(body)),
+		Body:          io.NopCloser(strings.NewReader(body)),
 	}
 }
 
 func MakeFailingBodyResponse(errorMessage string) *http.Response {
 	return &http.Response{
 		StatusCode: http.StatusOK,
-		Body:       ioutil.NopCloser(&FailingReadWriter{Message: errorMessage}),
+		Body:       io.NopCloser(&FailingReadWriter{Message: errorMessage}),
 	}
 }

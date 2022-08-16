@@ -7,7 +7,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -85,7 +85,7 @@ func (m *Marketplace) ListProducts(allOrgs bool, searchTerm string) ([]*models.P
 		}
 
 		if resp.StatusCode != http.StatusOK {
-			body, err := ioutil.ReadAll(resp.Body)
+			body, err := io.ReadAll(resp.Body)
 			if err != nil {
 				body = []byte{}
 			}
@@ -186,7 +186,7 @@ func (m *Marketplace) GetProduct(slug string) (*models.Product, error) {
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		body, err := ioutil.ReadAll(resp.Body)
+		body, err := io.ReadAll(resp.Body)
 		if err == nil {
 			return nil, fmt.Errorf("getting product %s failed: (%d)\n%s", slug, resp.StatusCode, string(body))
 		}
@@ -235,7 +235,7 @@ func (m *Marketplace) getVersionDetails(product *models.Product, version string)
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		body, err := ioutil.ReadAll(resp.Body)
+		body, err := io.ReadAll(resp.Body)
 		if err != nil {
 			return nil, fmt.Errorf("getting product version details for %s %s failed: (%d)", product.Slug, version, resp.StatusCode)
 		}
@@ -299,7 +299,7 @@ func (m *Marketplace) PutProduct(product *models.Product, versionUpdate bool) (*
 		return nil, fmt.Errorf("you do not have permission to modify the product \"%s\"", product.Slug)
 	}
 	if resp.StatusCode != http.StatusOK {
-		body, err := ioutil.ReadAll(resp.Body)
+		body, err := io.ReadAll(resp.Body)
 		if err != nil {
 			body = []byte{}
 		}

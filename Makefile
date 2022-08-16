@@ -9,7 +9,7 @@ default: build
 .PHONY: deps-go-binary deps-counterfeiter deps-ginkgo deps-golangci-lint
 
 GO_VERSION := $(shell go version)
-GO_VERSION_REQUIRED = go1.18
+GO_VERSION_REQUIRED = go1.19
 GO_VERSION_MATCHED := $(shell go version | grep $(GO_VERSION_REQUIRED))
 
 deps-go-binary:
@@ -45,7 +45,7 @@ ifeq ($(PLATFORM), Darwin)
 	brew install golangci-lint
 endif
 ifeq ($(PLATFORM), Linux)
-	curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.46.2
+	curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin
 endif
 endif
 

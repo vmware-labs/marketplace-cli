@@ -6,7 +6,7 @@ package pkg_test
 import (
 	"bytes"
 	"errors"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/url"
 	"os"
@@ -79,7 +79,7 @@ var _ = Describe("Charts", func() {
 			// This does not need to be cleaned up because chartDir will be removed
 			chartArchive, err := chartutil.Save(chart, chartDir)
 			Expect(err).ToNot(HaveOccurred())
-			chartBytes, err := ioutil.ReadFile(chartArchive)
+			chartBytes, err := os.ReadFile(chartArchive)
 			Expect(err).ToNot(HaveOccurred())
 			httpClient.DoReturns(test.MakeBytesResponse(chartBytes), nil)
 		})
@@ -249,11 +249,11 @@ var _ = Describe("Charts", func() {
 			// This does not need to be cleaned up because chartDir will be removed
 			chartArchive, err := chartutil.Save(chart, chartDir)
 			Expect(err).ToNot(HaveOccurred())
-			chartBytes, err = ioutil.ReadFile(chartArchive)
+			chartBytes, err = os.ReadFile(chartArchive)
 			Expect(err).ToNot(HaveOccurred())
 
 			httpClient.DoReturns(&http.Response{
-				Body: ioutil.NopCloser(bytes.NewReader(chartBytes)),
+				Body: io.NopCloser(bytes.NewReader(chartBytes)),
 			}, nil)
 			httpClient.PutStub = PutProductEchoResponse
 		})

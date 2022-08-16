@@ -8,7 +8,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"log"
 	"net/http"
 	"net/url"
@@ -75,7 +74,7 @@ func (c *DebuggingClient) printResponse(requestID int, resp *http.Response) {
 
 func (c *DebuggingClient) printPayload(name string, payload io.ReadCloser) io.ReadCloser {
 	c.Logger.Printf("--- Start of %s payload ---", name)
-	content, _ := ioutil.ReadAll(payload)
+	content, _ := io.ReadAll(payload)
 	c.Logger.Println(string(content))
 	c.Logger.Printf("--- End of %s payload ---", name)
 

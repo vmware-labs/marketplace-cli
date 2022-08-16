@@ -922,7 +922,7 @@ jobs:
             type: registry-image
             source:
               repository: harbor-repo.vmware.com/dockerhub-proxy-cache/library/golang
-              tag: 1.17
+              tag: 1.19
               username: ((harbor.username))
               password: ((harbor.token))
           inputs:
@@ -1011,7 +1011,7 @@ jobs:
                 type: registry-image
                 source:
                   repository: harbor-repo.vmware.com/dockerhub-proxy-cache/library/golang
-                  tag: 1.17
+                  tag: 1.19
                   username: ((harbor.username))
                   password: ((harbor.token))
               inputs:

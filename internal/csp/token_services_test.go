@@ -7,9 +7,11 @@ import (
 	"errors"
 	"net/http"
 
+	"github.com/golang-jwt/jwt"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/vmware-labs/marketplace-cli/v2/internal/csp"
+	"github.com/vmware-labs/marketplace-cli/v2/internal/csp/cspfakes"
 	"github.com/vmware-labs/marketplace-cli/v2/pkg/pkgfakes"
 	"github.com/vmware-labs/marketplace-cli/v2/test"
 )
@@ -17,20 +19,36 @@ import (
 var _ = Describe("CSP Token Services", func() {
 	var (
 		client        *pkgfakes.FakeHTTPClient
+		tokenParser   *cspfakes.FakeTokenParserFn
 		tokenServices *csp.TokenServices
 	)
 
 	BeforeEach(func() {
 		client = &pkgfakes.FakeHTTPClient{}
+		tokenParser = &cspfakes.FakeTokenParserFn{}
 		tokenServices = &csp.TokenServices{
-			CSPHost: "csp.example.com",
-			Client:  client,
+			CSPHost:     "csp.example.com",
+			Client:      client,
+			TokenParser: tokenParser.Spy,
 		}
 	})
 
 	Describe("Redeem", func() {
-		XIt("exchanges the token for the JWT token claims", func() {
-
+		BeforeEach(func() {
+			responseBody := csp.RedeemResponse{
+				AccessToken: "my-access-token",
+				StatusCode:  http.StatusOK,
+			}
+			client.PostFormReturns(test.MakeJSONResponse(responseBody), nil)
+			token := &jwt.Token{
+				Raw: "my-jwt-token",
+			}
+			tokenParser.Returns(token, nil)
+		})
+		It("exchanges the token for the JWT token claims", func() {
+			token, err := tokenServices.Redeem("my-csp-api-token")
+			Expect(err).ToNot(HaveOccurred())
+			Expect(token.Token).To(Equal("my-jwt-token"))
 		})
 
 		When("sending the request fails", func() {
@@ -90,8 +108,15 @@ var _ = Describe("CSP Token Services", func() {
 			})
 		})
 
-		XWhen("the response is not a valid token", func() {
-
+		When("the response is not a valid token", func() {
+			BeforeEach(func() {
+				tokenParser.Returns(nil, errors.New("token parser failed"))
+			})
+			It("returns an error", func() {
+				_, err := tokenServices.Redeem("my-csp-api-token")
+				Expect(err).To(HaveOccurred())
+				Expect(err.Error()).To(Equal("invalid token returned from CSP: token parser failed"))
+			})
 		})
 	})
 })

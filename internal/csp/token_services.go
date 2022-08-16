@@ -15,9 +15,13 @@ import (
 	"github.com/vmware-labs/marketplace-cli/v2/pkg"
 )
 
+//go:generate counterfeiter . TokenParserFn
+type TokenParserFn func(tokenString string, claims jwt.Claims, keyFunc jwt.Keyfunc) (*jwt.Token, error)
+
 type TokenServices struct {
-	CSPHost string
-	Client  pkg.HTTPClient
+	CSPHost     string
+	Client      pkg.HTTPClient
+	TokenParser TokenParserFn
 }
 
 type RedeemResponse struct {
@@ -57,7 +61,7 @@ func (csp *TokenServices) Redeem(refreshToken string) (*Claims, error) {
 	}
 
 	claims := &Claims{}
-	token, err := jwt.ParseWithClaims(body.AccessToken, claims, csp.GetPublicKey)
+	token, err := csp.TokenParser(body.AccessToken, claims, csp.GetPublicKey)
 	if err != nil {
 		return nil, fmt.Errorf("invalid token returned from CSP: %w", err)
 	}

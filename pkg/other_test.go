@@ -5,7 +5,6 @@ package pkg_test
 
 import (
 	"errors"
-	"io/ioutil"
 	"os"
 
 	. "github.com/onsi/ginkgo"
@@ -40,7 +39,7 @@ var _ = Describe("Other", func() {
 		var filePath string
 
 		BeforeEach(func() {
-			file, err := ioutil.TempFile("", "mkpcli-attachotherfile-test-file.tgz")
+			file, err := os.CreateTemp("", "mkpcli-attachotherfile-test-file.tgz")
 			Expect(err).ToNot(HaveOccurred())
 			filePath = file.Name()
 			uploader.UploadProductFileReturns("uploaded-file.tgz", "https://example.com/uploaded-file.tgz", err)

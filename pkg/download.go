@@ -6,7 +6,6 @@ package pkg
 import (
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"os"
 
@@ -45,7 +44,7 @@ func (m *Marketplace) Download(filename string, payload *DownloadRequestPayload)
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		body, err := ioutil.ReadAll(resp.Body)
+		body, err := io.ReadAll(resp.Body)
 		if err == nil {
 			return fmt.Errorf("failed to fetch download link: %s\n%s", resp.Status, string(body))
 		}

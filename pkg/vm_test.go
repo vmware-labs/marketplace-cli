@@ -5,7 +5,6 @@ package pkg_test
 
 import (
 	"errors"
-	"io/ioutil"
 	"os"
 
 	. "github.com/onsi/ginkgo"
@@ -40,7 +39,7 @@ var _ = Describe("VM", func() {
 		var vmFilePath string
 
 		BeforeEach(func() {
-			vmFile, err := ioutil.TempFile("", "mkpcli-uploadvm-test-vm.iso")
+			vmFile, err := os.CreateTemp("", "mkpcli-uploadvm-test-vm.iso")
 			Expect(err).ToNot(HaveOccurred())
 			vmFilePath = vmFile.Name()
 			uploader.UploadProductFileReturns("uploaded-file.iso", "https://example.com/uploaded-file.iso", err)
