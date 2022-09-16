@@ -4,7 +4,8 @@
 package internal
 
 import (
-	"fmt"
+	"encoding/json"
+	"strings"
 )
 
 const (
@@ -16,11 +17,13 @@ const (
 )
 
 type Sorting struct {
-	Order     int    `json:"order"`
+	Order     int    `json:"order,omitempty"`
 	Key       string `json:"key"`
 	Direction string `json:"direction"`
 }
 
 func (s *Sorting) QueryString() string {
-	return fmt.Sprintf("sortBy={%%22key%%22:%%22%s%%22,%%22direction%%22:%%22%s%%22}", s.Key, s.Direction)
+	value, _ := json.Marshal(s)
+	replacer := strings.NewReplacer(`"`, "%22")
+	return "sortBy=" + replacer.Replace(string(value))
 }
