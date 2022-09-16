@@ -70,7 +70,7 @@ var _ = Describe("Product", func() {
 		})
 
 		It("gets the list of products", func() {
-			products, err := marketplace.ListProducts(false, "")
+			products, err := marketplace.ListProducts(&pkg.ListProductFilter{})
 			Expect(err).ToNot(HaveOccurred())
 
 			By("sending the right request", func() {
@@ -87,7 +87,9 @@ var _ = Describe("Product", func() {
 
 		Context("with search term", func() {
 			It("sends the request with the search term", func() {
-				_, err := marketplace.ListProducts(false, "tanzu")
+				_, err := marketplace.ListProducts(&pkg.ListProductFilter{
+					Text: "tanzu",
+				})
 				Expect(err).ToNot(HaveOccurred())
 
 				By("including the search term", func() {
@@ -146,7 +148,7 @@ var _ = Describe("Product", func() {
 			})
 
 			It("returns all results", func() {
-				products, err := marketplace.ListProducts(false, "")
+				products, err := marketplace.ListProducts(&pkg.ListProductFilter{})
 				Expect(err).ToNot(HaveOccurred())
 
 				By("sending the correct requests", func() {
@@ -172,7 +174,7 @@ var _ = Describe("Product", func() {
 			})
 
 			It("prints the error", func() {
-				_, err := marketplace.ListProducts(false, "")
+				_, err := marketplace.ListProducts(&pkg.ListProductFilter{})
 				Expect(err).To(HaveOccurred())
 				Expect(err.Error()).To(Equal("sending the request for the list of products failed: request failed"))
 			})
@@ -188,7 +190,7 @@ var _ = Describe("Product", func() {
 			})
 
 			It("prints the error", func() {
-				_, err := marketplace.ListProducts(false, "")
+				_, err := marketplace.ListProducts(&pkg.ListProductFilter{})
 				Expect(err).To(HaveOccurred())
 				Expect(err.Error()).To(Equal("getting the list of products failed: (418) I'm a teapot: Teapots!"))
 			})
@@ -200,7 +202,7 @@ var _ = Describe("Product", func() {
 			})
 
 			It("prints the error", func() {
-				_, err := marketplace.ListProducts(false, "")
+				_, err := marketplace.ListProducts(&pkg.ListProductFilter{})
 				Expect(err).To(HaveOccurred())
 				Expect(err.Error()).To(Equal("failed to parse the list of products: invalid character 'T' looking for beginning of value"))
 			})

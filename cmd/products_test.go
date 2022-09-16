@@ -44,6 +44,8 @@ var _ = Describe("Products", func() {
 					models.SolutionTypeOthers),
 			}
 
+			cmd.ListProductSearchText = ""
+			cmd.ListProductsAllOrgs = false
 			marketplace.ListProductsReturns(products, nil)
 		})
 
@@ -53,14 +55,41 @@ var _ = Describe("Products", func() {
 
 			By("getting the list of products from the Marketplace", func() {
 				Expect(marketplace.ListProductsCallCount()).To(Equal(1))
+				filter := marketplace.ListProductsArgsForCall(0)
+				Expect(filter.AllOrgs).To(BeFalse())
+				Expect(filter.Text).To(Equal(""))
 			})
 
 			By("outputting the response", func() {
+				Expect(output.PrintHeaderCallCount()).To(Equal(1))
+				Expect(output.PrintHeaderArgsForCall(0)).To(Equal("All products from my-org"))
+
 				Expect(output.RenderProductsCallCount()).To(Equal(1))
 				products := output.RenderProductsArgsForCall(0)
 				Expect(products).To(HaveLen(2))
 				Expect(products[0].Slug).To(Equal("my-super-product"))
 				Expect(products[1].Slug).To(Equal("my-other-product"))
+			})
+		})
+
+		Context("Using all orgs and a search field", func() {
+			It("sends the appropriate filter", func() {
+				cmd.ListProductSearchText = "tanzu"
+				cmd.ListProductsAllOrgs = true
+				err := cmd.ListProductsCmd.RunE(cmd.ListProductsCmd, []string{})
+				Expect(err).ToNot(HaveOccurred())
+
+				By("using the right filter", func() {
+					Expect(marketplace.ListProductsCallCount()).To(Equal(1))
+					filter := marketplace.ListProductsArgsForCall(0)
+					Expect(filter.AllOrgs).To(BeTrue())
+					Expect(filter.Text).To(Equal("tanzu"))
+				})
+
+				By("outputting a specific header", func() {
+					Expect(output.PrintHeaderCallCount()).To(Equal(1))
+					Expect(output.PrintHeaderArgsForCall(0)).To(Equal("All products from all organizations filtered by \"tanzu\""))
+				})
 			})
 		})
 

@@ -33,6 +33,11 @@ func (e *VersionDoesNotExistError) Is(otherError error) bool {
 	return ok
 }
 
+type ListProductFilter struct {
+	Text    string
+	AllOrgs bool
+}
+
 type ListProductResponse struct {
 	Response *ListProductResponsePayload `json:"response"`
 }
@@ -54,12 +59,12 @@ type ListProductResponsePayload struct {
 	Params           *ListProductResponseParams `json:"params"`
 }
 
-func (m *Marketplace) ListProducts(allOrgs bool, searchTerm string) ([]*models.Product, error) {
+func (m *Marketplace) ListProducts(filter *ListProductFilter) ([]*models.Product, error) {
 	values := url.Values{
-		"managed": []string{strconv.FormatBool(!allOrgs)},
+		"managed": []string{strconv.FormatBool(!filter.AllOrgs)},
 	}
-	if searchTerm != "" {
-		values.Set("search", searchTerm)
+	if filter.Text != "" {
+		values.Set("search", filter.Text)
 	}
 
 	var products []*models.Product

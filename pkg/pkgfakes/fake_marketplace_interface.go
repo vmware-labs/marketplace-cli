@@ -226,11 +226,10 @@ type FakeMarketplaceInterface struct {
 		result1 internal.Uploader
 		result2 error
 	}
-	ListProductsStub        func(bool, string) ([]*models.Product, error)
+	ListProductsStub        func(*pkg.ListProductFilter) ([]*models.Product, error)
 	listProductsMutex       sync.RWMutex
 	listProductsArgsForCall []struct {
-		arg1 bool
-		arg2 string
+		arg1 *pkg.ListProductFilter
 	}
 	listProductsReturns struct {
 		result1 []*models.Product
@@ -1252,19 +1251,18 @@ func (fake *FakeMarketplaceInterface) GetUploaderReturnsOnCall(i int, result1 in
 	}{result1, result2}
 }
 
-func (fake *FakeMarketplaceInterface) ListProducts(arg1 bool, arg2 string) ([]*models.Product, error) {
+func (fake *FakeMarketplaceInterface) ListProducts(arg1 *pkg.ListProductFilter) ([]*models.Product, error) {
 	fake.listProductsMutex.Lock()
 	ret, specificReturn := fake.listProductsReturnsOnCall[len(fake.listProductsArgsForCall)]
 	fake.listProductsArgsForCall = append(fake.listProductsArgsForCall, struct {
-		arg1 bool
-		arg2 string
-	}{arg1, arg2})
+		arg1 *pkg.ListProductFilter
+	}{arg1})
 	stub := fake.ListProductsStub
 	fakeReturns := fake.listProductsReturns
-	fake.recordInvocation("ListProducts", []interface{}{arg1, arg2})
+	fake.recordInvocation("ListProducts", []interface{}{arg1})
 	fake.listProductsMutex.Unlock()
 	if stub != nil {
-		return stub(arg1, arg2)
+		return stub(arg1)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
@@ -1278,17 +1276,17 @@ func (fake *FakeMarketplaceInterface) ListProductsCallCount() int {
 	return len(fake.listProductsArgsForCall)
 }
 
-func (fake *FakeMarketplaceInterface) ListProductsCalls(stub func(bool, string) ([]*models.Product, error)) {
+func (fake *FakeMarketplaceInterface) ListProductsCalls(stub func(*pkg.ListProductFilter) ([]*models.Product, error)) {
 	fake.listProductsMutex.Lock()
 	defer fake.listProductsMutex.Unlock()
 	fake.ListProductsStub = stub
 }
 
-func (fake *FakeMarketplaceInterface) ListProductsArgsForCall(i int) (bool, string) {
+func (fake *FakeMarketplaceInterface) ListProductsArgsForCall(i int) *pkg.ListProductFilter {
 	fake.listProductsMutex.RLock()
 	defer fake.listProductsMutex.RUnlock()
 	argsForCall := fake.listProductsArgsForCall[i]
-	return argsForCall.arg1, argsForCall.arg2
+	return argsForCall.arg1
 }
 
 func (fake *FakeMarketplaceInterface) ListProductsReturns(result1 []*models.Product, result2 error) {
