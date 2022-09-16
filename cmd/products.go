@@ -13,11 +13,11 @@ import (
 )
 
 var (
-	allOrgs        = false
-	searchTerm     string
-	ProductSlug    string
-	ProductVersion string
-	SetOSLFile     string
+	ProductSlug           string
+	ProductVersion        string
+	ListProductsAllOrgs   = false
+	ListProductSearchText string
+	SetOSLFile            string
 )
 
 func init() {
@@ -28,8 +28,8 @@ func init() {
 	ProductCmd.AddCommand(ListProductVersionsCmd)
 	ProductCmd.AddCommand(SetCmd)
 
-	ListProductsCmd.Flags().StringVar(&searchTerm, "search-text", "", "Filter product list by text")
-	ListProductsCmd.Flags().BoolVarP(&allOrgs, "all-orgs", "a", false, "Show published products from all organizations")
+	ListProductsCmd.Flags().StringVar(&ListProductSearchText, "search-text", "", "Filter product list by text")
+	ListProductsCmd.Flags().BoolVarP(&ListProductsAllOrgs, "all-orgs", "a", false, "Show published products from all organizations")
 
 	GetProductCmd.Flags().StringVarP(&ProductSlug, "product", "p", "", "Product slug (required)")
 	_ = GetProductCmd.MarkFlagRequired("product")
@@ -68,19 +68,23 @@ var ListProductsCmd = &cobra.Command{
 	PreRunE: GetRefreshToken,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		cmd.SilenceUsage = true
-		products, err := Marketplace.ListProducts(allOrgs, searchTerm)
+		filter := &pkg.ListProductFilter{
+			Text:    ListProductSearchText,
+			AllOrgs: ListProductsAllOrgs,
+		}
+		products, err := Marketplace.ListProducts(filter)
 		if err != nil {
 			return err
 		}
 
 		header := "All products"
-		if allOrgs {
+		if filter.AllOrgs {
 			header += " from all organizations"
 		} else if len(products) > 0 {
 			header += fmt.Sprintf(" from %s", products[0].PublisherDetails.OrgDisplayName)
 		}
-		if searchTerm != "" {
-			header += fmt.Sprintf(" filtered by \"%s\"", searchTerm)
+		if filter.Text != "" {
+			header += fmt.Sprintf(" filtered by \"%s\"", filter.Text)
 		}
 
 		Output.PrintHeader(header)

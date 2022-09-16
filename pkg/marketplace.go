@@ -21,7 +21,7 @@ type MarketplaceInterface interface {
 	GetAPIHost() string
 	GetUIHost() string
 
-	ListProducts(allOrgs bool, searchTerm string) ([]*models.Product, error)
+	ListProducts(filter *ListProductFilter) ([]*models.Product, error)
 	GetProduct(slug string) (*models.Product, error)
 	GetProductWithVersion(slug, version string) (*models.Product, *models.Version, error)
 	PutProduct(product *models.Product, versionUpdate bool) (*models.Product, error)
