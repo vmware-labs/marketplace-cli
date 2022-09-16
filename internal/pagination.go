@@ -4,16 +4,19 @@
 package internal
 
 import (
-	"fmt"
+	"encoding/json"
+	"strings"
 )
 
 type Pagination struct {
-	Enable   bool  `json:"enable"` // TODO: I see this when product list request returns. Maybe a bug?
-	Enabled  bool  `json:"enabled"`
+	Enable   bool  `json:"enable,omitempty"` // TODO: I see this when product list request returns. Maybe a bug?
+	Enabled  bool  `json:"enabled,omitempty"`
 	Page     int32 `json:"page"`
-	PageSize int32 `json:"pagesize"`
+	PageSize int32 `json:"pageSize"`
 }
 
 func (p *Pagination) QueryString() string {
-	return fmt.Sprintf("pagination={%%22page%%22:%d,%%22pageSize%%22:%d}", p.Page, p.PageSize)
+	value, _ := json.Marshal(p)
+	replacer := strings.NewReplacer(`"`, "%22")
+	return "pagination=" + replacer.Replace(string(value))
 }

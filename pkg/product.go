@@ -33,11 +33,6 @@ func (e *VersionDoesNotExistError) Is(otherError error) bool {
 	return ok
 }
 
-type ListProductFilter struct {
-	Text    string
-	AllOrgs bool
-}
-
 type ListProductResponse struct {
 	Response *ListProductResponsePayload `json:"response"`
 }
@@ -83,7 +78,7 @@ func (m *Marketplace) ListProducts(filter *ListProductFilter) ([]*models.Product
 	var progressBar *progressbar.ProgressBar
 	for ; firstTime || len(products) < totalProducts; pagination.Page++ {
 		requestURL := MakeURL(m.GetHost(), "/api/v1/products", values)
-		ApplyParameters(requestURL, pagination, sorting)
+		ApplyParameters(requestURL, pagination, sorting, filter)
 		resp, err := m.Client.Get(requestURL)
 		if err != nil {
 			return nil, fmt.Errorf("sending the request for the list of products failed: %w", err)
@@ -107,7 +102,7 @@ func (m *Marketplace) ListProducts(filter *ListProductFilter) ([]*models.Product
 		// On empty lists, we cannot necessarily trust response.Response.Params.ProductCount
 		// See: https://github.com/vmware-labs/marketplace-cli/issues/62
 		if len(response.Response.Products) == 0 {
-			return products, nil
+			break
 		}
 
 		products = append(products, response.Response.Products...)

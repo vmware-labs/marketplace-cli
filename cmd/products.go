@@ -16,6 +16,7 @@ var (
 	ProductSlug           string
 	ProductVersion        string
 	ListProductsAllOrgs   = false
+	ListProductsOrgId     string
 	ListProductSearchText string
 	SetOSLFile            string
 )
@@ -30,6 +31,7 @@ func init() {
 
 	ListProductsCmd.Flags().StringVar(&ListProductSearchText, "search-text", "", "Filter product list by text")
 	ListProductsCmd.Flags().BoolVarP(&ListProductsAllOrgs, "all-orgs", "a", false, "Show published products from all organizations")
+	ListProductsCmd.Flags().StringVar(&ListProductsOrgId, "org-id", "", "Filter product list by organization id")
 
 	GetProductCmd.Flags().StringVarP(&ProductSlug, "product", "p", "", "Product slug (required)")
 	_ = GetProductCmd.MarkFlagRequired("product")
@@ -72,6 +74,10 @@ var ListProductsCmd = &cobra.Command{
 			Text:    ListProductSearchText,
 			AllOrgs: ListProductsAllOrgs,
 		}
+		if ListProductsOrgId != "" {
+			filter.OrgIds = []string{ListProductsOrgId}
+		}
+
 		products, err := Marketplace.ListProducts(filter)
 		if err != nil {
 			return err

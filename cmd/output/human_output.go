@@ -59,6 +59,7 @@ func (o *HumanOutput) NewTable(headers ...string) *tablewriter.Table {
 func (o *HumanOutput) RenderProduct(product *models.Product, version *models.Version) error {
 	o.Printf("Name:      %s\n", product.DisplayName)
 	o.Printf("Publisher: %s\n", product.PublisherDetails.OrgDisplayName)
+	o.Printf("Publisher Org ID: %s\n", product.PublisherDetails.OrgId)
 	o.Println()
 	o.Println(product.Description.Summary)
 	o.Printf("https://%s/services/details/%s?slug=true\n", o.marketplaceHost, product.Slug)
