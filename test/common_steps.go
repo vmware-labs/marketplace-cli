@@ -54,11 +54,14 @@ func unsetEnvVars(envVars []string, varsToUnset []string) []string {
 }
 
 func DefineCommonSteps(define Definitions) {
-	EnvVars = []string{}
 	var (
 		unsetVars      []string
 		downloadedFile string
 	)
+
+	BeforeEach(func() {
+		EnvVars = []string{}
+	})
 
 	define.Given(`^targeting the (.*) environment$`, func(environment string) {
 		EnvVars = append(EnvVars, "MARKETPLACE_ENV="+environment)

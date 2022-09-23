@@ -5,6 +5,7 @@ package pkg
 
 import (
 	"bytes"
+	"crypto/tls"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -13,6 +14,8 @@ import (
 	"net/url"
 	"strings"
 
+	"github.com/hashicorp/go-cleanhttp"
+	"github.com/hashicorp/go-retryablehttp"
 	"github.com/spf13/viper"
 )
 
@@ -40,13 +43,22 @@ type DebuggingClient struct {
 }
 
 func NewClient(output io.Writer, printRequests, printRequestPayloads, printResponsePayloads bool) *DebuggingClient {
+	retryClient := retryablehttp.NewClient()
+	retryClient.RetryMax = 5
+
+	if viper.GetBool("skip_ssl_validation") {
+		transport := cleanhttp.DefaultPooledTransport()
+		transport.TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
+		retryClient.HTTPClient.Transport = transport
+	}
+
 	return &DebuggingClient{
 		Logger:               log.New(output, "", log.LstdFlags),
 		PrintRequests:        printRequests,
 		PrintRequestPayloads: printRequestPayloads,
 		PrintResposePayloads: printResponsePayloads,
 		requestID:            0,
-		PerformRequest:       http.DefaultClient.Do,
+		PerformRequest:       retryClient.StandardClient().Do,
 	}
 }
 

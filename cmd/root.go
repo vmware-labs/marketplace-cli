@@ -126,6 +126,12 @@ func init() {
 	_ = viper.BindEnv("output_format", "MKPCLI_OUTPUT")
 	rootCmd.PersistentFlags().StringP("output", "o", output.FormatHuman, fmt.Sprintf("Output format. One of %s. [$MKPCLI_OUTPUT]", strings.Join(output.SupportedOutputs, "|")))
 	_ = viper.BindPFlag("output_format", rootCmd.PersistentFlags().Lookup("output"))
+
+	viper.SetDefault("skip_ssl_validation", "false")
+	_ = viper.BindEnv("skip_ssl_validation", "MKPCLI_SKIP_SSL_VALIDATION")
+	rootCmd.PersistentFlags().Bool("skip-ssl-validation", false, "Skip SSL certificate validation during HTTP requests")
+	_ = rootCmd.PersistentFlags().MarkHidden("skip-ssl-validation")
+	_ = viper.BindPFlag("skip_ssl_validation", rootCmd.PersistentFlags().Lookup("skip-ssl-validation"))
 }
 
 func Execute() {
