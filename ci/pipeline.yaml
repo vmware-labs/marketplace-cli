@@ -376,7 +376,7 @@ jobs:
         params:
           MARKETPLACE_ENV: staging
           PRODUCT_SLUG: test-container-product-41
-          TEST_IMAGE_REPO: bitnami/nginx
+          TEST_IMAGE_REPO: docker.io/bitnami/nginx
           TEST_IMAGE_TAG: 1.21.1
       - task: add-metafile
         image: mkpcli

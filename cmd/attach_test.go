@@ -435,7 +435,7 @@ var _ = Describe("AttachCmd", func() {
 		It("attaches the container image", func() {
 			cmd.AttachProductSlug = "my-super-product"
 			cmd.AttachProductVersion = "1.1.1"
-			cmd.AttachContainerImage = "bitnami/nginx"
+			cmd.AttachContainerImage = "docker.io/bitnami/nginx"
 			cmd.AttachContainerImageTag = "1.21.6"
 			cmd.AttachContainerImageTagType = "FIXED"
 			cmd.AttachInstructions = "docker run it"
@@ -452,7 +452,7 @@ var _ = Describe("AttachCmd", func() {
 			By("attaching the container image", func() {
 				Expect(marketplace.AttachPublicContainerImageCallCount()).To(Equal(1))
 				image, tag, tagType, instructions, product, version := marketplace.AttachPublicContainerImageArgsForCall(0)
-				Expect(image).To(Equal("bitnami/nginx"))
+				Expect(image).To(Equal("docker.io/bitnami/nginx"))
 				Expect(tag).To(Equal("1.21.6"))
 				Expect(tagType).To(Equal("FIXED"))
 				Expect(instructions).To(Equal("docker run it"))
@@ -486,7 +486,7 @@ var _ = Describe("AttachCmd", func() {
 			It("attaches the PCA file", func() {
 				cmd.AttachProductSlug = "my-super-product"
 				cmd.AttachProductVersion = "1.1.1"
-				cmd.AttachContainerImage = "bitnami/nginx"
+				cmd.AttachContainerImage = "docker.io/bitnami/nginx"
 				cmd.AttachContainerImageTag = "1.21.6"
 				cmd.AttachContainerImageTagType = "FIXED"
 				cmd.AttachInstructions = "docker run it"
@@ -515,7 +515,7 @@ var _ = Describe("AttachCmd", func() {
 				It("returns an error", func() {
 					cmd.AttachProductSlug = "my-super-product"
 					cmd.AttachProductVersion = "1.1.1"
-					cmd.AttachContainerImage = "bitnami/nginx"
+					cmd.AttachContainerImage = "docker.io/bitnami/nginx"
 					cmd.AttachContainerImageTag = "1.21.6"
 					cmd.AttachContainerImageTagType = "FIXED"
 					cmd.AttachInstructions = "docker run it"
@@ -533,7 +533,7 @@ var _ = Describe("AttachCmd", func() {
 				It("returns an error", func() {
 					cmd.AttachProductSlug = "my-super-product"
 					cmd.AttachProductVersion = "1.1.1"
-					cmd.AttachContainerImage = "bitnami/nginx"
+					cmd.AttachContainerImage = "docker.io/bitnami/nginx"
 					cmd.AttachContainerImageTag = "1.21.6"
 					cmd.AttachContainerImageTagType = "FIXED"
 					cmd.AttachInstructions = "docker run it"
@@ -549,7 +549,7 @@ var _ = Describe("AttachCmd", func() {
 			It("uploads and attaches the container image", func() {
 				cmd.AttachProductSlug = "my-super-product"
 				cmd.AttachProductVersion = "1.1.1"
-				cmd.AttachContainerImage = "bitnami/nginx"
+				cmd.AttachContainerImage = "docker.io/bitnami/nginx"
 				cmd.AttachContainerImageFile = "/path/tp/image.tar"
 				cmd.AttachContainerImageTag = "1.21.6"
 				cmd.AttachContainerImageTagType = "FIXED"
@@ -561,7 +561,7 @@ var _ = Describe("AttachCmd", func() {
 					Expect(marketplace.AttachLocalContainerImageCallCount()).To(Equal(1))
 					imageFile, image, tag, tagType, instructions, product, version := marketplace.AttachLocalContainerImageArgsForCall(0)
 					Expect(imageFile).To(Equal("/path/tp/image.tar"))
-					Expect(image).To(Equal("bitnami/nginx"))
+					Expect(image).To(Equal("docker.io/bitnami/nginx"))
 					Expect(tag).To(Equal("1.21.6"))
 					Expect(tagType).To(Equal("FIXED"))
 					Expect(instructions).To(Equal("docker run it"))
@@ -579,7 +579,7 @@ var _ = Describe("AttachCmd", func() {
 			It("returns an error", func() {
 				cmd.AttachProductSlug = "my-super-product"
 				cmd.AttachProductVersion = "1.1.1"
-				cmd.AttachContainerImage = "bitnami/nginx"
+				cmd.AttachContainerImage = "docker.io/bitnami/nginx"
 				cmd.AttachContainerImageTag = "1.21.6"
 				cmd.AttachContainerImageTagType = "FIXED"
 				cmd.AttachInstructions = "docker run it"
@@ -599,7 +599,7 @@ var _ = Describe("AttachCmd", func() {
 			It("returns an error", func() {
 				cmd.AttachProductSlug = "my-super-product"
 				cmd.AttachProductVersion = "9.9.9"
-				cmd.AttachContainerImage = "bitnami/nginx"
+				cmd.AttachContainerImage = "docker.io/bitnami/nginx"
 				cmd.AttachContainerImageTag = "1.21.6"
 				cmd.AttachContainerImageTagType = "FIXED"
 				cmd.AttachInstructions = "docker run it"
@@ -612,7 +612,7 @@ var _ = Describe("AttachCmd", func() {
 				It("attaches the asset, but with a new version", func() {
 					cmd.AttachProductSlug = "my-super-product"
 					cmd.AttachProductVersion = "9.9.9"
-					cmd.AttachContainerImage = "bitnami/nginx"
+					cmd.AttachContainerImage = "docker.io/bitnami/nginx"
 					cmd.AttachContainerImageTag = "1.21.6"
 					cmd.AttachContainerImageTagType = "FIXED"
 					cmd.AttachInstructions = "docker run it"
@@ -636,7 +636,7 @@ var _ = Describe("AttachCmd", func() {
 			It("returns an error", func() {
 				cmd.AttachProductSlug = "my-super-product"
 				cmd.AttachProductVersion = "1.1.1"
-				cmd.AttachContainerImage = "bitnami/nginx"
+				cmd.AttachContainerImage = "docker.io/bitnami/nginx"
 				cmd.AttachContainerImageTag = "1.21.6"
 				cmd.AttachContainerImageTagType = "FIXED"
 				cmd.AttachInstructions = "docker run it"
@@ -653,7 +653,7 @@ var _ = Describe("AttachCmd", func() {
 			It("returns an error", func() {
 				cmd.AttachProductSlug = "my-super-product"
 				cmd.AttachProductVersion = "1.1.1"
-				cmd.AttachContainerImage = "bitnami/nginx"
+				cmd.AttachContainerImage = "docker.io/bitnami/nginx"
 				cmd.AttachContainerImageTag = "1.21.6"
 				cmd.AttachContainerImageTagType = "FIXED"
 				cmd.AttachInstructions = "docker run it"
@@ -670,7 +670,7 @@ var _ = Describe("AttachCmd", func() {
 			It("Returns an error", func() {
 				cmd.AttachProductSlug = "my-super-product"
 				cmd.AttachProductVersion = "1.1.1"
-				cmd.AttachContainerImage = "bitnami/nginx"
+				cmd.AttachContainerImage = "docker.io/bitnami/nginx"
 				cmd.AttachContainerImageTag = "1.21.6"
 				cmd.AttachContainerImageTagType = "FIXED"
 				cmd.AttachInstructions = "docker run it"
