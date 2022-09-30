@@ -35,6 +35,7 @@ type DockerURLDetails struct {
 	ID                    string            `json:"id,omitempty"`
 	DeploymentInstruction string            `json:"deploymentinstruction"`
 	Name                  string            `json:"name"`
+	IsMultiArch           bool              `json:"ismultiarch"`
 }
 
 const (
