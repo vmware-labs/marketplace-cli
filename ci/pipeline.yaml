@@ -362,7 +362,7 @@ jobs:
         image: mkpcli
         params:
           MARKETPLACE_ENV: staging
-          PRODUCT_SLUG: test-container-product-41
+          PRODUCT_SLUG: test-container-product-5-1
         file: source/ci/tasks/get-current-product.yaml
         output_mapping: {output: previous}
       - put: test-container-product-version
@@ -375,7 +375,7 @@ jobs:
         input_mapping: {version: test-container-product-version}
         params:
           MARKETPLACE_ENV: staging
-          PRODUCT_SLUG: test-container-product-41
+          PRODUCT_SLUG: test-container-product-5-1
           TEST_IMAGE_REPO: docker.io/bitnami/nginx
           TEST_IMAGE_TAG: 1.21.1
       - task: add-metafile
@@ -384,7 +384,7 @@ jobs:
         input_mapping: {version: test-container-product-version}
         params:
           MARKETPLACE_ENV: staging
-          PRODUCT_SLUG: test-container-product-41
+          PRODUCT_SLUG: test-container-product-5-1
           METAFILE_TYPE: cli
       - task: add-container-image-to-existing-version
         image: mkpcli
@@ -392,7 +392,7 @@ jobs:
         input_mapping: { version: test-container-product-version }
         params:
           MARKETPLACE_ENV: staging
-          PRODUCT_SLUG: test-container-product-41
+          PRODUCT_SLUG: test-container-product-5-1
           TEST_IMAGE_REPO: harbor-repo.vmware.com/dockerhub-proxy-cache/library/ubuntu
           TEST_IMAGE_TAG: 20.04
           TEST_IMAGE_FILE: test-container-image/image.tar
@@ -402,14 +402,14 @@ jobs:
         input_mapping: {version: test-container-product-version}
         params:
           MARKETPLACE_ENV: staging
-          PRODUCT_SLUG: test-container-product-41
+          PRODUCT_SLUG: test-container-product-5-1
       - task: download-attached-container-image
         image: mkpcli
         file: source/ci/tasks/download-asset.yaml
         params:
           MARKETPLACE_ENV: staging
           ASSET_TYPE: image
-          PRODUCT_SLUG: test-container-product-41
+          PRODUCT_SLUG: test-container-product-5-1
     on_error:
       put: slack-dev
       inputs: detect
