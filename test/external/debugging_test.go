@@ -19,7 +19,7 @@ var _ = Describe("Debugging", func() {
 
 	Scenario("Debugging enabled", func() {
 		steps.Given("targeting the production environment")
-		steps.When("running mkpcli --debug product get --product nginx --product-version 1.22.0_150_r04")
+		steps.When("running mkpcli --debug product get --product " + Nginx + " --product-version " + NginxVersion)
 		steps.Then("the command exits without error")
 		steps.And("the request is printed")
 	})
@@ -27,14 +27,14 @@ var _ = Describe("Debugging", func() {
 	Scenario("Debugging enabled with environment variable", func() {
 		steps.Given("targeting the production environment")
 		steps.And("the environment variable MKPCLI_DEBUG is set to true")
-		steps.When("running mkpcli product get --product nginx --product-version 1.22.0_150_r04")
+		steps.When("running mkpcli product get --product " + Nginx + " --product-version " + NginxVersion)
 		steps.Then("the command exits without error")
 		steps.And("the request is printed")
 	})
 
 	Scenario("Debugging enabled with request payloads", func() {
 		steps.Given("targeting the production environment")
-		steps.When("running mkpcli --debug --debug-request-payloads download -p nginx -v 1.22.0_150_r04 --filename chart.tgz --accept-eula")
+		steps.When("running mkpcli --debug --debug-request-payloads download -p " + Nginx + " -v " + NginxVersion + " --filename chart.tgz --accept-eula")
 		steps.Then("the command exits without error")
 		steps.And("chart.tgz is downloaded")
 		steps.And("the requests are printed with request payloads")
@@ -44,7 +44,7 @@ var _ = Describe("Debugging", func() {
 		steps.Given("targeting the production environment")
 		steps.And("the environment variable MKPCLI_DEBUG is set to true")
 		steps.And("the environment variable MKPCLI_DEBUG_REQUEST_PAYLOADS is set to true")
-		steps.When("running mkpcli download -p nginx -v 1.22.0_150_r04 --filename chart.tgz --accept-eula")
+		steps.When("running mkpcli download -p " + Nginx + " -v " + NginxVersion + " --filename chart.tgz --accept-eula")
 		steps.Then("the command exits without error")
 		steps.And("chart.tgz is downloaded")
 		steps.And("the requests are printed with request payloads")

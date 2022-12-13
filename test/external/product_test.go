@@ -16,21 +16,21 @@ var _ = Describe("Product", func() {
 
 	Scenario("Listing products", func() {
 		steps.Given("targeting the production environment")
-		steps.When("running mkpcli product list --all-orgs --search-text nginx")
+		steps.When("running mkpcli product list --all-orgs --search-text " + Nginx)
 		steps.Then("the command exits without error")
 		steps.And("the list of products is printed")
 	})
 
 	Scenario("Listing product versions", func() {
 		steps.Given("targeting the production environment")
-		steps.When("running mkpcli product list-versions --product nginx")
+		steps.When("running mkpcli product list-versions --product " + Nginx)
 		steps.Then("the command exits without error")
 		steps.And("the list of product versions is printed")
 	})
 
 	Scenario("Getting product details", func() {
 		steps.Given("targeting the production environment")
-		steps.When("running mkpcli product get --product nginx")
+		steps.When("running mkpcli product get --product " + Nginx)
 		steps.Then("the command exits without error")
 		steps.And("the product details are printed")
 	})
