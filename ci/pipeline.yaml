@@ -8,7 +8,7 @@ resource_types:
     type: registry-image
     source:
       repository: harbor-repo.vmware.com/dockerhub-proxy-cache/concourse/github-release-resource
-      tag: 1.6.4
+      tag: 1.8.0
       username: ((harbor.username))
       password: ((harbor.token))
 
@@ -32,7 +32,7 @@ resource_types:
     type: registry-image
     source:
       repository: harbor-repo.vmware.com/dockerhub-proxy-cache/arbourd/concourse-slack-alert-resource
-      tag: v0.15.0
+      tag: v0.16.1
       username: ((harbor.username))
       password: ((harbor.token))
 
@@ -89,14 +89,29 @@ resources:
       repository: marketplace-cli
       access_token: ((github.access_token))
 
+  - name: scratch
+    type: registry-image
+    icon: docker
+    source:
+      repository: harbor-repo.vmware.com/dockerhub-proxy-cache/library/scratch
+      username: ((harbor.username))
+      password: ((harbor.token))
+
   - name: test-container-image
     type: registry-image
     icon: docker
     source:
-      repository: harbor-repo.vmware.com/dockerhub-proxy-cache/library/ubuntu
-      tag: 20.04
-      username: ((harbor.username))
-      password: ((harbor.token))
+      repository: projects.registry.vmware.com/tanzu_isv_engineering/test-container-image
+      username: ((harbor-public.username))
+      password: ((harbor-public.token))
+
+#  - name: test-container-image2
+#    type: registry-image
+#    icon: docker
+#    source:
+#      repository: projects.registry.vmware.com/tanzu_isv_engineering/test-container-image2
+#      username: ((harbor-public.username))
+#      password: ((harbor-public.token))
 
   - name: test-container-product-version
     type: semver
@@ -341,34 +356,61 @@ jobs:
         params:
           bump: minor
 
+  - name: update-test-container-images
+    max_in_flight: 1
+    plan:
+      - in_parallel:
+        - get: mkpcli
+          trigger: true
+          passed: [ build ]
+        - get: mkpcli_source
+          resource: source
+          passed: [ build ]
+        - get: version
+          passed: [ build ]
+        - get: scratch
+          params:
+            format: oci
+        - put: test-container-product-version
+          inputs: detect
+          params: { bump: patch }
+      - in_parallel:
+        - put: test-container-image
+          inputs: detect
+          params:
+            image: scratch/image.tar
+            additional_tags: test-container-product-version/version
+#        - put: test-container-image2
+#          inputs: detect
+#          params:
+#            image: scratch/image.tar
+#            additional_tags: test-container-product-version/version
+
   - name: test-publish-container-product
     public: true
     max_in_flight: 1
     plan:
       - in_parallel:
           - get: test-container-product-version
-            params: { bump: patch }
+            passed: [update-test-container-images]
           - get: mkpcli
             trigger: true
-            passed: [build]
+            passed: [update-test-container-images]
           - get: source
-            passed: [build]
+            passed: [update-test-container-images]
           - get: version
-            passed: [build]
+            passed: [update-test-container-images]
           - get: test-container-image
-            params:
-              format: oci
-      - task: get-current-product
-        image: mkpcli
-        params:
-          MARKETPLACE_ENV: staging
-          PRODUCT_SLUG: test-container-product-5-1
-        file: source/ci/tasks/get-current-product.yaml
-        output_mapping: {output: previous}
-      - put: test-container-product-version
-        inputs: detect
-        params:
-          file: test-container-product-version/version
+            passed: [update-test-container-images]
+#          - get: test-container-image2
+#            passed: [update-test-container-images]
+#      - task: get-current-product
+#        image: mkpcli
+#        params:
+#          MARKETPLACE_ENV: staging
+#          PRODUCT_SLUG: test-container-product-5-1
+#        file: source/ci/tasks/get-current-product.yaml
+#        output_mapping: {output: previous}
       - task: add-container-image-to-marketplace
         image: mkpcli
         file: source/ci/tasks/test-container-image-product.yaml
@@ -376,8 +418,8 @@ jobs:
         params:
           MARKETPLACE_ENV: staging
           PRODUCT_SLUG: test-container-product-5-1
-          TEST_IMAGE_REPO: docker.io/bitnami/nginx
-          TEST_IMAGE_TAG: 1.21.1
+          TEST_IMAGE_REPO: projects.registry.vmware.com/tanzu_isv_engineering/test-container-image
+          TEST_IMAGE_TAG_FILE: version/version
       - task: add-metafile
         image: mkpcli
         file: source/ci/tasks/attach-metafile.yaml
@@ -386,16 +428,16 @@ jobs:
           MARKETPLACE_ENV: staging
           PRODUCT_SLUG: test-container-product-5-1
           METAFILE_TYPE: cli
-      - task: add-container-image-to-existing-version
-        image: mkpcli
-        file: source/ci/tasks/test-container-image-product.yaml
-        input_mapping: { version: test-container-product-version }
-        params:
-          MARKETPLACE_ENV: staging
-          PRODUCT_SLUG: test-container-product-5-1
-          TEST_IMAGE_REPO: harbor-repo.vmware.com/dockerhub-proxy-cache/library/ubuntu
-          TEST_IMAGE_TAG: 20.04
-          TEST_IMAGE_FILE: test-container-image/image.tar
+#      - task: add-container-image-to-existing-version
+#        image: mkpcli
+#        file: source/ci/tasks/test-container-image-product.yaml
+#        input_mapping: { version: test-container-product-version }
+#        params:
+#          MARKETPLACE_ENV: staging
+#          PRODUCT_SLUG: test-container-product-5-1
+#          TEST_IMAGE_REPO: harbor-repo.vmware.com/dockerhub-proxy-cache/library/ubuntu
+#          TEST_IMAGE_TAG: 20.04
+#          TEST_IMAGE_FILE: test-container-image/image.tar
       - task: set-osl
         image: mkpcli
         file: source/ci/tasks/set-osl-file.yaml

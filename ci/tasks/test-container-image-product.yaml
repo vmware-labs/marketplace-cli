@@ -10,6 +10,7 @@ params:
   PRODUCT_SLUG:
   TEST_IMAGE_REPO:
   TEST_IMAGE_TAG:
+  TEST_IMAGE_TAG_FILE:
   TEST_IMAGE_FILE:
   MKPCLI_DEBUG: true
   MKPCLI_DEBUG_REQUEST_PAYLOADS: true
@@ -25,6 +26,15 @@ run:
     - |
       set -ex
       VERSION=$(cat version/version)
+      
+      if [ -z "${TEST_IMAGE_TAG}" ]; then
+        if [ ! -z "${TEST_IMAGE_TAG_FILE}" ]; then
+          TEST_IMAGE_TAG=$(cat "${TEST_IMAGE_TAG_FILE}")
+        else
+          echo "TEST_IMAGE_TAG or TEST_IMAGE_TAG_FILE must be defined"
+          exit 1
+        fi
+      fi
 
       if [ -z "${TEST_IMAGE_FILE}" ]; then
         # Attach a public container image
