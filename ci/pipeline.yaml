@@ -361,18 +361,27 @@ jobs:
     max_in_flight: 1
     plan:
       - in_parallel:
-          - get: test-container-product-version
-            params: { bump: patch }
-          - get: mkpcli
-            trigger: true
-            passed: [build]
-          - get: source
-            passed: [build]
-          - get: version
-            passed: [build]
-          - get: test-image-seed
-            params:
-              format: oci
+        - get: test-container-product-version
+          params: { bump: patch }
+        - get: mkpcli
+          trigger: true
+          passed: [build]
+        - get: source
+          passed: [build]
+        - get: version
+          passed: [build]
+        - get: test-image-seed
+          params:
+            format: oci
+      - in_parallel:
+        - put: test-container-image
+          params:
+            image: test-image-seed/image.tar
+            additional_tags: test-container-product-version/version
+        - put: test-container-image2
+          params:
+            image: test-image-seed/image.tar
+            additional_tags: test-container-product-version/version
       - task: get-current-product
         image: mkpcli
         params:
@@ -384,10 +393,6 @@ jobs:
         inputs: detect
         params:
           file: test-container-product-version/version
-      - put: test-container-image2
-        params:
-          image: test-image-seed/image.tar
-          additional_tags: previous/version
       - task: add-container-image-to-marketplace
         image: mkpcli
         file: source/ci/tasks/test-container-image-product.yaml
@@ -396,7 +401,7 @@ jobs:
           MARKETPLACE_ENV: staging
           PRODUCT_SLUG: test-container-product-6-1
           TEST_IMAGE_REPO: projects.registry.vmware.com/tanzu_isv_engineering/test-container-image2
-          TEST_IMAGE_TAG_FILE: previous/version
+          TEST_IMAGE_TAG_FILE: version/version
       - task: add-metafile
         image: mkpcli
         file: source/ci/tasks/attach-metafile.yaml
@@ -405,10 +410,6 @@ jobs:
           MARKETPLACE_ENV: staging
           PRODUCT_SLUG: test-container-product-6-1
           METAFILE_TYPE: cli
-      - put: test-container-image
-        params:
-          image: test-image-seed/image.tar
-          additional_tags: test-container-product-version/version
       - task: add-container-image-to-existing-version
         image: mkpcli
         file: source/ci/tasks/test-container-image-product.yaml
@@ -420,7 +421,7 @@ jobs:
           PRODUCT_SLUG: test-container-product-6-1
           TEST_IMAGE_REPO: projects.registry.vmware.com/tanzu_isv_engineering/test-container-image
           TEST_IMAGE_TAG_FILE: version/version
-          TEST_IMAGE_FILE: test-image-seed/image.tar
+          TEST_IMAGE_FILE: image/image.tar
       - task: set-osl
         image: mkpcli
         file: source/ci/tasks/set-osl-file.yaml
