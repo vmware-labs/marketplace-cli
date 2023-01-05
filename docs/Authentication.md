@@ -22,7 +22,7 @@ To generate a new API Token:
 
 You have two options for passing the API Token to the Marketplace CLI:
 
-### CLI argument
+### CLI Arguments
 
 ```bash
 $ mkpcli products list --csp-api-token <CSP API Token>
