@@ -43,7 +43,7 @@ func ValidateOutputFormatFlag(command *cobra.Command, _ []string) error {
 var rootCmd = &cobra.Command{
 	Use:   AppName,
 	Short: fmt.Sprintf("%s is a CLI interface for the VMware Marketplace", AppName),
-	Long: fmt.Sprintf(`%s is a Command Line interface for the VMware Marketplace,
+	Long: fmt.Sprintf(`%s is a CLI interface for the VMware Marketplace,
 enabling users to view, get, and manage their Marketplace products.`, AppName),
 	PersistentPreRunE: RunSerially(
 		func(cmd *cobra.Command, args []string) error {
