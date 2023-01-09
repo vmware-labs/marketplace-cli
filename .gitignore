@@ -1,2 +1,7 @@
 build/
 release/
+/vendor/
+/vendor/*
+vendor/
+.idea/
+.vscode/
