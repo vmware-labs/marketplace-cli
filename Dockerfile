@@ -1,4 +1,4 @@
-# Copyright 2022 VMware, Inc.
+# Copyright 2023 VMware, Inc.
 # SPDX-License-Identifier: BSD-2-Clause
 
 FROM harbor-repo.vmware.com/dockerhub-proxy-cache/library/golang:1.19 as builder
