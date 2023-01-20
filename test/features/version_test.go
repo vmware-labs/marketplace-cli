@@ -14,7 +14,7 @@ import (
 var _ = Describe("Report version", func() {
 	steps := NewSteps()
 
-	Scenario("version command reports version for solutions", func() {
+	Scenario("version command reports version for solutions dummy", func() {
 		steps.When("running mkpcli version")
 		steps.Then("the command exits without error")
 		steps.And("the version is printed")
