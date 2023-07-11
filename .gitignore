@@ -1,4 +1,2 @@
 build/
 release/
-*.idea
-internal/csp/argocdsample.code-workspace
