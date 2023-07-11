@@ -49,6 +49,7 @@ resources:
     type: pull-request
     icon: github
     check_every: 1m
+    disable_forks: true
     source:
       repository: vmware-labs/marketplace-cli
       access_token: ((github.access_token))
