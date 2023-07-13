@@ -27,6 +27,7 @@ resource_types:
       tag: v0.23.0
       username: ((harbor.username))
       password: ((harbor.token))
+      disable_forks: true
 
   - name: slack-alert
     type: registry-image
