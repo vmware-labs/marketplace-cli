@@ -5,11 +5,13 @@ package cmd
 
 import (
 	"fmt"
-	"strings"
-
 	"github.com/spf13/cobra"
 	"github.com/vmware-labs/marketplace-cli/v2/internal/models"
 	"github.com/vmware-labs/marketplace-cli/v2/pkg"
+	"log"
+	"os"
+	"os/exec"
+	"strings"
 )
 
 var (
@@ -28,6 +30,8 @@ func init() {
 	ProductCmd.AddCommand(ListAssetsCmd)
 	ProductCmd.AddCommand(ListProductVersionsCmd)
 	ProductCmd.AddCommand(SetCmd)
+	ProductCmd.AddCommand(StartProcessCmd)
+	ProductCmd.AddCommand(StopProcessCmd)
 
 	ListProductsCmd.Flags().StringVar(&ListProductSearchText, "search-text", "", "Filter product list by text")
 	ListProductsCmd.Flags().BoolVarP(&ListProductsAllOrgs, "all-orgs", "a", false, "Show published products from all organizations")
@@ -209,4 +213,52 @@ var SetCmd = &cobra.Command{
 
 		return nil
 	},
+}
+
+var StartProcessCmd = &cobra.Command{
+	Use:     "start-mkpl-agent-process",
+	Short:   "start background process required for Markeptlace Agent",
+	Long:    "start background process performing for monitoring, polling, heart-beat and update subscription status",
+	Args:    cobra.NoArgs,
+	PreRunE: GetRefreshToken,
+	RunE: func(cmd *cobra.Command, args []string) error {
+		startBackgroundProcess()
+		return nil
+	},
+}
+
+var StopProcessCmd = &cobra.Command{
+	Use:     "stop-mkpl-agent-process",
+	Short:   "stop background process of Marketplace Agent",
+	Long:    "stop background process performing monitoring, polling, heart-beat and update subscription status",
+	Args:    cobra.NoArgs,
+	PreRunE: GetRefreshToken,
+	RunE: func(cmd *cobra.Command, args []string) error {
+		stopBackgroundProcess()
+		return nil
+	},
+}
+
+func startBackgroundProcess() {
+	log.Println("starting the agent process...")
+	//dir, _ := os.Getwd()
+	cmd := exec.Command("./agent")
+	err := cmd.Start()
+	if err != nil {
+		log.Println("Error starting the process: ", err)
+		os.Exit(1)
+	}
+
+	log.Println("Process has started successfully...")
+}
+
+func stopBackgroundProcess() {
+	cmd := exec.Command("pkill", "-f", "agent")
+	err := cmd.Start()
+	if err != nil {
+		log.Println("Error in stopping the process:", err)
+		os.Exit(1)
+	}
+
+	log.Println("Process stopped successfully")
 }

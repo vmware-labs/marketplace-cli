@@ -85,18 +85,23 @@ LDFLAGS="-X github.com/vmware-labs/marketplace-cli/v2/cmd.version=$(VERSION)"
 
 build/mkpcli: $(SRC)
 	go build -o build/mkpcli -ldflags ${LDFLAGS} ./main.go
+	go build -o build/agent -ldflags ${LDFLAGS} ./background/main.go
 
 build/mkpcli-darwin-amd64: $(SRC)
 	GOARCH=amd64 GOOS=darwin go build -o build/mkpcli-darwin-amd64 -ldflags ${LDFLAGS} ./main.go
+	GOARCH=amd64 GOOS=darwin go build -o build/agent-darwin-amd64 -ldflags ${LDFLAGS} ./background/main.go
 
 build/mkpcli-darwin-arm64: $(SRC)
 	GOARCH=arm64 GOOS=darwin go build -o build/mkpcli-darwin-arm64 -ldflags ${LDFLAGS} ./main.go
+	GOARCH=arm64 GOOS=darwin go build -o build/agent-darwin-arm64 -ldflags ${LDFLAGS} ./background/main.go
 
 build/mkpcli-linux-amd64: $(SRC)
 	GOARCH=amd64 GOOS=linux go build -o build/mkpcli-linux-amd64 -ldflags ${LDFLAGS} ./main.go
+	GOARCH=amd64 GOOS=linux go build -o build/agent-linux-amd64 -ldflags ${LDFLAGS} ./background/main.go
 
 build/mkpcli-windows-amd64.exe: $(SRC)
 	GOARCH=amd64 GOOS=windows go build -o build/mkpcli-windows-amd64.exe -ldflags ${LDFLAGS} ./main.go
+	GOARCH=amd64 GOOS=windows go build -o build/agent-windows-amd64.exe -ldflags ${LDFLAGS} ./background/main.go
 
 build: deps build/mkpcli
 
@@ -104,10 +109,10 @@ build-all: build/mkpcli-darwin-amd64 build/mkpcli-darwin-arm64 build/mkpcli-linu
 
 release: build/mkpcli-darwin-amd64 build/mkpcli-darwin-arm64 build/mkpcli-linux-amd64 build/mkpcli-windows-amd64.exe
 	mkdir -p release
-	cp -f build/mkpcli-darwin-amd64 release/mkpcli && tar czvf release/mkpcli-darwin-amd64.tgz -C release mkpcli
-	cp -f build/mkpcli-darwin-arm64 release/mkpcli && tar czvf release/mkpcli-darwin-arm64.tgz -C release mkpcli
-	cp -f build/mkpcli-linux-amd64 release/mkpcli && tar czvf release/mkpcli-linux-amd64.tgz -C release mkpcli
-	cp -f build/mkpcli-windows-amd64.exe release/mkpcli.exe && zip -j release/mkpcli-windows-amd64.zip release/mkpcli.exe
+	cp -f build/mkpcli-darwin-amd64 release/mkpcli && cp -f build/agent-darwin-amd64 release/agent && tar czvf release/mkpcli-darwin-amd64.tgz -C release mkpcli agent
+	cp -f build/mkpcli-darwin-arm64 release/mkpcli && cp -f build/agent-darwin-arm64 release/agent && tar czvf release/mkpcli-darwin-arm64.tgz -C release mkpcli agent
+	cp -f build/mkpcli-linux-amd64 release/mkpcli && cp -f build/agent-linux-amd64 release/agent  && tar czvf release/mkpcli-linux-amd64.tgz -C release mkpcli agent
+	cp -f build/mkpcli-windows-amd64.exe release/mkpcli.exe && cp -f build/agent-windows-amd64.exe release/agent.exe && zip -j release/mkpcli-windows-amd64.zip release/mkpcli.exe release/agent.exe
 	rm release/mkpcli release/mkpcli.exe
 
 build-image: build/mkpcli-linux
